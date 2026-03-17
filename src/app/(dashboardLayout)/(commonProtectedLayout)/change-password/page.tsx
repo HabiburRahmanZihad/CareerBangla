@@ -1,8 +1,7 @@
+import ChangePasswordContent from "@/components/modules/Dashboard/ChangePasswordContent";
 
 const ChangePasswordPage = () => {
-  return (
-    <div>ChangePasswordPage</div>
-  )
-}
+    return <ChangePasswordContent />;
+};
 
-export default ChangePasswordPage
+export default ChangePasswordPage;
