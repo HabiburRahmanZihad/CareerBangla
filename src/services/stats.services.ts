@@ -1,8 +1,8 @@
 "use server";
 
-import { httpClient } from "@/lib/axios/httpClient";
+import { serverHttpClient } from "@/lib/axios/serverHttpClient";
 import { IAdminDashboardData } from "@/types/dashboard.types";
 
 export async function getDashboardStats() {
-    return httpClient.get<IAdminDashboardData>("/stats");
+    return serverHttpClient.get<IAdminDashboardData>("/stats");
 }

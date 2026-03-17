@@ -6,7 +6,7 @@ import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { httpClient } from "@/lib/axios/httpClient";
+import { changePassword } from "@/services/auth.services";
 import { changePasswordZodSchema, IChangePasswordPayload } from "@/zod/auth.validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
@@ -21,7 +21,7 @@ const ChangePasswordContent = () => {
 
     const { mutateAsync, isPending } = useMutation({
         mutationFn: (payload: IChangePasswordPayload) =>
-            httpClient.post("/auth/change-password", payload),
+            changePassword(payload),
         onSuccess: () => {
             toast.success("Password changed successfully!");
             form.reset();

@@ -5,8 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { changeUserStatus } from "@/services/admin.services";
-import { httpClient } from "@/lib/axios/httpClient";
+import { changeUserStatus, getAllAdmins } from "@/services/admin.services";
 import { UserInfo } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -16,7 +15,7 @@ const UsersManagementContent = () => {
 
     const { data, isLoading } = useQuery({
         queryKey: ["all-users"],
-        queryFn: () => httpClient.get<UserInfo[]>("/admins", { params: { limit: "50" } }),
+        queryFn: () => getAllAdmins({ limit: "50" }),
     });
 
     const { mutateAsync: updateStatus } = useMutation({

@@ -1,12 +1,12 @@
 "use server";
 
-import { httpClient } from "@/lib/axios/httpClient";
+import { serverHttpClient } from "@/lib/axios/serverHttpClient";
 import { ICoinTransaction, IWallet } from "@/types/user.types";
 
 export async function getMyWallet() {
-    return httpClient.get<IWallet>("/wallet");
+    return serverHttpClient.get<IWallet>("/wallet");
 }
 
 export async function getTransactionHistory(params?: Record<string, unknown>) {
-    return httpClient.get<ICoinTransaction[]>("/wallet/transactions", { params });
+    return serverHttpClient.get<ICoinTransaction[]>("/wallet/transactions", { params });
 }

@@ -1,22 +1,22 @@
 "use server";
 
-import { httpClient } from "@/lib/axios/httpClient";
+import { serverHttpClient } from "@/lib/axios/serverHttpClient";
 import { IResume } from "@/types/user.types";
 
 export async function getMyResume() {
-    return httpClient.get<IResume & { profileCompletion: number }>("/resumes/my-resume");
+    return serverHttpClient.get<IResume & { profileCompletion: number }>("/resumes/my-resume");
 }
 
 export async function updateMyResume(data: Record<string, unknown>) {
-    return httpClient.patch<IResume & { profileCompletion: number }>("/resumes/my-resume", data);
+    return serverHttpClient.patch<IResume & { profileCompletion: number }>("/resumes/my-resume", data);
 }
 
 export async function getResumeByUserId(userId: string) {
-    return httpClient.get<IResume>(`/resumes/user/${userId}`);
+    return serverHttpClient.get<IResume>(`/resumes/user/${userId}`);
 }
 
 export async function getAtsScore(jobId?: string) {
-    return httpClient.post<{
+    return serverHttpClient.post<{
         atsScore: number;
         profileCompletion: number;
         suggestions: string[];
@@ -27,5 +27,5 @@ export async function getAtsScore(jobId?: string) {
 }
 
 export async function searchCandidates(params?: Record<string, unknown>) {
-    return httpClient.get<IResume[]>("/resumes/search-candidates", { params });
+    return serverHttpClient.get<IResume[]>("/resumes/search-candidates", { params });
 }

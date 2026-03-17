@@ -1,6 +1,8 @@
 "use server";
 
+import { serverHttpClient } from "@/lib/axios/serverHttpClient";
 import { setTokenInCookies } from "@/lib/tokenUtils";
+import { IChangePasswordPayload } from "@/zod/auth.validation";
 import { cookies } from "next/headers";
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -83,4 +85,8 @@ export async function getUserInfo() {
         console.error("Error fetching user info:", error);
         return null;
     }
+}
+
+export async function changePassword(payload: IChangePasswordPayload) {
+    return serverHttpClient.post("/auth/change-password", payload);
 }
