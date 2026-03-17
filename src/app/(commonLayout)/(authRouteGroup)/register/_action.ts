@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
-import { httpClient } from "@/lib/axios/httpClient";
 import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
+import { serverHttpClient } from "@/lib/axios/serverHttpClient";
 import { setTokenInCookies } from "@/lib/tokenUtils";
 import { ApiErrorResponse } from "@/types/api.types";
 import { IRegisterResponse } from "@/types/auth.types";
@@ -21,7 +21,7 @@ export const registerAction = async (payload: IRegisterPayload): Promise<IRegist
     }
 
     try {
-        const response = await httpClient.post<IRegisterResponse>("/auth/register", parsedPayload.data);
+        const response = await serverHttpClient.post<IRegisterResponse>("/auth/register", parsedPayload.data);
 
         const { accessToken, refreshToken, token } = response.data;
 

@@ -2,8 +2,8 @@
 "use server";
 
 import { getDefaultDashboardRoute, isValidRedirectForRole, UserRole } from "@/lib/authUtils";
-import { httpClient } from "@/lib/axios/httpClient";
 import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
+import { serverHttpClient } from "@/lib/axios/serverHttpClient";
 import { setTokenInCookies } from "@/lib/tokenUtils";
 import { ApiErrorResponse } from "@/types/api.types";
 import { ILoginResponse } from "@/types/auth.types";
@@ -29,7 +29,7 @@ export const loginAction = async (payload: ILoginPayload, redirectPath?: string)
         console.log("[LoginAction] Calling backend /auth/login");
         console.log("[LoginAction] Redirect path param:", redirectPath);
 
-        const response = await httpClient.post<ILoginResponse>("/auth/login", parsedPayload.data);
+        const response = await serverHttpClient.post<ILoginResponse>("/auth/login", parsedPayload.data);
 
         const { accessToken, refreshToken, token, user } = response.data;
         const { role, needPasswordChange, email } = user;
