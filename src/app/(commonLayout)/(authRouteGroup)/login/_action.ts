@@ -7,9 +7,14 @@ import { setTokenInCookies } from "@/lib/tokenUtils";
 import { ApiErrorResponse } from "@/types/api.types";
 import { ILoginResponse } from "@/types/auth.types";
 import { ILoginPayload, loginZodSchema } from "@/zod/auth.validation";
-import { redirect } from "next/navigation";
 
-export const loginAction = async (payload: ILoginPayload, redirectPath?: string): Promise<ILoginResponse | ApiErrorResponse> => {
+interface LoginActionResponse {
+    success: boolean;
+    message: string;
+    redirectPath?: string;
+}
+
+export const loginAction = async (payload: ILoginPayload, redirectPath?: string): Promise<LoginActionResponse | ApiErrorResponse> => {
     const parsedPayload = loginZodSchema.safeParse(payload);
 
     if (!parsedPayload.success) {
@@ -24,7 +29,7 @@ export const loginAction = async (payload: ILoginPayload, redirectPath?: string)
         const response = await httpClient.post<ILoginResponse>("/auth/login", parsedPayload.data);
 
         const { accessToken, refreshToken, token, user } = response.data;
-        const { role, emailVerified, needPasswordChange, email } = user;
+        const { role, needPasswordChange, email } = user;
         await setTokenInCookies("accessToken", accessToken);
         await setTokenInCookies("refreshToken", refreshToken);
         await setTokenInCookies("better-auth.session_token", token, 24 * 60 * 60); // 1 day in seconds
@@ -35,25 +40,30 @@ export const loginAction = async (payload: ILoginPayload, redirectPath?: string)
 
         if (needPasswordChange) {
             //TODO : refactoring
-            redirect(`/reset-password?email=${email}`);
+            return {
+                success: true,
+                message: "Login successful",
+                redirectPath: `/reset-password?email=${email}`,
+            };
         } else {
-            // redirect(redirectPath || "/dashboard");
             const targetPath = redirectPath && isValidRedirectForRole(redirectPath, role as UserRole) ? redirectPath : getDefaultDashboardRoute(role as UserRole);
 
-
-            redirect(targetPath);
+            return {
+                success: true,
+                message: "Login successful",
+                redirectPath: targetPath,
+            };
         }
 
     } catch (error: any) {
-        // Re-throw Next.js redirect errors immediately
-        if (error && typeof error === "object" && "digest" in error && typeof error.digest === "string" && error.digest.startsWith("NEXT_REDIRECT")) {
-            throw error;
-        }
-
         console.log(error, "error");
 
         if (error && error.response && error.response.data.message === "Email not verified") {
-            redirect(`/verify-email?email=${payload.email}`);
+            return {
+                success: true,
+                message: "Email verification required",
+                redirectPath: `/verify-email?email=${payload.email}`,
+            };
         }
         return {
             success: false,
