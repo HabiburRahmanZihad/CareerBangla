@@ -1,8 +1,7 @@
+import AdminsManagementContent from "@/components/modules/Admin/AdminsManagement/AdminsManagementContent";
 
 const AdminsManagementPage = () => {
-  return (
-    <div>AdminsManagementPage</div>
-  )
-}
+    return <AdminsManagementContent />;
+};
 
-export default AdminsManagementPage
+export default AdminsManagementPage;
