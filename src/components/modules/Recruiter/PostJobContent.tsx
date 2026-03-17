@@ -7,14 +7,20 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { createJob, getJobCategories } from "@/services/job.services";
+import { getMyRecruiterProfile } from "@/services/recruiter.services";
+import { getMyWallet } from "@/services/wallet.services";
 import { createJobZodSchema } from "@/zod/job.validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Coins, ShieldAlert } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+
+const POST_JOB_COST = 20;
 
 const PostJobContent = () => {
     const router = useRouter();
@@ -24,6 +30,24 @@ const PostJobContent = () => {
         queryKey: ["job-categories"],
         queryFn: () => getJobCategories(),
     });
+
+    const { data: profileData, isLoading: profileLoading } = useQuery({
+        queryKey: ["my-recruiter-profile"],
+        queryFn: () => getMyRecruiterProfile(),
+    });
+
+    const { data: walletData, isLoading: walletLoading } = useQuery({
+        queryKey: ["my-wallet"],
+        queryFn: () => getMyWallet(),
+    });
+
+    const isVerified = profileData?.data?.isVerified ?? false;
+    const profileCompletion = profileData?.data?.profileCompletion ?? 0;
+    const isProfileComplete = profileCompletion >= 100;
+    const coinBalance = walletData?.data?.balance ?? 0;
+    const hasEnoughCoins = coinBalance >= POST_JOB_COST;
+    const canPost = isVerified && isProfileComplete && hasEnoughCoins;
+    const isGuardLoading = profileLoading || walletLoading;
 
     const { mutateAsync, isPending } = useMutation({
         mutationFn: (data: Record<string, unknown>) => createJob(data),
@@ -71,12 +95,46 @@ const PostJobContent = () => {
         <div className="space-y-6 max-w-3xl">
             <h1 className="text-2xl font-bold">Post a New Job</h1>
 
-            <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                    Posting a job costs <strong>20 coins</strong>. Make sure you have enough coins in your wallet.
-                </AlertDescription>
-            </Alert>
+            {/* Guard Alerts */}
+            {isGuardLoading ? (
+                <Skeleton className="h-16 w-full" />
+            ) : (
+                <>
+                    {!isVerified && (
+                        <Alert variant="destructive">
+                            <ShieldAlert className="h-4 w-4" />
+                            <AlertDescription>
+                                Your account is not verified yet. You cannot post jobs until an admin verifies your profile.
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                    {!isProfileComplete && (
+                        <Alert variant="destructive">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription>
+                                Your profile is {profileCompletion}% complete. You must complete your profile to 100% before posting jobs.
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                    {!hasEnoughCoins && isVerified && isProfileComplete && (
+                        <Alert variant="destructive">
+                            <Coins className="h-4 w-4" />
+                            <AlertDescription>
+                                Insufficient coins. You need {POST_JOB_COST} coins to post a job. Your balance: {coinBalance}.{" "}
+                                <Link href="/recruiter/dashboard/wallet" className="underline font-medium">Buy Coins</Link>
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                    {canPost && (
+                        <Alert>
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription>
+                                Posting a job costs <strong>{POST_JOB_COST} coins</strong>. Your balance: {coinBalance} coins.
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                </>
+            )}
 
             <Card>
                 <CardHeader>
@@ -201,8 +259,8 @@ const PostJobContent = () => {
                             </Alert>
                         )}
 
-                        <AppSubmitButton isPending={isPending} pendingLabel="Posting Job...">
-                            Post Job (20 coins)
+                        <AppSubmitButton isPending={isPending} pendingLabel="Posting Job..." disabled={!canPost || isGuardLoading}>
+                            Post Job ({POST_JOB_COST} coins)
                         </AppSubmitButton>
                     </form>
                 </CardContent>

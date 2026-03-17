@@ -7,10 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { applyToJob } from "@/services/application.services";
+import { getMyResume } from "@/services/resume.services";
+import { getMyWallet } from "@/services/wallet.services";
 import { IJob } from "@/types/user.types";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { AlertCircle, ArrowLeft, Briefcase, Building2, Calendar, Clock, MapPin } from "lucide-react";
+import { AlertCircle, ArrowLeft, Briefcase, Building2, Calendar, Clock, Coins, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -35,9 +37,27 @@ const experienceLevelLabels: Record<string, string> = {
     EXECUTIVE: "Executive",
 };
 
+const APPLY_COST = 5;
+
 const JobDetailsContent = ({ job }: JobDetailsContentProps) => {
     const [coverLetter, setCoverLetter] = useState("");
     const [showApplyForm, setShowApplyForm] = useState(false);
+
+    const { data: resumeData } = useQuery({
+        queryKey: ["my-resume"],
+        queryFn: () => getMyResume(),
+    });
+
+    const { data: walletData } = useQuery({
+        queryKey: ["my-wallet"],
+        queryFn: () => getMyWallet(),
+    });
+
+    const profileCompletion = resumeData?.data?.profileCompletion ?? 0;
+    const coinBalance = walletData?.data?.balance ?? 0;
+    const isProfileComplete = profileCompletion >= 100;
+    const hasEnoughCoins = coinBalance >= APPLY_COST;
+    const canApply = isProfileComplete && hasEnoughCoins;
 
     const { mutateAsync: apply, isPending } = useMutation({
         mutationFn: () => applyToJob({ jobId: job.id, coverLetter: coverLetter || undefined }),
@@ -148,9 +168,33 @@ const JobDetailsContent = ({ job }: JobDetailsContentProps) => {
                             {job.status === "OPEN" ? (
                                 <>
                                     {!showApplyForm ? (
-                                        <Button className="w-full" onClick={() => setShowApplyForm(true)}>
-                                            Apply Now
-                                        </Button>
+                                        <div className="space-y-3">
+                                            {!isProfileComplete && (
+                                                <Alert variant="destructive">
+                                                    <AlertCircle className="h-4 w-4" />
+                                                    <AlertDescription>
+                                                        Your profile is {profileCompletion}% complete. You must complete your profile to 100% before applying.{" "}
+                                                        <Link href="/dashboard/my-resume" className="underline font-medium">Complete Profile</Link>
+                                                    </AlertDescription>
+                                                </Alert>
+                                            )}
+                                            {!hasEnoughCoins && isProfileComplete && (
+                                                <Alert variant="destructive">
+                                                    <Coins className="h-4 w-4" />
+                                                    <AlertDescription>
+                                                        Insufficient coins. You need {APPLY_COST} coins to apply. Your balance: {coinBalance}.{" "}
+                                                        <Link href="/dashboard/wallet" className="underline font-medium">Buy Coins</Link>
+                                                    </AlertDescription>
+                                                </Alert>
+                                            )}
+                                            <Button
+                                                className="w-full"
+                                                onClick={() => setShowApplyForm(true)}
+                                                disabled={!canApply}
+                                            >
+                                                Apply Now ({APPLY_COST} coins)
+                                            </Button>
+                                        </div>
                                     ) : (
                                         <div className="space-y-3">
                                             <h4 className="font-medium">Cover Letter (Optional)</h4>
@@ -163,7 +207,7 @@ const JobDetailsContent = ({ job }: JobDetailsContentProps) => {
                                             <Alert>
                                                 <AlertCircle className="h-4 w-4" />
                                                 <AlertDescription>
-                                                    Applying costs 5 coins. Make sure your profile is 100% complete.
+                                                    Applying costs {APPLY_COST} coins. Your balance: {coinBalance} coins.
                                                 </AlertDescription>
                                             </Alert>
                                             <div className="flex gap-2">
