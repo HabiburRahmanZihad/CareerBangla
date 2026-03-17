@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PH Healthcare Management System",
-  description: "A comprehensive healthcare management system built with Next.js, TypeScript, and Tailwind CSS. This application provides features for managing patient records, appointments, billing, and more, ensuring efficient healthcare administration.",
+  title: "CareerBangla - Your Career, Your Future",
+  description: "CareerBangla is a comprehensive job portal platform connecting job seekers with recruiters. Find your dream job, build your resume, and advance your career.",
 };
 
 export default function RootLayout({
