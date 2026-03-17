@@ -14,14 +14,24 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+const oauthErrorMessages: Record<string, string> = {
+  oauth_failed: "Google sign-in failed. Please try again or use email login.",
+  no_session_found: "Could not establish a session. Please try again.",
+  no_user_found: "No user account found. Please register first.",
+  invalid_client: "Google OAuth is not configured. Please use email login.",
+};
+
 interface LoginFormProps {
   redirectPath?: string;
+  oauthError?: string;
 }
 
-const LoginForm = ({ redirectPath }: LoginFormProps) => {
+const LoginForm = ({ redirectPath, oauthError }: LoginFormProps) => {
   const router = useRouter();
 
-  const [serverError, setServerError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(
+    oauthError ? oauthErrorMessages[oauthError] || "Authentication failed. Please try again." : null
+  );
   const [showPassword, setShowPassword] = useState(false);
 
   const { mutateAsync, isPending } = useMutation({
@@ -47,6 +57,7 @@ const LoginForm = ({ redirectPath }: LoginFormProps) => {
         // If login was successful and has a redirect path, navigate to it
         if (result.redirectPath) {
           router.push(result.redirectPath);
+          router.refresh();
         }
       } catch (error: any) {
         console.log(`Login failed: ${error.message}`);
