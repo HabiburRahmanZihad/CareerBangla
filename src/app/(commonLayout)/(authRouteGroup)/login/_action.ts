@@ -3,6 +3,7 @@
 
 import { getDefaultDashboardRoute, isValidRedirectForRole, UserRole } from "@/lib/authUtils";
 import { httpClient } from "@/lib/axios/httpClient";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { setTokenInCookies } from "@/lib/tokenUtils";
 import { ApiErrorResponse } from "@/types/api.types";
 import { ILoginResponse } from "@/types/auth.types";
@@ -76,7 +77,7 @@ export const loginAction = async (payload: ILoginPayload, redirectPath?: string)
         }
         return {
             success: false,
-            message: `Login failed: ${error.message}`,
+            message: getRequestErrorMessage(error, "Login failed"),
         }
     }
 }

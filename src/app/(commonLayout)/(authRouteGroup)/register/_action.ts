@@ -2,6 +2,7 @@
 "use server";
 
 import { httpClient } from "@/lib/axios/httpClient";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { setTokenInCookies } from "@/lib/tokenUtils";
 import { ApiErrorResponse } from "@/types/api.types";
 import { IRegisterResponse } from "@/types/auth.types";
@@ -36,7 +37,7 @@ export const registerAction = async (payload: IRegisterPayload): Promise<IRegist
 
         return {
             success: false,
-            message: error?.response?.data?.message || `Registration failed: ${error.message}`,
+            message: getRequestErrorMessage(error, "Registration failed"),
         };
     }
 };
