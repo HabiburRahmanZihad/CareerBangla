@@ -47,20 +47,25 @@ const LoginForm = ({ redirectPath, oauthError }: LoginFormProps) => {
     onSubmit: async ({ value }) => {
       setServerError(null);
       try {
+        console.log("[Login] Submitting login for:", value.email);
+        console.log("[Login] Redirect path from URL:", redirectPath);
+
         const result = await mutateAsync(value) as any;
+
+        console.log("[Login] Server response:", { success: result.success, redirectPath: result.redirectPath, message: result.message });
 
         if (!result.success) {
           setServerError(result.message || "Login failed");
           return;
         }
 
-        // If login was successful and has a redirect path, navigate to it
-        if (result.redirectPath) {
-          router.push(result.redirectPath);
-          router.refresh();
-        }
+        const targetPath = result.redirectPath || "/dashboard";
+        console.log("[Login] Navigating to:", targetPath);
+
+        router.push(targetPath);
+        router.refresh();
       } catch (error: any) {
-        console.log(`Login failed: ${error.message}`);
+        console.error("[Login] Error:", error.message);
         setServerError(`Login failed: ${error.message}`);
       }
     }
