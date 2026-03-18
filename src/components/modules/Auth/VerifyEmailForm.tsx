@@ -24,7 +24,12 @@ const VerifyEmailForm = ({ email }: VerifyEmailFormProps) => {
         mutationFn: () => httpClient.post("/auth/verify-email", { email, otp }),
         onSuccess: () => {
             toast.success("Email verified successfully!");
-            router.push("/dashboard");
+            // Refresh the page to get the updated user session
+            router.refresh();
+            // Wait a moment for the refresh, then navigate
+            setTimeout(() => {
+                router.push("/dashboard");
+            }, 500);
         },
         onError: (err: any) => {
             setError(err?.response?.data?.message || "Verification failed");

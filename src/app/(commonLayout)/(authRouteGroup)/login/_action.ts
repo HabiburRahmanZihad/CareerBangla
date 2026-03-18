@@ -68,13 +68,15 @@ export const loginAction = async (payload: ILoginPayload, redirectPath?: string)
     } catch (error: any) {
         console.log(error, "error");
 
-        if (error && error.response && error.response.data.message === "Email not verified") {
+        // Check for email verification error (401 with specific message)
+        if (error?.response?.status === 401 && error?.response?.data?.message === "Email not verified") {
             return {
                 success: true,
                 message: "Email verification required",
                 redirectPath: `/verify-email?email=${payload.email}`,
             };
         }
+
         return {
             success: false,
             message: getRequestErrorMessage(error, "Login failed"),
