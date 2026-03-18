@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import AppField from "@/components/shared/form/AppField";
+import { useState } from "react";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import ProfileCompletionBar from "@/components/shared/ProfileCompletionBar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -24,11 +25,32 @@ const MyResumeContent = () => {
         queryFn: () => getMyResume(),
     });
 
+    const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
+
     const { mutateAsync, isPending } = useMutation({
         mutationFn: (payload: Record<string, unknown>) => updateMyResume(payload),
-        onSuccess: () => {
-            toast.success("Resume updated successfully!");
-            queryClient.invalidateQueries({ queryKey: ["my-resume"] });
+        onSuccess: (response: any) => {
+            if (response && response.success === false) {
+                const newErrors: Record<string, string> = {};
+                if (response.errorSources) {
+                    response.errorSources.forEach((source: any) => {
+                        const parts = source.path.split(" => ");
+                        const formattedPath = parts.reduce((acc: string, curr: string) => {
+                            if (!isNaN(Number(curr))) return `${acc}[${curr}]`;
+                            return acc ? `${acc}.${curr}` : curr;
+                        }, "");
+                        newErrors[formattedPath] = source.message;
+                    });
+                    setServerErrors(newErrors);
+                    toast.error("Please fix the specific field errors marked below.");
+                } else {
+                    toast.error(response.message || "Failed to update resume");
+                }
+            } else {
+                setServerErrors({});
+                toast.success("Resume updated successfully!");
+                queryClient.invalidateQueries({ queryKey: ["my-resume"] });
+            }
         },
         onError: (err: any) => {
             toast.error(err?.response?.data?.message || "Failed to update resume");
@@ -74,14 +96,17 @@ const MyResumeContent = () => {
         onSubmit: async ({ value }) => {
             const payload: Record<string, unknown> = { ...value };
 
-            // Sanitize URLs to prevent Zod 400 Validation errors on empty inputs
+            // Sanitize URLs to prevent Zod 400 Validation errors on empty inputs or missing protocol
             const urlFields = ["linkedinUrl", "githubUrl", "portfolioUrl"];
             urlFields.forEach((field) => {
                 if (typeof payload[field] === "string") {
-                    const trimmed = (payload[field] as string).trim();
+                    let trimmed = (payload[field] as string).trim();
                     if (!trimmed) {
                         delete payload[field];
                     } else {
+                        if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+                            trimmed = "https://" + trimmed;
+                        }
                         payload[field] = trimmed;
                     }
                 }
@@ -170,25 +195,27 @@ const MyResumeContent = () => {
                             <h3 className="text-lg font-semibold">Basic Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <form.Field name="professionalTitle">
-                                    {(field) => <AppField field={field} label="Professional Title" placeholder="e.g. Full Stack Developer" />}
+                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Professional Title" placeholder="e.g. Full Stack Developer" />}
                                 </form.Field>
 
                                 <form.Field name="contactNumber">
-                                    {(field) => <AppField field={field} label="Contact Number" placeholder="+880..." />}
+                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Contact Number" placeholder="+880..." />}
                                 </form.Field>
 
                                 <form.Field name="address">
-                                    {(field) => <AppField field={field} label="Address" placeholder="Dhaka, Bangladesh" />}
+                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Address" placeholder="Dhaka, Bangladesh" />}
                                 </form.Field>
 
                                 <form.Field name="dateOfBirth">
-                                    {(field) => <AppField field={field} label="Date of Birth" type="date" />}
+                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Date of Birth" type="date" />}
                                 </form.Field>
 
                                 <form.Field name="gender">
                                     {(field) => {
                                         const error = field.state.meta.isTouched && field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : null;
-                                        const errorMsg = typeof error === "string" ? error : (error as any)?.message || String(error || "");
+                                        const serverErr = serverErrors[field.name];
+                                        const finalError = error || serverErr;
+                                        const errorMsg = typeof finalError === "string" ? finalError : (finalError as any)?.message || String(finalError || "");
                                         return (
                                             <div className="space-y-1.5">
                                                 <Label htmlFor={field.name} className={error ? "text-destructive" : ""}>Gender</Label>
@@ -212,24 +239,24 @@ const MyResumeContent = () => {
                                 </form.Field>
 
                                 <form.Field name="linkedinUrl">
-                                    {(field) => <AppField field={field} label="LinkedIn URL" placeholder="https://linkedin.com/in/..." />}
+                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="LinkedIn URL" placeholder="https://linkedin.com/in/..." />}
                                 </form.Field>
 
                                 <form.Field name="githubUrl">
-                                    {(field) => <AppField field={field} label="GitHub URL" placeholder="https://github.com/..." />}
+                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="GitHub URL" placeholder="https://github.com/..." />}
                                 </form.Field>
 
                                 <form.Field name="portfolioUrl">
-                                    {(field) => <AppField field={field} label="Portfolio URL" placeholder="https://..." />}
+                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Portfolio URL" placeholder="https://..." />}
                                 </form.Field>
                             </div>
 
                             <form.Field name="technicalSkills">
-                                {(field) => <AppField field={field} label="Technical Skills (comma separated)" placeholder="React, TypeScript, Node.js, ..." />}
+                                {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Technical Skills (comma separated)" placeholder="React, TypeScript, Node.js, ..." />}
                             </form.Field>
 
                             <form.Field name="professionalSummary">
-                                {(field) => <AppField field={field} label="Professional Summary" placeholder="Brief summary of your experience and goals..." />}
+                                {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Professional Summary" placeholder="Brief summary of your experience and goals..." />}
                             </form.Field>
                         </div>
 
@@ -250,20 +277,20 @@ const MyResumeContent = () => {
                                             </Button>
                                             <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <form.Field name={`workExperience[${i}].jobTitle`}>
-                                                    {(subField) => <AppField field={subField as any} label="Job Title" placeholder="Software Engineer" />}
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Job Title" placeholder="Software Engineer" />}
                                                 </form.Field>
                                                 <form.Field name={`workExperience[${i}].companyName`}>
-                                                    {(subField) => <AppField field={subField as any} label="Company Name" placeholder="Google" />}
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Company Name" placeholder="Google" />}
                                                 </form.Field>
                                                 <form.Field name={`workExperience[${i}].startDate`}>
-                                                    {(subField) => <AppField field={subField as any} label="Start Date" type="date" />}
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Start Date" type="date" />}
                                                 </form.Field>
                                                 <form.Field name={`workExperience[${i}].endDate`}>
-                                                    {(subField) => <AppField field={subField as any} label="End Date" type="date" />}
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="End Date" type="date" />}
                                                 </form.Field>
                                                 <div className="md:col-span-2">
                                                     <form.Field name={`workExperience[${i}].responsibilities`}>
-                                                        {(subField) => <AppField field={subField as any} label="Responsibilities (comma separated)" />}
+                                                        {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Responsibilities (comma separated)" />}
                                                     </form.Field>
                                                 </div>
                                             </CardContent>
@@ -290,19 +317,19 @@ const MyResumeContent = () => {
                                             </Button>
                                             <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <form.Field name={`education[${i}].degree`}>
-                                                    {(subField) => <AppField field={subField as any} label="Degree" placeholder="BSc in Computer Science" />}
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Degree" placeholder="BSc in Computer Science" />}
                                                 </form.Field>
                                                 <form.Field name={`education[${i}].institutionName`}>
-                                                    {(subField) => <AppField field={subField as any} label="Institution" placeholder="University Name" />}
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Institution" placeholder="University Name" />}
                                                 </form.Field>
                                                 <form.Field name={`education[${i}].fieldOfStudy`}>
-                                                    {(subField) => <AppField field={subField as any} label="Field of Study" placeholder="Computer Science" />}
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Field of Study" placeholder="Computer Science" />}
                                                 </form.Field>
                                                 <form.Field name={`education[${i}].startDate`}>
-                                                    {(subField) => <AppField field={subField as any} label="Start Date" type="date" />}
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Start Date" type="date" />}
                                                 </form.Field>
                                                 <form.Field name={`education[${i}].endDate`}>
-                                                    {(subField) => <AppField field={subField as any} label="End Date" type="date" />}
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="End Date" type="date" />}
                                                 </form.Field>
                                             </CardContent>
                                         </Card>
@@ -328,13 +355,13 @@ const MyResumeContent = () => {
                                             </Button>
                                             <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <form.Field name={`certifications[${i}].certificationName`}>
-                                                    {(subField) => <AppField field={subField as any} label="Certification Name" placeholder="AWS Certified Solutions Architect" />}
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Certification Name" placeholder="AWS Certified Solutions Architect" />}
                                                 </form.Field>
                                                 <form.Field name={`certifications[${i}].issuingOrganization`}>
-                                                    {(subField) => <AppField field={subField as any} label="Issuing Organization" placeholder="Amazon Web Services" />}
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Issuing Organization" placeholder="Amazon Web Services" />}
                                                 </form.Field>
                                                 <form.Field name={`certifications[${i}].issueDate`}>
-                                                    {(subField) => <AppField field={subField as any} label="Issue Date" type="date" />}
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Issue Date" type="date" />}
                                                 </form.Field>
                                             </CardContent>
                                         </Card>

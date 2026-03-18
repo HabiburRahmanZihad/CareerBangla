@@ -8,7 +8,15 @@ export async function getMyResume() {
 }
 
 export async function updateMyResume(data: Record<string, unknown>) {
-    return serverHttpClient.patch<IResume & { profileCompletion: number }>("/resumes/my-resume", data);
+    try {
+        const res = await serverHttpClient.patch<IResume & { profileCompletion: number }>("/resumes/my-resume", data);
+        return res;
+    } catch (error: any) {
+        if (error.response?.data) {
+            return { success: false, ...error.response.data };
+        }
+        throw error;
+    }
 }
 
 export async function getResumeByUserId(userId: string) {

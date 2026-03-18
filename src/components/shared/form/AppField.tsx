@@ -25,6 +25,7 @@ type AppFieldProps = {
     prepend ?: React.ReactNode;
     className ?: string;
     disabled ?: boolean;
+    serverError ?: string;
 }
 
 const AppField = ({
@@ -36,11 +37,13 @@ const AppField = ({
     prepend,
     className,
     disabled = false,
+    serverError,
 } : AppFieldProps) => {
 
-    const firstError = field.state.meta.isTouched && field.state.meta.errors.length > 0 ? getErrorMessage(field.state.meta.errors[0]) : null;
+    const localError = field.state.meta.isTouched && field.state.meta.errors.length > 0 ? getErrorMessage(field.state.meta.errors[0]) : null;
+    const firstError = localError || serverError;
 
-    const hasError = firstError !== null;
+    const hasError = firstError !== null && firstError !== undefined;
 
   return (
     <div className={cn("space-y-1.5", className)}>
