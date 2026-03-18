@@ -122,6 +122,8 @@ export async function proxy(request: NextRequest) {
         return NextResponse.next();
     } catch (error) {
         console.error("Error in proxy middleware:", error);
+        // Return login redirect on any middleware error to prevent hangs
+        return NextResponse.redirect(new URL("/login", request.url));
     }
 }
 

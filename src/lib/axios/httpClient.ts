@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { ApiResponse } from "@/types/api.types";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -17,6 +17,21 @@ const axiosInstance = axios.create({
     },
 });
 
+// Response interceptor for better error handling
+axiosInstance.interceptors.response.use(
+    response => response,
+    (error: AxiosError) => {
+        if (process.env.NODE_ENV === "development") {
+            console.error("[API Error]", {
+                status: error.response?.status,
+                message: error.message,
+                data: error.response?.data,
+            });
+        }
+        return Promise.reject(error);
+    }
+);
+
 export interface ApiRequestOptions {
     params?: Record<string, unknown>;
     headers?: Record<string, string>;
@@ -30,7 +45,9 @@ const httpGet = async <TData>(endpoint: string, options?: ApiRequestOptions): Pr
         });
         return response.data;
     } catch (error) {
-        console.error(`GET request to ${endpoint} failed:`, error);
+        if (process.env.NODE_ENV === "development") {
+            console.error(`GET request to ${endpoint} failed:`, error);
+        }
         throw error;
     }
 };
@@ -43,7 +60,9 @@ const httpPost = async <TData>(endpoint: string, data: unknown, options?: ApiReq
         });
         return response.data;
     } catch (error) {
-        console.error(`POST request to ${endpoint} failed:`, error);
+        if (process.env.NODE_ENV === "development") {
+            console.error(`POST request to ${endpoint} failed:`, error);
+        }
         throw error;
     }
 };
@@ -56,7 +75,9 @@ const httpPut = async <TData>(endpoint: string, data: unknown, options?: ApiRequ
         });
         return response.data;
     } catch (error) {
-        console.error(`PUT request to ${endpoint} failed:`, error);
+        if (process.env.NODE_ENV === "development") {
+            console.error(`PUT request to ${endpoint} failed:`, error);
+        }
         throw error;
     }
 };
@@ -69,7 +90,9 @@ const httpPatch = async <TData>(endpoint: string, data: unknown, options?: ApiRe
         });
         return response.data;
     } catch (error) {
-        console.error(`PATCH request to ${endpoint} failed:`, error);
+        if (process.env.NODE_ENV === "development") {
+            console.error(`PATCH request to ${endpoint} failed:`, error);
+        }
         throw error;
     }
 };
@@ -82,7 +105,9 @@ const httpDelete = async <TData>(endpoint: string, options?: ApiRequestOptions):
         });
         return response.data;
     } catch (error) {
-        console.error(`DELETE request to ${endpoint} failed:`, error);
+        if (process.env.NODE_ENV === "development") {
+            console.error(`DELETE request to ${endpoint} failed:`, error);
+        }
         throw error;
     }
 };

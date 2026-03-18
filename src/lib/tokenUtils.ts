@@ -9,16 +9,18 @@ const getTokenSecondsRemaining = (token: string): number => {
     try {
         const tokenPayload = jwt.decode(token) as JwtPayload;
 
-        if (tokenPayload && !tokenPayload.exp) {
+        if (!tokenPayload || !tokenPayload.exp) {
             return 0;
         }
 
-        const remainingSeconds = tokenPayload.exp as number - Math.floor(Date.now() / 1000)
+        const remainingSeconds = (tokenPayload.exp as number) - Math.floor(Date.now() / 1000)
 
         return remainingSeconds > 0 ? remainingSeconds : 0;
 
     } catch (error) {
-        console.error("Error decoding token:", error);
+        if (process.env.NODE_ENV === "development") {
+            console.error("Error decoding token:", error);
+        }
         return 0;
     }
 }
@@ -26,33 +28,51 @@ const getTokenSecondsRemaining = (token: string): number => {
 export const setTokenInCookies = async (
     name: string,
     token: string,
-    fallbackMaxAgeInSeconds = 60 * 60 * 24 // 1 days
+    fallbackMaxAgeInSeconds = 60 * 60 * 24 // 1 day
 ) => {
     // Safety check - don't set empty or undefined tokens
-    if (!token) {
-        console.error(`[setTokenInCookies] Token is empty for ${name}`);
+    if (!token || token.trim() === "") {
+        if (process.env.NODE_ENV === "development") {
+            console.error(`[setTokenInCookies] Token is empty for ${name}`);
+        }
         return;
     }
 
-    let maxAgeInSeconds;
+    let maxAgeInSeconds = fallbackMaxAgeInSeconds;
 
     // Only try to decode JWT tokens (accessToken, refreshToken)
     // Session tokens from better-auth are NOT JWTs, they're random strings
     if (name !== "better-auth.session_token" && name !== "refreshToken") {
-        maxAgeInSeconds = getTokenSecondsRemaining(token);
+        const decoded = getTokenSecondsRemaining(token);
+        if (decoded > 0) {
+            maxAgeInSeconds = decoded;
+        }
     }
 
-    console.log(`[setTokenInCookies] Setting ${name} with maxAge: ${maxAgeInSeconds || fallbackMaxAgeInSeconds}`);
-    await setCookie(name, token, maxAgeInSeconds || fallbackMaxAgeInSeconds);
+    if (process.env.NODE_ENV === "development") {
+        console.log(`[setTokenInCookies] Setting ${name} with maxAge: ${maxAgeInSeconds}s`);
+    }
+
+    await setCookie(name, token, maxAgeInSeconds);
 }
 
 
 export async function isTokenExpiringSoon(token: string, thresholdInSeconds = 300): Promise<boolean> {
-    const remainingSeconds = getTokenSecondsRemaining(token);
-    return remainingSeconds > 0 && remainingSeconds <= thresholdInSeconds;
+    if (!token) return true;
+    try {
+        const remainingSeconds = getTokenSecondsRemaining(token);
+        return remainingSeconds < thresholdInSeconds;
+    } catch (error) {
+        return true;
+    }
 }
 
 export async function isTokenExpired(token: string): Promise<boolean> {
-    const remainingSeconds = getTokenSecondsRemaining(token);
-    return remainingSeconds === 0;
+    if (!token) return true;
+    try {
+        const remainingSeconds = getTokenSecondsRemaining(token);
+        return remainingSeconds === 0;
+    } catch (error) {
+        return true;
+    }
 }
