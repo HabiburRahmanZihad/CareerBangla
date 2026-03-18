@@ -6,6 +6,7 @@ import { useState } from "react";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import ProfileCompletionBar from "@/components/shared/ProfileCompletionBar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import Link from "next/link";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -25,7 +26,7 @@ import { getMyResume, updateMyResume } from "@/services/resume.services";
 import { getMyWallet } from "@/services/wallet.services";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Coins, Plus, Trash2 } from "lucide-react";
+import { AlertCircle, Coins, Plus, Trash2, Info } from "lucide-react";
 import { toast } from "sonner";
 
 const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
@@ -205,7 +206,14 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                 </AlertDialogContent>
             </AlertDialog>
 
-            <h1 className="text-2xl font-bold">My Resume</h1>
+            <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold">My Resume</h1>
+                <Link href="/dashboard/profile-completion-guide">
+                    <Button variant="outline" size="sm">
+                        <Info className="w-4 h-4 mr-2" /> ATS Scoring Guide
+                    </Button>
+                </Link>
+            </div>
 
             <ProfileCompletionBar completion={profileCompletion} />
 
