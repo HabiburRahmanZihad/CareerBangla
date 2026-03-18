@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "server-only";
 
-import { getNewTokensWithRefreshToken } from "@/services/auth.services";
 import { ApiResponse } from "@/types/api.types";
 import axios from "axios";
 import { cookies, headers } from "next/headers";
@@ -9,12 +8,13 @@ import { isTokenExpiringSoon } from "../tokenUtils";
 import type { ApiRequestOptions } from "./httpClient";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const NEXT_PUBLIC_APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 if (!API_BASE_URL) {
     throw new Error("API_BASE_URL is not defined in environment variables");
 }
 
-async function tryRefreshToken(accessToken: string, refreshToken: string): Promise<void> {
+async function tryRefreshToken(accessToken: string): Promise<void> {
     if (!isTokenExpiringSoon(accessToken)) {
         return;
     }
@@ -26,7 +26,15 @@ async function tryRefreshToken(accessToken: string, refreshToken: string): Promi
     }
 
     try {
-        await getNewTokensWithRefreshToken(refreshToken);
+        // Call the Route Handler to refresh tokens
+        const refreshResponse = await fetch(`${NEXT_PUBLIC_APP_URL}/api/auth/refresh-token`, {
+            method: "POST",
+            credentials: "include", // Include cookies
+        });
+
+        if (refreshResponse.ok) {
+            requestHeaders.set("x-token-refreshed", "1");
+        }
     } catch (error: any) {
         console.error("Error refreshing token in server http client:", error);
     }
@@ -38,7 +46,7 @@ const axiosInstance = async () => {
     const refreshToken = cookieStore.get("refreshToken")?.value;
 
     if (accessToken && refreshToken) {
-        await tryRefreshToken(accessToken, refreshToken);
+        await tryRefreshToken(accessToken);
     }
 
     const cookieHeader = cookieStore
