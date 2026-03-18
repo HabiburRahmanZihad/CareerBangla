@@ -7,14 +7,14 @@ import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import ProfileCompletionBar from "@/components/shared/ProfileCompletionBar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -129,7 +129,11 @@ const MyResumeContent = () => {
                     }
                 }
             });
-            
+
+            if (!payload.gender) {
+                delete payload.gender;
+            }
+
             if (typeof value.technicalSkills === "string") {
                 payload.technicalSkills = value.technicalSkills.split(",").map((s: string) => s.trim()).filter(Boolean);
             }
@@ -137,8 +141,8 @@ const MyResumeContent = () => {
             if (Array.isArray(value.workExperience)) {
                 payload.workExperience = value.workExperience.map((exp: any) => ({
                     ...exp,
-                    responsibilities: typeof exp.responsibilities === "string" 
-                        ? exp.responsibilities.split(",").map((s: string) => s.trim()).filter(Boolean) 
+                    responsibilities: typeof exp.responsibilities === "string"
+                        ? exp.responsibilities.split(",").map((s: string) => s.trim()).filter(Boolean)
                         : exp.responsibilities,
                     startDate: exp.startDate ? new Date(exp.startDate).toISOString() : new Date().toISOString(),
                     endDate: exp.endDate ? new Date(exp.endDate).toISOString() : undefined,
@@ -214,8 +218,8 @@ const MyResumeContent = () => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction 
-                            onClick={confirmUpdate} 
+                        <AlertDialogAction
+                            onClick={confirmUpdate}
                             disabled={isPending || coins < 15}
                             className={coins < 15 ? "opacity-50 cursor-not-allowed" : ""}
                         >
@@ -289,7 +293,7 @@ const MyResumeContent = () => {
                                             <div className="space-y-1.5">
                                                 <Label htmlFor={field.name} className={error ? "text-destructive" : ""}>Gender</Label>
                                                 <Select
-                                                    value={field.state.value as string}
+                                                    value={(field.state.value as string) || undefined}
                                                     onValueChange={(value) => field.handleChange(value)}
                                                 >
                                                     <SelectTrigger id={field.name} className={error ? "border-destructive focus:ring-destructive" : ""}>
@@ -336,7 +340,7 @@ const MyResumeContent = () => {
                                     <h3 className="text-lg font-semibold flex items-center justify-between">
                                         Work Experience
                                         <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue({ jobTitle: "", companyName: "", startDate: "", endDate: "", responsibilities: "" })}>
-                                            <Plus className="w-4 h-4 mr-2" /> Add 
+                                            <Plus className="w-4 h-4 mr-2" /> Add
                                         </Button>
                                     </h3>
                                     {field.state.value.map((_, i) => (
@@ -376,7 +380,7 @@ const MyResumeContent = () => {
                                     <h3 className="text-lg font-semibold flex items-center justify-between">
                                         Education
                                         <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue({ degree: "", institutionName: "", fieldOfStudy: "", startDate: "", endDate: "" })}>
-                                            <Plus className="w-4 h-4 mr-2" /> Add 
+                                            <Plus className="w-4 h-4 mr-2" /> Add
                                         </Button>
                                     </h3>
                                     {field.state.value.map((_, i) => (
@@ -414,7 +418,7 @@ const MyResumeContent = () => {
                                     <h3 className="text-lg font-semibold flex items-center justify-between">
                                         Certifications
                                         <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue({ certificationName: "", issuingOrganization: "", issueDate: "" })}>
-                                            <Plus className="w-4 h-4 mr-2" /> Add 
+                                            <Plus className="w-4 h-4 mr-2" /> Add
                                         </Button>
                                     </h3>
                                     {field.state.value.map((_, i) => (
