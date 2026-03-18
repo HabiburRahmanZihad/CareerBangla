@@ -42,7 +42,7 @@ export const setTokenInCookies = async (
 
     // Only try to decode JWT tokens (accessToken, refreshToken)
     // Session tokens from better-auth are NOT JWTs, they're random strings
-    if (name !== "better-auth.session_token" && name !== "refreshToken") {
+    if (name !== "better-auth.session_token") {
         const decoded = getTokenSecondsRemaining(token);
         if (decoded > 0) {
             maxAgeInSeconds = decoded;

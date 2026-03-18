@@ -13,9 +13,19 @@ export const getRequestErrorMessage = (error: any, fallbackPrefix: string) => {
     if (
         errorCode === "ECONNREFUSED" ||
         errorCode === "ECONNRESET" ||
+        errorCode === "ENOTFOUND" ||
+        errorCode === "ETIMEDOUT" ||
         (typeof rawMessage === "string" && rawMessage.includes("socket connection was closed unexpectedly"))
     ) {
         return "Backend API is unavailable. Make sure the backend server is running and reachable.";
+    }
+
+    if (error?.response?.status === 429) {
+        return "Too many requests. Please wait a moment and try again.";
+    }
+
+    if (error?.response?.status === 500) {
+        return "An unexpected server error occurred. Please try again later.";
     }
 
     return `${fallbackPrefix}: ${rawMessage || "Unexpected error"}`;
