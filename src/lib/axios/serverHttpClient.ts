@@ -4,6 +4,7 @@ import "server-only";
 import { ApiResponse } from "@/types/api.types";
 import axios from "axios";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import type { ApiRequestOptions } from "./httpClient";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -42,7 +43,10 @@ const httpGet = async <TData>(endpoint: string, options?: ApiRequestOptions): Pr
             headers: options?.headers,
         });
         return response.data;
-    } catch (error) {
+    } catch (error: any) {
+        if (error.response?.status === 401) {
+            redirect("/login");
+        }
         console.error(`GET request to ${endpoint} failed:`, error);
         throw error;
     }
@@ -56,7 +60,10 @@ const httpPost = async <TData>(endpoint: string, data: unknown, options?: ApiReq
             headers: options?.headers,
         });
         return response.data;
-    } catch (error) {
+    } catch (error: any) {
+        if (error.response?.status === 401) {
+            redirect("/login");
+        }
         console.error(`POST request to ${endpoint} failed:`, error);
         throw error;
     }
@@ -70,7 +77,10 @@ const httpPut = async <TData>(endpoint: string, data: unknown, options?: ApiRequ
             headers: options?.headers,
         });
         return response.data;
-    } catch (error) {
+    } catch (error: any) {
+        if (error.response?.status === 401) {
+            redirect("/login");
+        }
         console.error(`PUT request to ${endpoint} failed:`, error);
         throw error;
     }
@@ -84,7 +94,10 @@ const httpPatch = async <TData>(endpoint: string, data: unknown, options?: ApiRe
             headers: options?.headers,
         });
         return response.data;
-    } catch (error) {
+    } catch (error: any) {
+        if (error.response?.status === 401) {
+            redirect("/login");
+        }
         console.error(`PATCH request to ${endpoint} failed:`, error);
         throw error;
     }
@@ -98,7 +111,10 @@ const httpDelete = async <TData>(endpoint: string, options?: ApiRequestOptions):
             headers: options?.headers,
         });
         return response.data;
-    } catch (error) {
+    } catch (error: any) {
+        if (error.response?.status === 401) {
+            redirect("/login");
+        }
         console.error(`DELETE request to ${endpoint} failed:`, error);
         throw error;
     }

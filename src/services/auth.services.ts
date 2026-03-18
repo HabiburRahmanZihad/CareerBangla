@@ -5,6 +5,7 @@ import { setTokenInCookies } from "@/lib/tokenUtils";
 import { UserInfo } from "@/types/user.types";
 import { IChangePasswordPayload } from "@/zod/auth.validation";
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -56,13 +57,14 @@ export async function getNewTokensWithRefreshToken(refreshToken: string): Promis
     }
 }
 
-export async function getUserInfo(): Promise<UserInfo | null> {
+// Use React cache to prevent repeated API calls during a single render pass
+export const getUserInfo = cache(async (): Promise<UserInfo | null> => {
     try {
         const cookieStore = await cookies();
-        const accessToken = cookieStore.get("accessToken")?.value;
         const sessionToken = cookieStore.get("better-auth.session_token")?.value;
 
-        if (!accessToken || !sessionToken) {
+        // Primary Authentication check: ONLY depend on better-auth.session_token
+        if (!sessionToken) {
             return null;
         }
 
@@ -72,7 +74,7 @@ export async function getUserInfo(): Promise<UserInfo | null> {
         console.error("Error fetching user info:", error);
         return null;
     }
-}
+});
 
 export async function changePassword(payload: IChangePasswordPayload) {
     return serverHttpClient.post("/auth/change-password", payload);

@@ -20,7 +20,7 @@ const axiosInstance = axios.create({
 // Response interceptor for better error handling
 axiosInstance.interceptors.response.use(
     response => response,
-    (error: AxiosError) => {
+    async (error: AxiosError) => {
         if (process.env.NODE_ENV === "development") {
             console.error("[API Error]", {
                 status: error.response?.status,
@@ -28,6 +28,20 @@ axiosInstance.interceptors.response.use(
                 data: error.response?.data,
             });
         }
+
+        // Gracefully handle 401 Unauthorized across the app
+        if (error.response?.status === 401) {
+            const originalRequest = error.config;
+            const isAuthRoute = originalRequest?.url?.includes("/auth/login") || originalRequest?.url?.includes("/auth/refresh-token");
+            
+            // If it's not an auth route, the session might be expired
+            if (!isAuthRoute && typeof window !== 'undefined') {
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login?error=session_expired';
+                }
+            }
+        }
+
         return Promise.reject(error);
     }
 );
