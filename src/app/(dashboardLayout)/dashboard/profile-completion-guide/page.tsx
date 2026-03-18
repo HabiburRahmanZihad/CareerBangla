@@ -12,19 +12,19 @@ const ProfileCompletionGuide = () => {
     { category: "Professional Title", criteria: "Your primary job title", points: 3, uiExists: true },
     { category: "URLs/Portfolio", criteria: "At least one (LinkedIn, GitHub, or Website)", points: 4, uiExists: true },
     { category: "Additional Profile Data", criteria: "Date of Birth, Gender, and Address", points: 3, uiExists: true },
-    { category: "Nationality", criteria: "Your nationality", points: 2, uiExists: false },
-    { category: "Professional Summary", criteria: "Summary text (MUST be longer than 50 characters)", points: 12, uiExists: true },
+    { category: "Nationality", criteria: "Your nationality", points: 2, uiExists: true },
+    { category: "Professional Summary", criteria: "Summary text (MUST be strictly > 50 characters)", points: 12, uiExists: true },
     { category: "Technical Skills", criteria: "At least one technical skill", points: 6, uiExists: true },
-    { category: "Soft Skills", criteria: "At least one soft skill", points: 6, uiExists: false },
-    { category: "Tools & Technologies", criteria: "At least one tool/technology", points: 6, uiExists: false },
+    { category: "Soft Skills", criteria: "At least one soft skill", points: 6, uiExists: true },
+    { category: "Tools & Technologies", criteria: "At least one tool/technology", points: 6, uiExists: true },
     { category: "Work Experience", criteria: "At least one work experience entry", points: 15, uiExists: true },
     { category: "Education", criteria: "At least one education entry", points: 12, uiExists: true },
     { category: "Certifications", criteria: "At least one certification entry", points: 8, uiExists: true },
-    { category: "Projects", criteria: "At least one project entry", points: 8, uiExists: false },
-    { category: "Languages", criteria: "At least one language entry", points: 3, uiExists: false },
-    { category: "Awards", criteria: "At least one award entry", points: 2, uiExists: false },
-    { category: "Interests", criteria: "At least one interest", points: 1, uiExists: false },
-    { category: "References", criteria: "At least one reference", points: 1, uiExists: false },
+    { category: "Projects", criteria: "At least one project entry", points: 8, uiExists: true },
+    { category: "Languages", criteria: "At least one language entry", points: 3, uiExists: true },
+    { category: "Awards", criteria: "At least one award entry", points: 2, uiExists: true },
+    { category: "Interests", criteria: "At least one interest", points: 1, uiExists: true },
+    { category: "References", criteria: "At least one reference", points: 1, uiExists: true },
   ];
 
   return (
@@ -83,24 +83,24 @@ const ProfileCompletionGuide = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Info className="w-5 h-5 text-primary" />
-                Why am I stuck?
+                Why am I stuck below 100%?
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
               <p>
-                If you have filled out your entire form but are stuck around <strong>50%-60%</strong>, it is because of two main reasons:
+                If you have filled out your entire form but are stuck around <strong>80%-95%</strong>, it is almost always due to these common mathematical drop-offs:
               </p>
               <ol className="list-decimal pl-4 space-y-2">
                 <li>
-                  <strong>Summary Length:</strong> Your Professional Summary <strong>must be strictly longer than 50 characters</strong> to earn its massive 12% weight.
+                  <strong>Summary Absence (-12%):</strong> Simply filling out your Professional Summary with any text earns a massive 12%. Don't leave it blank!
                 </li>
                 <li>
-                  <strong>Missing Advanced ATS Fields:</strong> Currently, the frontend form does not display the input fields for <span className="font-semibold">Projects, Soft Skills, Tools, Languages, Awards, or References</span>.
+                  <strong>Missing Name / Email (-5%):</strong> Your Full Name and Email are now standard fields. If you leave them empty, you immediately lose 5%.
+                </li>
+                <li>
+                  <strong>Missing Dynamic Trackers (-35% combined):</strong> It's easy to forget one of the massive lists (Projects, Languages, Awards, References, Soft Skills, Tools). You must have at least 1 entry saved in EVERY list above!
                 </li>
               </ol>
-              <p className="text-muted-foreground mt-2">
-                These advanced tracking modules make up exactly <strong>29%</strong> of the mathematical scoring criteria in the backend API database schema, but wait on future UI implementation to be visible.
-              </p>
             </CardContent>
           </Card>
         </div>

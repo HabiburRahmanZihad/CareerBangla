@@ -69,6 +69,8 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
     const isProfileCompleted = profileCompletion === 100;
     const form = useForm({
         defaultValues: {
+            fullName: resume?.fullName || "",
+            email: resume?.email || "",
             professionalTitle: resume?.professionalTitle || "",
             professionalSummary: resume?.professionalSummary || "",
             nationality: resume?.nationality || "",
@@ -303,6 +305,14 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold">Basic Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <form.Field name="fullName">
+                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Full Name" placeholder="John Doe" />}
+                                </form.Field>
+
+                                <form.Field name="email">
+                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Email" type="email" placeholder="john@example.com" />}
+                                </form.Field>
+
                                 <form.Field name="professionalTitle">
                                     {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Professional Title" placeholder="e.g. Full Stack Developer" />}
                                 </form.Field>
@@ -378,7 +388,12 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                             </form.Field>
 
                             <form.Field name="professionalSummary">
-                                {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Professional Summary" placeholder="Brief summary of your experience and goals..." />}
+                                {(field) => (
+                                    <div className="space-y-1">
+                                        <AppField field={field} serverError={serverErrors[field.name]} label="Professional Summary" placeholder="Brief summary of your experience and goals..." />
+                                        <p className="text-xs text-muted-foreground mt-1">A brief description will significantly boost your ATS Profile Completion score.</p>
+                                    </div>
+                                )}
                             </form.Field>
                         </div>
 
