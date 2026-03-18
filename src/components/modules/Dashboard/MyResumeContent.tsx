@@ -6,12 +6,23 @@ import { useState } from "react";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import ProfileCompletionBar from "@/components/shared/ProfileCompletionBar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyResume, updateMyResume } from "@/services/resume.services";
+import { getMyWallet } from "@/services/wallet.services";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, Coins, Plus, Trash2 } from "lucide-react";
@@ -25,7 +36,13 @@ const MyResumeContent = () => {
         queryFn: () => getMyResume(),
     });
 
+    const { data: walletRes } = useQuery({
+        queryKey: ["my-wallet"],
+        queryFn: () => getMyWallet(),
+    });
+
     const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
+    const [pendingPayload, setPendingPayload] = useState<Record<string, unknown> | null>(null);
 
     const { mutateAsync, isPending } = useMutation({
         mutationFn: (payload: Record<string, unknown>) => updateMyResume(payload),
@@ -60,6 +77,7 @@ const MyResumeContent = () => {
     const resume = data?.data;
     const profileCompletion = resume?.profileCompletion ?? 0;
     const isProfileCompleted = !!resume?.profileCompletedAt;
+    const coins = walletRes?.data?.balance || 0;
 
     const form = useForm({
         defaultValues: {
@@ -140,9 +158,21 @@ const MyResumeContent = () => {
                 }));
             }
 
-            await mutateAsync(payload);
+            if (isProfileCompleted) {
+                setPendingPayload(payload);
+            } else {
+                await mutateAsync(payload);
+            }
         },
     });
+
+    const confirmUpdate = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (pendingPayload) {
+            await mutateAsync(pendingPayload);
+            setPendingPayload(null);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -156,6 +186,45 @@ const MyResumeContent = () => {
 
     return (
         <div className="space-y-6">
+            <AlertDialog open={!!pendingPayload} onOpenChange={(open) => !open && setPendingPayload(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Profile Update</AlertDialogTitle>
+                        <AlertDialogDescription asChild>
+                            <div className="space-y-3 pt-2">
+                                <p>
+                                    Your profile has already been completed. Any further updates will charge <strong>15 coins</strong> from your wallet.
+                                </p>
+                                <div className="bg-muted p-4 rounded-lg space-y-2 text-foreground">
+                                    <div className="flex justify-between">
+                                        <span>Current Balance:</span>
+                                        <span className="font-semibold">{coins} coins</span>
+                                    </div>
+                                    <div className="flex justify-between text-destructive">
+                                        <span>Update Cost:</span>
+                                        <span className="font-semibold">-15 coins</span>
+                                    </div>
+                                    <div className="border-t pt-2 flex justify-between font-bold">
+                                        <span>Remaining Balance:</span>
+                                        <span className={coins < 15 ? "text-destructive" : ""}>{coins - 15} coins</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={confirmUpdate} 
+                            disabled={isPending || coins < 15}
+                            className={coins < 15 ? "opacity-50 cursor-not-allowed" : ""}
+                        >
+                            {isPending ? "Updating..." : coins < 15 ? "Insufficient Coins" : "Confirm Update"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
             <h1 className="text-2xl font-bold">My Resume</h1>
 
             <ProfileCompletionBar completion={profileCompletion} />
@@ -169,11 +238,11 @@ const MyResumeContent = () => {
                 </Alert>
             )}
 
-            {profileCompletion < 100 && (
+            {!isProfileCompleted && (
                 <Alert>
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                        Complete your profile to 100% to unlock all features. First completion is free!
+                        Complete your profile to 50% to unlock all features. First completion is free!
                     </AlertDescription>
                 </Alert>
             )}
