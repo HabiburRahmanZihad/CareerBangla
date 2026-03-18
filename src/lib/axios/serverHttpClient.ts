@@ -14,7 +14,7 @@ if (!API_BASE_URL) {
 
 const axiosInstance = async () => {
     const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
+
 
     // Token refresh is handled by the client-side Route Handler or middleware
     // Not attempted here to avoid 401 errors and cookie issues
