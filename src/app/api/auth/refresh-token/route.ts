@@ -28,10 +28,12 @@ export async function POST(request: NextRequest) {
         const refreshToken = cookieStore.get("refreshToken")?.value;
         const sessionToken = cookieStore.get("better-auth.session_token")?.value;
 
+        // If tokens don't exist, return success silently (no refresh needed)
         if (!refreshToken || !sessionToken) {
+            console.debug("Token refresh requested but no tokens found");
             return NextResponse.json(
-                { error: "Missing refresh token or session token" },
-                { status: 401 }
+                { success: false, reason: "no_tokens" },
+                { status: 200 }
             );
         }
 
@@ -44,9 +46,10 @@ export async function POST(request: NextRequest) {
         });
 
         if (!res.ok) {
+            console.error("Backend token refresh failed with status:", res.status);
             return NextResponse.json(
-                { error: "Token refresh failed" },
-                { status: res.status }
+                { success: false, reason: "backend_refresh_failed" },
+                { status: 200 } // Return 200 to prevent retry loops
             );
         }
 
@@ -90,10 +93,10 @@ export async function POST(request: NextRequest) {
 
         return response;
     } catch (error) {
-        console.error("Error refreshing token:", error);
+        console.error("Error in token refresh endpoint:", error);
         return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
+            { success: false, reason: "error" },
+            { status: 200 } // Return 200 to prevent retry loops
         );
     }
 }

@@ -1,53 +1,23 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import "server-only";
 
 import { ApiResponse } from "@/types/api.types";
 import axios from "axios";
-import { cookies, headers } from "next/headers";
-import { isTokenExpiringSoon } from "../tokenUtils";
+import { cookies } from "next/headers";
 import type { ApiRequestOptions } from "./httpClient";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-const NEXT_PUBLIC_APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 if (!API_BASE_URL) {
     throw new Error("API_BASE_URL is not defined in environment variables");
 }
 
-async function tryRefreshToken(accessToken: string): Promise<void> {
-    if (!isTokenExpiringSoon(accessToken)) {
-        return;
-    }
-
-    const requestHeaders = await headers();
-
-    if (requestHeaders.get("x-token-refreshed") === "1") {
-        return;
-    }
-
-    try {
-        // Call the Route Handler to refresh tokens
-        const refreshResponse = await fetch(`${NEXT_PUBLIC_APP_URL}/api/auth/refresh-token`, {
-            method: "POST",
-            credentials: "include", // Include cookies
-        });
-
-        if (refreshResponse.ok) {
-            requestHeaders.set("x-token-refreshed", "1");
-        }
-    } catch (error: any) {
-        console.error("Error refreshing token in server http client:", error);
-    }
-}
-
 const axiosInstance = async () => {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
-    const refreshToken = cookieStore.get("refreshToken")?.value;
 
-    if (accessToken && refreshToken) {
-        await tryRefreshToken(accessToken);
-    }
+    // Token refresh is handled by the client-side Route Handler or middleware
+    // Not attempted here to avoid 401 errors and cookie issues
 
     const cookieHeader = cookieStore
         .getAll()
