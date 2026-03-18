@@ -28,18 +28,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, Coins, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-const MyResumeContent = () => {
+const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
     const queryClient = useQueryClient();
-
-    const { data, isLoading } = useQuery({
-        queryKey: ["my-resume"],
-        queryFn: () => getMyResume(),
-    });
-
-    const { data: walletRes } = useQuery({
-        queryKey: ["my-wallet"],
-        queryFn: () => getMyWallet(),
-    });
 
     const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
     const [pendingPayload, setPendingPayload] = useState<Record<string, unknown> | null>(null);
@@ -74,11 +64,8 @@ const MyResumeContent = () => {
         },
     });
 
-    const resume = data?.data;
     const profileCompletion = resume?.profileCompletion ?? 0;
     const isProfileCompleted = !!resume?.profileCompletedAt;
-    const coins = walletRes?.data?.balance || 0;
-
     const form = useForm({
         defaultValues: {
             professionalTitle: resume?.professionalTitle || "",
@@ -91,25 +78,25 @@ const MyResumeContent = () => {
             linkedinUrl: resume?.linkedinUrl || "",
             githubUrl: resume?.githubUrl || "",
             portfolioUrl: resume?.portfolioUrl || "",
-            workExperience: resume?.workExperience?.map((exp: any) => ({
+            workExperience: (resume?.workExperience?.map((exp: any) => ({
                 jobTitle: exp.jobTitle || "",
                 companyName: exp.companyName || "",
                 startDate: exp.startDate ? exp.startDate.split("T")[0] : "",
                 endDate: exp.endDate ? exp.endDate.split("T")[0] : "",
                 responsibilities: exp.responsibilities?.join(", ") || "",
-            })) || [],
-            education: resume?.education?.map((edu: any) => ({
+            })) || []) as any[],
+            education: (resume?.education?.map((edu: any) => ({
                 degree: edu.degree || "",
                 institutionName: edu.institutionName || "",
                 fieldOfStudy: edu.fieldOfStudy || "",
                 startDate: edu.startDate ? edu.startDate.split("T")[0] : "",
                 endDate: edu.endDate ? edu.endDate.split("T")[0] : "",
-            })) || [],
-            certifications: resume?.certifications?.map((cert: any) => ({
+            })) || []) as any[],
+            certifications: (resume?.certifications?.map((cert: any) => ({
                 certificationName: cert.certificationName || "",
                 issuingOrganization: cert.issuingOrganization || "",
                 issueDate: cert.issueDate ? cert.issueDate.split("T")[0] : "",
-            })) || [],
+            })) || []) as any[],
         },
         onSubmit: async ({ value }) => {
             const payload: Record<string, unknown> = { ...value };
@@ -177,17 +164,6 @@ const MyResumeContent = () => {
             setPendingPayload(null);
         }
     };
-
-    if (isLoading) {
-        return (
-            <div className="space-y-4">
-                <Skeleton className="h-8 w-48" />
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-96 w-full" />
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-6">
             <AlertDialog open={!!pendingPayload} onOpenChange={(open) => !open && setPendingPayload(null)}>
@@ -343,7 +319,7 @@ const MyResumeContent = () => {
                                             <Plus className="w-4 h-4 mr-2" /> Add
                                         </Button>
                                     </h3>
-                                    {field.state.value.map((_, i) => (
+                                    {field.state.value.map((_: any, i: number) => (
                                         <Card key={i} className="relative bg-muted/30">
                                             <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2 text-destructive" onClick={() => field.removeValue(i)}>
                                                 <Trash2 className="w-4 h-4" />
@@ -383,7 +359,7 @@ const MyResumeContent = () => {
                                             <Plus className="w-4 h-4 mr-2" /> Add
                                         </Button>
                                     </h3>
-                                    {field.state.value.map((_, i) => (
+                                    {field.state.value.map((_: any, i: number) => (
                                         <Card key={i} className="relative bg-muted/30">
                                             <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2 text-destructive" onClick={() => field.removeValue(i)}>
                                                 <Trash2 className="w-4 h-4" />
@@ -421,7 +397,7 @@ const MyResumeContent = () => {
                                             <Plus className="w-4 h-4 mr-2" /> Add
                                         </Button>
                                     </h3>
-                                    {field.state.value.map((_, i) => (
+                                    {field.state.value.map((_: any, i: number) => (
                                         <Card key={i} className="relative bg-muted/30">
                                             <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2 text-destructive" onClick={() => field.removeValue(i)}>
                                                 <Trash2 className="w-4 h-4" />
@@ -453,6 +429,30 @@ const MyResumeContent = () => {
             </Card>
         </div>
     );
+};
+
+const MyResumeContent = () => {
+    const { data, isLoading: isResumeLoading } = useQuery({
+        queryKey: ["my-resume"],
+        queryFn: () => getMyResume(),
+    });
+
+    const { data: walletRes, isLoading: isWalletLoading } = useQuery({
+        queryKey: ["my-wallet"],
+        queryFn: () => getMyWallet(),
+    });
+
+    if (isResumeLoading || isWalletLoading) {
+        return (
+            <div className="space-y-4">
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-96 w-full" />
+            </div>
+        );
+    }
+
+    return <MyResumeForm resume={data?.data} coins={walletRes?.data?.balance || 0} />;
 };
 
 export default MyResumeContent;
