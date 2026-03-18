@@ -16,14 +16,18 @@ export async function getResumeByUserId(userId: string) {
 }
 
 export async function getAtsScore(jobId?: string) {
-    return serverHttpClient.post<{
-        atsScore: number;
-        profileCompletion: number;
-        suggestions: string[];
-        jobMatchScore?: number;
-        matchedSkills?: string[];
-        missingSkills?: string[];
-    }>("/resumes/ats-score", { jobId });
+    try {
+        return await serverHttpClient.post<{
+            atsScore: number;
+            profileCompletion: number;
+            suggestions: string[];
+            jobMatchScore?: number;
+            matchedSkills?: string[];
+            missingSkills?: string[];
+        }>("/resumes/ats-score", { jobId });
+    } catch (error) {
+        return { data: null };
+    }
 }
 
 export async function searchCandidates(params?: Record<string, unknown>) {

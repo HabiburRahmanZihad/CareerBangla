@@ -47,7 +47,9 @@ const httpGet = async <TData>(endpoint: string, options?: ApiRequestOptions): Pr
         if (error.response?.status === 401) {
             redirect("/login");
         }
-        console.error(`GET request to ${endpoint} failed:`, error);
+        if (error.response?.status !== 400 && process.env.NODE_ENV === "development") {
+            console.error(`GET request to ${endpoint} failed:`, error.response?.data?.message || error.message);
+        }
         throw error;
     }
 };
@@ -64,7 +66,9 @@ const httpPost = async <TData>(endpoint: string, data: unknown, options?: ApiReq
         if (error.response?.status === 401) {
             redirect("/login");
         }
-        console.error(`POST request to ${endpoint} failed:`, error);
+        if (error.response?.status !== 400 && process.env.NODE_ENV === "development") {
+            console.error(`POST request to ${endpoint} failed:`, error.response?.data?.message || error.message);
+        }
         throw error;
     }
 };
@@ -81,7 +85,9 @@ const httpPut = async <TData>(endpoint: string, data: unknown, options?: ApiRequ
         if (error.response?.status === 401) {
             redirect("/login");
         }
-        console.error(`PUT request to ${endpoint} failed:`, error);
+        if (error.response?.status !== 400 && process.env.NODE_ENV === "development") {
+            console.error(`PUT request to ${endpoint} failed:`, error.response?.data?.message || error.message);
+        }
         throw error;
     }
 };
@@ -98,7 +104,9 @@ const httpPatch = async <TData>(endpoint: string, data: unknown, options?: ApiRe
         if (error.response?.status === 401) {
             redirect("/login");
         }
-        console.error(`PATCH request to ${endpoint} failed:`, error);
+        if (error.response?.status !== 400 && process.env.NODE_ENV === "development") {
+            console.error(`PATCH request to ${endpoint} failed:`, error.response?.data?.message || error.message);
+        }
         throw error;
     }
 };
@@ -115,7 +123,9 @@ const httpDelete = async <TData>(endpoint: string, options?: ApiRequestOptions):
         if (error.response?.status === 401) {
             redirect("/login");
         }
-        console.error(`DELETE request to ${endpoint} failed:`, error);
+        if (error.response?.status !== 400 && process.env.NODE_ENV === "development") {
+            console.error(`DELETE request to ${endpoint} failed:`, error.response?.data?.message || error.message);
+        }
         throw error;
     }
 };
