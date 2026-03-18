@@ -4,7 +4,7 @@ import { useCallback, useMemo } from "react";
 import { UpdateParamsFn } from "./useServerManagedDataTable";
 
 interface UseServerManagedDataTableSearchParams {
-  searchParams: ReadonlyURLSearchParams;
+  searchParams: Record<string, string | string[] | undefined>;
   updateParams: UpdateParamsFn;
   queryKey?: string;
 }
@@ -15,12 +15,17 @@ export const useServerManagedDataTableSearch = ({
   queryKey = "searchTerm",
 }: UseServerManagedDataTableSearchParams) => {
   const searchTermFromUrl = useMemo(() => {
-    return searchParams.get(queryKey) ?? "";
+    const value = searchParams[queryKey];
+    if (Array.isArray(value)) {
+      return value[0] ?? "";
+    }
+    return value ?? "";
   }, [queryKey, searchParams]);
 
   const handleDebouncedSearchChange = useCallback((searchTerm: string) => {
     const normalizedSearchTerm = searchTerm.trim();
-    const currentSearchTerm = searchParams.get(queryKey) ?? "";
+    const value = searchParams[queryKey];
+    const currentSearchTerm = Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
 
     if (normalizedSearchTerm === currentSearchTerm) {
       return;

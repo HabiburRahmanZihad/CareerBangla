@@ -48,6 +48,8 @@ export interface IAdminProfile {
     name: string;
     email: string;
     contactNumber?: string;
+    role?: UserRole;
+    status?: UserStatus;
     createdAt?: string;
     updatedAt?: string;
 }
@@ -55,26 +57,137 @@ export interface IAdminProfile {
 export interface IResume {
     id: string;
     userId: string;
-    title?: string;
-    summary?: string;
-    skills?: string[];
-    experience?: IExperience[];
-    education?: IEducation[];
-    certifications?: ICertification[];
-    languages?: string[];
+
+    // Personal Information
+    fullName?: string;
+    email?: string;
+    professionalTitle?: string;
     contactNumber?: string;
-    address?: string;
     dateOfBirth?: string;
     gender?: string;
+    nationality?: string;
+    address?: string;
+
+    // URLs
     linkedinUrl?: string;
     githubUrl?: string;
     portfolioUrl?: string;
-    profileCompletedAt?: string;
+    websiteUrl?: string;
+    profilePhoto?: string;
+
+    // Professional Summary
+    professionalSummary?: string;
+
+    // Skills
+    technicalSkills?: string[];
+    softSkills?: string[];
+    toolsAndTechnologies?: string[];
+
+    // Legacy fields
+    skills?: string[];
+    title?: string;
+    summary?: string;
+
+    // Nested sections
+    workExperience?: IWorkExperience[];
+    education?: IEducation[];
+    certifications?: ICertification[];
+    projects?: IProject[];
+    languages?: ILanguage[];
+    awards?: IAward[];
+    interests?: string[];
+    references?: IReference[];
+
+    // Legacy nested data
+    experience?: IExperience[];
+    certifications_legacy?: ICertification[];
+
+    // User info
     user?: { id: string; name: string; email: string; image?: string };
+
+    // Metadata
+    profileCompletedAt?: string;
     createdAt?: string;
     updatedAt?: string;
 }
 
+export interface IWorkExperience {
+    id?: string;
+    jobTitle: string;
+    companyName: string;
+    employmentType?: string;
+    location?: string;
+    startDate: string | Date;
+    endDate?: string | Date;
+    currentlyWorking?: boolean;
+    responsibilities?: string[];
+    achievements?: string[];
+    technologiesUsed?: string[];
+}
+
+export interface IEducation {
+    id?: string;
+    degree: string;
+    fieldOfStudy: string;
+    institutionName: string;
+    location?: string;
+    startDate: string | Date;
+    endDate?: string | Date;
+    currentlyStudying?: boolean;
+    cgpaOrResult?: string;
+    description?: string;
+}
+
+export interface ICertification {
+    id?: string;
+    certificationName?: string;
+    name?: string; // legacy
+    issuer?: string;
+    issuingOrganization?: string; // new field
+    issueDate: string | Date;
+    expiryDate?: string | Date;
+    credentialId?: string;
+    credentialUrl?: string;
+}
+
+export interface IProject {
+    id?: string;
+    projectName: string;
+    role?: string;
+    description: string;
+    technologiesUsed?: string[];
+    liveUrl?: string;
+    githubUrl?: string;
+    startDate?: string | Date;
+    endDate?: string | Date;
+    highlights?: string[];
+}
+
+export interface ILanguage {
+    id?: string;
+    language: string;
+    proficiencyLevel: "Native" | "Fluent" | "Intermediate" | "Beginner";
+}
+
+export interface IAward {
+    id?: string;
+    title: string;
+    issuer: string;
+    date: string | Date;
+    description?: string;
+}
+
+export interface IReference {
+    id?: string;
+    name: string;
+    designation?: string;
+    company?: string;
+    email?: string;
+    phone?: string;
+    relationship?: string;
+}
+
+// Legacy interfaces (kept for backward compatibility)
 export interface IExperience {
     company: string;
     position: string;
@@ -82,24 +195,6 @@ export interface IExperience {
     endDate?: string;
     current?: boolean;
     description?: string;
-}
-
-export interface IEducation {
-    institution: string;
-    degree: string;
-    fieldOfStudy: string;
-    startDate: string;
-    endDate?: string;
-    current?: boolean;
-    grade?: string;
-}
-
-export interface ICertification {
-    name: string;
-    issuer: string;
-    issueDate: string;
-    expiryDate?: string;
-    credentialUrl?: string;
 }
 
 export interface IWallet {
