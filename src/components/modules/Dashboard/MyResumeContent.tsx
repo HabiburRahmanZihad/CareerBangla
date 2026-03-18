@@ -66,12 +66,16 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
     });
 
     const profileCompletion = resume?.profileCompletion ?? 0;
-    const isProfileCompleted = !!resume?.profileCompletedAt;
+    const isProfileCompleted = profileCompletion === 100;
     const form = useForm({
         defaultValues: {
             professionalTitle: resume?.professionalTitle || "",
             professionalSummary: resume?.professionalSummary || "",
+            nationality: resume?.nationality || "",
             technicalSkills: resume?.technicalSkills?.join(", ") || "",
+            softSkills: resume?.softSkills?.join(", ") || "",
+            toolsAndTechnologies: resume?.toolsAndTechnologies?.join(", ") || "",
+            interests: resume?.interests?.join(", ") || "",
             contactNumber: resume?.contactNumber || "",
             address: resume?.address || "",
             dateOfBirth: resume?.dateOfBirth ? resume.dateOfBirth.split("T")[0] : "",
@@ -98,6 +102,35 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                 issuingOrganization: cert.issuingOrganization || "",
                 issueDate: cert.issueDate ? cert.issueDate.split("T")[0] : "",
             })) || []) as any[],
+            projects: (resume?.projects?.map((proj: any) => ({
+                projectName: proj.projectName || "",
+                role: proj.role || "",
+                description: proj.description || "",
+                technologiesUsed: proj.technologiesUsed?.join(", ") || "",
+                liveUrl: proj.liveUrl || "",
+                githubUrl: proj.githubUrl || "",
+                startDate: proj.startDate ? proj.startDate.split("T")[0] : "",
+                endDate: proj.endDate ? proj.endDate.split("T")[0] : "",
+                highlights: proj.highlights?.join(", ") || "",
+            })) || []) as any[],
+            languages: (resume?.languages?.map((lang: any) => ({
+                language: lang.language || "",
+                proficiencyLevel: lang.proficiencyLevel || "",
+            })) || []) as any[],
+            awards: (resume?.awards?.map((award: any) => ({
+                title: award.title || "",
+                issuer: award.issuer || "",
+                date: award.date ? award.date.split("T")[0] : "",
+                description: award.description || "",
+            })) || []) as any[],
+            references: (resume?.references?.map((ref: any) => ({
+                name: ref.name || "",
+                designation: ref.designation || "",
+                company: ref.company || "",
+                email: ref.email || "",
+                phone: ref.phone || "",
+                relationship: ref.relationship || "",
+            })) || []) as any[],
         },
         onSubmit: async ({ value }) => {
             const payload: Record<string, unknown> = { ...value };
@@ -122,9 +155,13 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                 delete payload.gender;
             }
 
-            if (typeof value.technicalSkills === "string") {
-                payload.technicalSkills = value.technicalSkills.split(",").map((s: string) => s.trim()).filter(Boolean);
-            }
+            const arrayFields = ["technicalSkills", "softSkills", "toolsAndTechnologies", "interests"];
+            arrayFields.forEach(field => {
+                const val = (value as Record<string, unknown>)[field];
+                if (typeof val === "string") {
+                    payload[field] = val.split(",").map((s: string) => s.trim()).filter(Boolean);
+                }
+            });
 
             if (Array.isArray(value.workExperience)) {
                 payload.workExperience = value.workExperience.map((exp: any) => ({
@@ -147,6 +184,21 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                 payload.certifications = value.certifications.map((cert: any) => ({
                     ...cert,
                     issueDate: cert.issueDate ? new Date(cert.issueDate).toISOString() : new Date().toISOString(),
+                }));
+            }
+            if (Array.isArray(value.projects)) {
+                payload.projects = value.projects.map((proj: any) => ({
+                    ...proj,
+                    technologiesUsed: typeof proj.technologiesUsed === "string" ? proj.technologiesUsed.split(",").map((s: string) => s.trim()).filter(Boolean) : proj.technologiesUsed,
+                    highlights: typeof proj.highlights === "string" ? proj.highlights.split(",").map((s: string) => s.trim()).filter(Boolean) : proj.highlights,
+                    startDate: proj.startDate ? new Date(proj.startDate).toISOString() : undefined,
+                    endDate: proj.endDate ? new Date(proj.endDate).toISOString() : undefined,
+                }));
+            }
+            if (Array.isArray(value.awards)) {
+                payload.awards = value.awards.map((award: any) => ({
+                    ...award,
+                    date: award.date ? new Date(award.date).toISOString() : new Date().toISOString(),
                 }));
             }
 
@@ -221,7 +273,7 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                 <Alert>
                     <Coins className="h-4 w-4" />
                     <AlertDescription>
-                        Your profile has been completed before. Updates will cost <strong>15 coins</strong>.
+                        Your profile is at 100% completion! Any further updates will cost <strong>15 coins</strong>.
                     </AlertDescription>
                 </Alert>
             )}
@@ -230,7 +282,7 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                 <Alert>
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                        Complete your profile to 50% to unlock all features. First completion is free!
+                        Reach 100% Profile Completion to maximize visibility. Updates are free until you hit 100%!
                     </AlertDescription>
                 </Alert>
             )}
@@ -261,6 +313,10 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
 
                                 <form.Field name="address">
                                     {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Address" placeholder="Dhaka, Bangladesh" />}
+                                </form.Field>
+
+                                <form.Field name="nationality">
+                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Nationality" placeholder="e.g. Bangladeshi" />}
                                 </form.Field>
 
                                 <form.Field name="dateOfBirth">
@@ -310,6 +366,15 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
 
                             <form.Field name="technicalSkills">
                                 {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Technical Skills (comma separated)" placeholder="React, TypeScript, Node.js, ..." />}
+                            </form.Field>
+                            <form.Field name="softSkills">
+                                {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Soft Skills (comma separated)" placeholder="Communication, Teamwork, Leadership, ..." />}
+                            </form.Field>
+                            <form.Field name="toolsAndTechnologies">
+                                {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Tools & Technologies (comma separated)" placeholder="Git, Docker, VS Code, ..." />}
+                            </form.Field>
+                            <form.Field name="interests">
+                                {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Interests (comma separated)" placeholder="Reading, Traveling, Open Source, ..." />}
                             </form.Field>
 
                             <form.Field name="professionalSummary">
@@ -419,6 +484,194 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                                                 </form.Field>
                                                 <form.Field name={`certifications[${i}].issueDate`}>
                                                     {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Issue Date" type="date" />}
+                                                </form.Field>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </form.Field>
+
+                        {/* PROJECTS */}
+                        <form.Field name="projects" mode="array">
+                            {(field) => (
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold flex items-center justify-between">
+                                        Projects
+                                        <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue({ projectName: "", role: "", description: "", technologiesUsed: "", liveUrl: "", githubUrl: "", startDate: "", endDate: "", highlights: "" })}>
+                                            <Plus className="w-4 h-4 mr-2" /> Add
+                                        </Button>
+                                    </h3>
+                                    {field.state.value.map((_: any, i: number) => (
+                                        <Card key={i} className="relative bg-muted/30">
+                                            <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2 text-destructive" onClick={() => field.removeValue(i)}>
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <form.Field name={`projects[${i}].projectName`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Project Name" placeholder="E-commerce Platform" />}
+                                                </form.Field>
+                                                <form.Field name={`projects[${i}].role`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Role" placeholder="Lead Developer" />}
+                                                </form.Field>
+                                                <div className="md:col-span-2">
+                                                    <form.Field name={`projects[${i}].description`}>
+                                                        {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Description" placeholder="Project summary..." />}
+                                                    </form.Field>
+                                                </div>
+                                                <div className="md:col-span-2">
+                                                    <form.Field name={`projects[${i}].technologiesUsed`}>
+                                                        {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Technologies Used (comma separated)" placeholder="React, Node.js..." />}
+                                                    </form.Field>
+                                                </div>
+                                                <form.Field name={`projects[${i}].liveUrl`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Live URL" placeholder="https://..." />}
+                                                </form.Field>
+                                                <form.Field name={`projects[${i}].githubUrl`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="GitHub URL" placeholder="https://github.com/..." />}
+                                                </form.Field>
+                                                <form.Field name={`projects[${i}].startDate`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Start Date" type="date" />}
+                                                </form.Field>
+                                                <form.Field name={`projects[${i}].endDate`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="End Date" type="date" />}
+                                                </form.Field>
+                                                <div className="md:col-span-2">
+                                                    <form.Field name={`projects[${i}].highlights`}>
+                                                        {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Highlights (comma separated)" placeholder="Increased performance by 50%..." />}
+                                                    </form.Field>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </form.Field>
+
+                        {/* LANGUAGES */}
+                        <form.Field name="languages" mode="array">
+                            {(field) => (
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold flex items-center justify-between">
+                                        Languages
+                                        <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue({ language: "", proficiencyLevel: "" })}>
+                                            <Plus className="w-4 h-4 mr-2" /> Add
+                                        </Button>
+                                    </h3>
+                                    {field.state.value.map((_: any, i: number) => (
+                                        <Card key={i} className="relative bg-muted/30">
+                                            <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2 text-destructive" onClick={() => field.removeValue(i)}>
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <form.Field name={`languages[${i}].language`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Language" placeholder="English" />}
+                                                </form.Field>
+                                                <form.Field name={`languages[${i}].proficiencyLevel`}>
+                                                    {(subField) => {
+                                                        const error = subField.state.meta.isTouched && subField.state.meta.errors.length > 0 ? subField.state.meta.errors[0] : null;
+                                                        const serverErr = serverErrors[subField.name];
+                                                        const finalError = error || serverErr;
+                                                        const errorMsg = typeof finalError === "string" ? finalError : (finalError as any)?.message || String(finalError || "");
+                                                        return (
+                                                            <div className="space-y-1.5">
+                                                                <Label htmlFor={subField.name} className={errorMsg ? "text-destructive" : ""}>Proficiency Level</Label>
+                                                                <Select
+                                                                    value={(subField.state.value as string) || undefined}
+                                                                    onValueChange={(value) => subField.handleChange(value)}
+                                                                >
+                                                                    <SelectTrigger id={subField.name} className={errorMsg ? "border-destructive focus:ring-destructive" : ""}>
+                                                                        <SelectValue placeholder="Select Proficiency" />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        <SelectItem value="Native">Native</SelectItem>
+                                                                        <SelectItem value="Fluent">Fluent</SelectItem>
+                                                                        <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                                                        <SelectItem value="Beginner">Beginner</SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                                {errorMsg && <p className="text-sm text-destructive">{errorMsg}</p>}
+                                                            </div>
+                                                        )
+                                                    }}
+                                                </form.Field>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </form.Field>
+
+                        {/* AWARDS */}
+                        <form.Field name="awards" mode="array">
+                            {(field) => (
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold flex items-center justify-between">
+                                        Awards
+                                        <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue({ title: "", issuer: "", date: "", description: "" })}>
+                                            <Plus className="w-4 h-4 mr-2" /> Add
+                                        </Button>
+                                    </h3>
+                                    {field.state.value.map((_: any, i: number) => (
+                                        <Card key={i} className="relative bg-muted/30">
+                                            <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2 text-destructive" onClick={() => field.removeValue(i)}>
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <form.Field name={`awards[${i}].title`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Title" placeholder="Employee of the Month" />}
+                                                </form.Field>
+                                                <form.Field name={`awards[${i}].issuer`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Issuer" placeholder="Google" />}
+                                                </form.Field>
+                                                <form.Field name={`awards[${i}].date`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Date" type="date" />}
+                                                </form.Field>
+                                                <div className="md:col-span-2">
+                                                    <form.Field name={`awards[${i}].description`}>
+                                                        {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Description" />}
+                                                    </form.Field>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </form.Field>
+
+                        {/* REFERENCES */}
+                        <form.Field name="references" mode="array">
+                            {(field) => (
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold flex items-center justify-between">
+                                        References
+                                        <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue({ name: "", designation: "", company: "", email: "", phone: "", relationship: "" })}>
+                                            <Plus className="w-4 h-4 mr-2" /> Add
+                                        </Button>
+                                    </h3>
+                                    {field.state.value.map((_: any, i: number) => (
+                                        <Card key={i} className="relative bg-muted/30">
+                                            <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2 text-destructive" onClick={() => field.removeValue(i)}>
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <form.Field name={`references[${i}].name`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Name" placeholder="Jane Doe" />}
+                                                </form.Field>
+                                                <form.Field name={`references[${i}].designation`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Designation" placeholder="Manager" />}
+                                                </form.Field>
+                                                <form.Field name={`references[${i}].company`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Company" placeholder="Google" />}
+                                                </form.Field>
+                                                <form.Field name={`references[${i}].email`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Email" type="email" placeholder="jane@example.com" />}
+                                                </form.Field>
+                                                <form.Field name={`references[${i}].phone`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Phone" placeholder="+1..." />}
+                                                </form.Field>
+                                                <form.Field name={`references[${i}].relationship`}>
+                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Relationship" placeholder="Manager" />}
                                                 </form.Field>
                                             </CardContent>
                                         </Card>
