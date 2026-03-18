@@ -1,6 +1,8 @@
 import MyResumeContent from "@/components/modules/Dashboard/MyResumeContent";
+import { protectPageByRole } from "@/lib/protectedPageHelpers";
 
-const MyResumePage = () => {
+const MyResumePage = async () => {
+    await protectPageByRole("USER");
     return <MyResumeContent />;
 };
 

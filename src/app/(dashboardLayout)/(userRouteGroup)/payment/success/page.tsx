@@ -1,9 +1,22 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { canAccessRoute, getDefaultDashboardRoute } from "@/lib/authUtils";
+import { getUserInfo } from "@/services/auth.services";
 import { CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-const PaymentSuccessPage = () => {
+const PaymentSuccessPage = async () => {
+    const userInfo = await getUserInfo();
+
+    if (!userInfo) {
+        redirect("/login");
+    }
+
+    if (!canAccessRoute("/payment/success", userInfo.role)) {
+        redirect(getDefaultDashboardRoute(userInfo.role));
+    }
+
     return (
         <div className="flex items-center justify-center min-h-[60vh]">
             <Card className="w-full max-w-md text-center">

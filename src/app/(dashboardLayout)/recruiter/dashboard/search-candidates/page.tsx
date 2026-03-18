@@ -1,6 +1,8 @@
 import SearchCandidatesContent from "@/components/modules/Recruiter/SearchCandidatesContent";
+import { protectPageByRole } from "@/lib/protectedPageHelpers";
 
-const SearchCandidatesPage = () => {
+const SearchCandidatesPage = async () => {
+    await protectPageByRole("RECRUITER");
     return <SearchCandidatesContent />;
 };
 

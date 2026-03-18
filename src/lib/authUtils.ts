@@ -89,3 +89,30 @@ export const isValidRedirectForRole = (redirectPath: string, role: UserRole) => 
 
     return false;
 };
+
+/**
+ * Validates if a user can access a specific route based on their role
+ * SUPER_ADMIN is treated as ADMIN for access control
+ */
+export const canAccessRoute = (pathname: string, userRole?: UserRole): boolean => {
+    if (!userRole) {
+        return false;
+    }
+
+    const routeOwner = getRouteOwner(pathname);
+
+    // If route has no owner, it's public
+    if (routeOwner === null) {
+        return true;
+    }
+
+    // COMMON routes are accessible to all authenticated users
+    if (routeOwner === "COMMON") {
+        return true;
+    }
+
+    // Normalize SUPER_ADMIN to ADMIN for access control
+    const normalizedRole = userRole === "SUPER_ADMIN" ? "ADMIN" : userRole;
+
+    return routeOwner === normalizedRole;
+};

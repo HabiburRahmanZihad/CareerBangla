@@ -1,6 +1,8 @@
 import WalletContent from "@/components/modules/Dashboard/WalletContent";
+import { protectPageByRole } from "@/lib/protectedPageHelpers";
 
-const WalletPage = () => {
+const WalletPage = async () => {
+    await protectPageByRole("USER");
     return <WalletContent />;
 };
 

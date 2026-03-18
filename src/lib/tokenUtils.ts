@@ -4,12 +4,12 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { setCookie } from "./cookieUtils";
 
 
-const getTokenSecondsRemaining =  (token: string): number => {
-    if(!token) return 0;
+const getTokenSecondsRemaining = (token: string): number => {
+    if (!token) return 0;
     try {
-        const tokenPayload= jwt.decode(token) as JwtPayload;
+        const tokenPayload = jwt.decode(token) as JwtPayload;
 
-        if (tokenPayload && !tokenPayload.exp){
+        if (tokenPayload && !tokenPayload.exp) {
             return 0;
         }
 
@@ -21,29 +21,38 @@ const getTokenSecondsRemaining =  (token: string): number => {
         console.error("Error decoding token:", error);
         return 0;
     }
-} 
+}
 
 export const setTokenInCookies = async (
-    name : string,
-    token : string,
+    name: string,
+    token: string,
     fallbackMaxAgeInSeconds = 60 * 60 * 24 // 1 days
 ) => {
+    // Safety check - don't set empty or undefined tokens
+    if (!token) {
+        console.error(`[setTokenInCookies] Token is empty for ${name}`);
+        return;
+    }
+
     let maxAgeInSeconds;
 
-    if (name !== "better-auth.session_token"){
+    // Only try to decode JWT tokens (accessToken, refreshToken)
+    // Session tokens from better-auth are NOT JWTs, they're random strings
+    if (name !== "better-auth.session_token" && name !== "refreshToken") {
         maxAgeInSeconds = getTokenSecondsRemaining(token);
     }
 
+    console.log(`[setTokenInCookies] Setting ${name} with maxAge: ${maxAgeInSeconds || fallbackMaxAgeInSeconds}`);
     await setCookie(name, token, maxAgeInSeconds || fallbackMaxAgeInSeconds);
 }
 
 
-export async function isTokenExpiringSoon(token: string, thresholdInSeconds = 300) : Promise<boolean> {
+export async function isTokenExpiringSoon(token: string, thresholdInSeconds = 300): Promise<boolean> {
     const remainingSeconds = getTokenSecondsRemaining(token);
     return remainingSeconds > 0 && remainingSeconds <= thresholdInSeconds;
 }
 
-export async function isTokenExpired(token: string) : Promise<boolean> {
+export async function isTokenExpired(token: string): Promise<boolean> {
     const remainingSeconds = getTokenSecondsRemaining(token);
     return remainingSeconds === 0;
 }

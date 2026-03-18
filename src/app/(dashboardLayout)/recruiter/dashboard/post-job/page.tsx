@@ -1,6 +1,8 @@
 import PostJobContent from "@/components/modules/Recruiter/PostJobContent";
+import { protectPageByRole } from "@/lib/protectedPageHelpers";
 
-const PostJobPage = () => {
+const PostJobPage = async () => {
+    await protectPageByRole("RECRUITER");
     return <PostJobContent />;
 };
 

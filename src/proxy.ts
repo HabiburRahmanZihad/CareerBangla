@@ -30,8 +30,13 @@ export async function proxy(request: NextRequest) {
         // This prevents "Cookies can only be modified in a Server Action or Route Handler" errors
 
         // Rule 1: User is logged in and trying to access auth route -> redirect to dashboard
+        // Exception: Allow /verify-email even if logged in, as email verification is required
         if (isAuth && isValidAccessToken) {
-            return NextResponse.redirect(new URL(getDefaultDashboardRoute(userRole as UserRole), request.url));
+            // Only redirect from verify-email if email is already verified
+            if (pathname !== "/verify-email") {
+                return NextResponse.redirect(new URL(getDefaultDashboardRoute(userRole as UserRole), request.url));
+            }
+            // If on /verify-email, fall through to check email verification status
         }
 
         // Rule 2: User is trying to access reset password page
@@ -41,7 +46,7 @@ export async function proxy(request: NextRequest) {
             if (accessToken && email) {
                 const userInfo = await getUserInfo();
 
-                if (userInfo.needPasswordChange) {
+                if (userInfo && userInfo.needPasswordChange) {
                     return NextResponse.next();
                 } else {
                     return NextResponse.redirect(new URL(getDefaultDashboardRoute(userRole as UserRole), request.url));
