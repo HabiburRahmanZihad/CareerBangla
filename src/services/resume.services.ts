@@ -29,6 +29,7 @@ export async function getAtsScore(jobId?: string) {
             atsScore: number;
             profileCompletion: number;
             suggestions: string[];
+            categories: { label: string; earned: number; max: number; suggestions: string[] }[];
             jobMatchScore?: number;
             matchedSkills?: string[];
             missingSkills?: string[];
@@ -37,6 +38,7 @@ export async function getAtsScore(jobId?: string) {
         return { data: null };
     }
 }
+
 
 export async function searchCandidates(params?: Record<string, unknown>) {
     return serverHttpClient.get<IResume[]>("/resumes/search-candidates", { params });

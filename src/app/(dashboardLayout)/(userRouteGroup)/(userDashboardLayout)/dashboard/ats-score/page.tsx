@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { getAtsScore } from "@/services/resume.services";
-import { getMyResume } from "@/services/resume.services";
 import { useQuery } from "@tanstack/react-query";
 import {
     AlertCircle,
@@ -13,106 +13,87 @@ import {
     ChevronRight,
     FileUser,
     Info,
+    Lightbulb,
+    ShieldCheck,
     TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
 
-// Mirrors the backend profileCompletion.ts weighted fields
-const ALL_SECTIONS = [
-    { key: "personalDetails",    label: "Personal Details",         desc: "Full Name, Email & Contact Number",               weight: 5  },
-    { key: "professionalTitle",  label: "Professional Title",       desc: "Your primary job title/role",                     weight: 3  },
-    { key: "urlsPortfolio",      label: "URLs / Portfolio",         desc: "At least one of LinkedIn, GitHub, or Website",    weight: 4  },
-    { key: "additionalInfo",     label: "Additional Personal Info", desc: "Date of Birth, Gender & Address",                 weight: 3  },
-    { key: "nationality",        label: "Nationality",              desc: "Your nationality",                                weight: 2  },
-    { key: "summary",            label: "Professional Summary",     desc: "A written summary (any length)",                  weight: 12 },
-    { key: "technicalSkills",    label: "Technical Skills",         desc: "At least one technical skill",                    weight: 6  },
-    { key: "softSkills",         label: "Soft Skills",              desc: "At least one soft skill",                         weight: 6  },
-    { key: "tools",              label: "Tools & Technologies",     desc: "At least one tool or technology",                 weight: 6  },
-    { key: "workExperience",     label: "Work Experience",          desc: "At least one work experience entry",              weight: 15 },
-    { key: "education",          label: "Education",                desc: "At least one education entry",                    weight: 12 },
-    { key: "certifications",     label: "Certifications",           desc: "At least one certification",                     weight: 8  },
-    { key: "projects",           label: "Projects",                 desc: "At least one project",                            weight: 8  },
-    { key: "languages",          label: "Languages",                desc: "At least one language",                           weight: 3  },
-    { key: "awards",             label: "Awards",                   desc: "At least one award",                              weight: 2  },
-    { key: "interests",          label: "Interests",                desc: "At least one interest",                           weight: 1  },
-    { key: "references",         label: "References",               desc: "At least one reference",                          weight: 1  },
-];
-const TOTAL_WEIGHT = ALL_SECTIONS.reduce((s, f) => s + f.weight, 0); // 100
+// Category icons mapping
+const CATEGORY_ICONS: Record<string, string> = {
+    "Contact & Identity": "👤",
+    "Professional Summary": "📝",
+    "Skills": "🛠️",
+    "Work Experience": "💼",
+    "Education": "🎓",
+    "Projects": "🚀",
+    "Certifications": "🏅",
+    "Languages": "🌐",
+    "Awards": "🏆",
+    "References": "🤝",
+};
 
-// Evaluate which sections a resume has completed (mirrors backend logic)
-function evaluateSections(resume: any) {
-    if (!resume) return {};
-    return {
-        personalDetails:   !!(resume.fullName && resume.email && resume.contactNumber),
-        professionalTitle: !!resume.professionalTitle,
-        urlsPortfolio:     !!(resume.linkedinUrl || resume.githubUrl || resume.portfolioUrl || resume.websiteUrl),
-        additionalInfo:    !!(resume.dateOfBirth && resume.gender && resume.address),
-        nationality:       !!resume.nationality,
-        summary:           !!(resume.professionalSummary?.trim()),
-        technicalSkills:   (resume.technicalSkills?.length ?? 0) > 0,
-        softSkills:        (resume.softSkills?.length ?? 0) > 0,
-        tools:             (resume.toolsAndTechnologies?.length ?? 0) > 0,
-        workExperience:    (resume.workExperience?.length ?? 0) > 0,
-        education:         (resume.education?.length ?? 0) > 0,
-        certifications:    (resume.certifications?.length ?? 0) > 0,
-        projects:          (resume.projects?.length ?? 0) > 0,
-        languages:         (resume.languages?.length ?? 0) > 0,
-        awards:            (resume.awards?.length ?? 0) > 0,
-        interests:         (resume.interests?.length ?? 0) > 0,
-        references:        (resume.references?.length ?? 0) > 0,
-    };
+// Color classes for score levels
+function scoreClass(pct: number) {
+    if (pct === 100) return "text-green-600";
+    if (pct >= 60) return "text-yellow-600";
+    return "text-red-500";
+}
+
+function strokeColor(pct: number) {
+    if (pct >= 80) return "#22c55e";
+    if (pct >= 50) return "#eab308";
+    return "#ef4444";
+}
+
+function scoreLabel(score: number) {
+    if (score === 100) return { label: "Excellent", color: "bg-green-100 text-green-800" };
+    if (score >= 80) return { label: "Good", color: "bg-blue-100 text-blue-800" };
+    if (score >= 50) return { label: "Average", color: "bg-yellow-100 text-yellow-800" };
+    return { label: "Needs Work", color: "bg-red-100 text-red-800" };
 }
 
 const AtsScorePage = () => {
-    const { data: resumeRes, isLoading: resumeLoading } = useQuery({
-        queryKey: ["my-resume"],
-        queryFn: () => getMyResume(),
-    });
-
-    const { data: atsRes, isLoading: atsLoading } = useQuery({
+    const { data: atsRes, isLoading } = useQuery({
         queryKey: ["ats-score"],
         queryFn: () => getAtsScore(),
     });
 
-    const isLoading = resumeLoading || atsLoading;
-    const resume = resumeRes?.data;
-    const atsData = atsRes?.data;
-
-    const completed = evaluateSections(resume);
-    const earnedWeight = ALL_SECTIONS.reduce(
-        (sum, s) => sum + (completed[s.key as keyof typeof completed] ? s.weight : 0),
-        0
-    );
-    const localScore = Math.round((earnedWeight / TOTAL_WEIGHT) * 100);
-    const atsScore = atsData?.atsScore ?? localScore;
-    const suggestions = atsData?.suggestions ?? [];
-
-    const scoreColor =
-        atsScore >= 80 ? "text-green-600" :
-        atsScore >= 50 ? "text-yellow-600" : "text-red-600";
-
-    const strokeColor =
-        atsScore >= 80 ? "#22c55e" :
-        atsScore >= 50 ? "#eab308" : "#ef4444";
-
     if (isLoading) {
         return (
-            <div className="space-y-4 max-w-4xl mx-auto">
+            <div className="space-y-4 max-w-5xl mx-auto">
                 <Skeleton className="h-8 w-64" />
-                <Skeleton className="h-48 w-full" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Skeleton className="h-56" />
+                    <Skeleton className="h-56" />
+                    <Skeleton className="h-56" />
+                </div>
                 <Skeleton className="h-96 w-full" />
             </div>
         );
     }
 
+    const atsData = atsRes?.data;
+    const atsScore: number = atsData?.atsScore ?? 0;
+    const suggestions: string[] = atsData?.suggestions ?? [];
+    const categories: { label: string; earned: number; max: number; suggestions: string[] }[] =
+        atsData?.categories ?? [];
+
+    const { label: rating, color: ratingColor } = scoreLabel(atsScore);
+    const categoriesComplete = categories.filter(c => c.earned >= c.max).length;
+
     return (
-        <div className="space-y-6 max-w-4xl mx-auto">
+        <div className="space-y-6 max-w-5xl mx-auto">
+
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold">ATS Score</h1>
+                    <h1 className="text-2xl font-bold flex items-center gap-2">
+                        <ShieldCheck className="w-6 h-6 text-primary" />
+                        ATS Score Analysis
+                    </h1>
                     <p className="text-muted-foreground text-sm mt-1">
-                        Your resume&apos;s readiness for Applicant Tracking Systems
+                        Based on international ATS standards (Workday, Taleo, Greenhouse, iCIMS)
                     </p>
                 </div>
                 <Link href="/dashboard/my-resume">
@@ -122,18 +103,18 @@ const AtsScorePage = () => {
                 </Link>
             </div>
 
-            {/* Score + Suggestions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Top Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
                 {/* Score Ring */}
                 <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5 text-primary" />
-                            Your ATS Score
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <TrendingUp className="w-4 h-4 text-primary" /> Your ATS Score
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="flex flex-col items-center gap-4">
-                        <div className="relative w-36 h-36">
+                    <CardContent className="flex flex-col items-center gap-3">
+                        <div className="relative w-32 h-32">
                             <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                                 <path
                                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
@@ -142,120 +123,183 @@ const AtsScorePage = () => {
                                 <path
                                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                                     fill="none"
-                                    stroke={strokeColor}
+                                    stroke={strokeColor(atsScore)}
                                     strokeWidth="3"
                                     strokeDasharray={`${atsScore}, 100`}
                                     strokeLinecap="round"
-                                    style={{ transition: "stroke-dasharray 0.6s ease" }}
                                 />
                             </svg>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <span className={`text-3xl font-bold ${scoreColor}`}>{atsScore}%</span>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className={`text-2xl font-bold ${scoreClass(atsScore)}`}>{atsScore}%</span>
                             </div>
                         </div>
-                        <Progress value={atsScore} className="w-full h-2" />
-                        <p className="text-sm text-muted-foreground text-center">
+                        <Badge className={ratingColor}>{rating}</Badge>
+                        <Progress value={atsScore} className="w-full h-1.5" />
+                    </CardContent>
+                </Card>
+
+                {/* Stats */}
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <Info className="w-4 h-4 text-primary" /> Score Snapshot
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 pt-2">
+                        <div className="flex justify-between items-center py-2 border-b">
+                            <span className="text-sm text-muted-foreground">Categories Complete</span>
+                            <span className="font-semibold">{categoriesComplete} / {categories.length}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b">
+                            <span className="text-sm text-muted-foreground">Points Earned</span>
+                            <span className="font-semibold">
+                                {categories.reduce((s, c) => s + c.earned, 0)} / 100
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center py-2">
+                            <span className="text-sm text-muted-foreground">Points Missing</span>
+                            <span className="font-semibold text-red-500">
+                                {categories.reduce((s, c) => s + (c.max - c.earned), 0)} pts
+                            </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
                             {atsScore === 100
-                                ? "🎉 Perfect score! Your profile is fully optimized."
-                                : atsScore >= 80
-                                ? "Great profile! A few tweaks will push you to 100%."
-                                : atsScore >= 50
-                                ? "Good start. Complete the missing sections below."
-                                : "Fill more sections to boost your ATS visibility."}
+                                ? "🎉 Perfect! Your resume is fully ATS-optimized."
+                                : `Complete ${categories.length - categoriesComplete} more section${categories.length - categoriesComplete !== 1 ? "s" : ""} to maximize visibility.`}
                         </p>
                     </CardContent>
                 </Card>
 
-                {/* Suggestions */}
+                {/* Top Suggestions */}
                 <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Info className="w-5 h-5 text-yellow-500" />
-                            Improvement Suggestions
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <Lightbulb className="w-4 h-4 text-yellow-500" /> Top Tips
                         </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-2">
                         {suggestions.length > 0 ? (
-                            <ul className="space-y-3">
-                                {suggestions.map((s: string, i: number) => (
-                                    <li key={i} className="flex items-start gap-3 text-sm">
-                                        <AlertCircle className="w-4 h-4 text-yellow-500 mt-0.5 shrink-0" />
+                            <ul className="space-y-2">
+                                {suggestions.slice(0, 4).map((s, i) => (
+                                    <li key={i} className="flex items-start gap-2 text-sm">
+                                        <AlertCircle className="w-3.5 h-3.5 text-yellow-500 mt-0.5 shrink-0" />
                                         <span>{s}</span>
                                     </li>
                                 ))}
                             </ul>
                         ) : (
-                            <div className="flex items-center gap-3 text-green-600">
-                                <CheckCircle2 className="w-5 h-5 shrink-0" />
-                                <span className="text-sm">No suggestions — your profile looks great!</span>
+                            <div className="flex items-center gap-2 text-green-600 text-sm">
+                                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                                <span>No suggestions — your profile is fully optimized!</span>
                             </div>
                         )}
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Section Breakdown */}
+            {/* Category Breakdown */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Section-by-Section Breakdown</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                        📊 Category Breakdown
+                    </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                        Each section contributes a fixed percentage to your total score.
+                        Each category contributes a fixed number of points based on international ATS standards.
                     </p>
                 </CardHeader>
-                <CardContent>
-                    <div className="space-y-3">
-                        {ALL_SECTIONS.map((section) => {
-                            const done = completed[section.key as keyof typeof completed];
-                            return (
-                                <div
-                                    key={section.key}
-                                    className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                                        done
-                                            ? "border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800"
-                                            : "border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-800"
-                                    }`}
-                                >
-                                    <div className="flex items-start gap-3 min-w-0">
-                                        {done ? (
-                                            <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
-                                        ) : (
-                                            <AlertCircle className="w-5 h-5 text-yellow-500 mt-0.5 shrink-0" />
-                                        )}
-                                        <div className="min-w-0">
-                                            <p className="font-medium text-sm">{section.label}</p>
-                                            <p className="text-xs text-muted-foreground truncate">{section.desc}</p>
+                <CardContent className="space-y-3">
+                    {categories.map((cat) => {
+                        const pct = Math.round((cat.earned / cat.max) * 100);
+                        const done = cat.earned >= cat.max;
+                        const icon = CATEGORY_ICONS[cat.label] ?? "📋";
+                        return (
+                            <div
+                                key={cat.label}
+                                className={`rounded-lg border p-4 transition-colors ${
+                                    done
+                                        ? "border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800"
+                                        : "border-muted bg-muted/20"
+                                }`}
+                            >
+                                <div className="flex items-start justify-between gap-3 mb-2">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <span className="text-lg">{icon}</span>
+                                        <div>
+                                            <p className="font-medium text-sm">{cat.label}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {cat.earned} / {cat.max} pts
+                                            </p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3 shrink-0 ml-3">
-                                        <span
-                                            className={`text-lg font-bold ${
-                                                done ? "text-green-600" : "text-muted-foreground"
-                                            }`}
-                                        >
-                                            +{section.weight}%
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <span className={`font-bold text-sm ${done ? "text-green-600" : scoreClass(pct)}`}>
+                                            {pct}%
                                         </span>
-                                        {!done && (
+                                        {done ? (
+                                            <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                        ) : (
                                             <Link href="/dashboard/my-resume">
                                                 <ChevronRight className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
                                             </Link>
                                         )}
                                     </div>
                                 </div>
-                            );
-                        })}
-                    </div>
+                                <Progress value={pct} className="h-1.5 mb-2" />
+                                {!done && cat.suggestions.length > 0 && (
+                                    <ul className="mt-2 space-y-1">
+                                        {cat.suggestions.map((s, i) => (
+                                            <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                                                <AlertCircle className="w-3 h-3 text-yellow-500 mt-0.5 shrink-0" />
+                                                <span>{s}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        );
+                    })}
 
-                    {/* Summary bar */}
-                    <div className="mt-6 p-4 border rounded-lg bg-muted/30">
+                    {/* Total bar */}
+                    <div className="mt-4 p-4 border rounded-lg bg-muted/30">
                         <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium">Total Earned</span>
-                            <span className={`font-bold text-lg ${scoreColor}`}>{atsScore}%</span>
+                            <span className="font-medium text-sm">Total ATS Score</span>
+                            <span className={`font-bold text-lg ${scoreClass(atsScore)}`}>{atsScore}%</span>
                         </div>
                         <Progress value={atsScore} className="h-2" />
-                        <p className="text-xs text-muted-foreground mt-2">
-                            {ALL_SECTIONS.filter((s) => completed[s.key as keyof typeof completed]).length} of {ALL_SECTIONS.length} sections complete
-                        </p>
+                        <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                            <span>{categories.filter(c => c.earned >= c.max).length} of {categories.length} categories complete</span>
+                            <span>{categories.reduce((s, c) => s + c.earned, 0)} / 100 pts earned</span>
+                        </div>
                     </div>
+                </CardContent>
+            </Card>
+
+            {/* How ATS works */}
+            <Card className="border-primary/20 bg-primary/5">
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <Info className="w-4 h-4 text-primary" />
+                        How ATS Scoring Works
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm space-y-3 text-muted-foreground">
+                    <p>
+                        Applicant Tracking Systems (ATS) like <strong>Workday</strong>, <strong>Taleo</strong>, and <strong>Greenhouse</strong> automatically scan resumes before a human ever sees them. Your score reflects how well your resume satisfies their standard parsing criteria.
+                    </p>
+                    <ul className="space-y-2 list-none">
+                        <li>✅ <strong>Contact & Identity (10 pts)</strong> — Recruiters and ATS need structured contact info to reach you.</li>
+                        <li>✅ <strong>Professional Summary (15 pts)</strong> — ATS extracts keywords from your summary first. Longer = more keywords.</li>
+                        <li>✅ <strong>Skills (20 pts)</strong> — Most ATS systems rank candidates by skill keyword matches. Aim for 5+ technical skills.</li>
+                        <li>✅ <strong>Work Experience (20 pts)</strong> — Strong experience with listed responsibilities boosts relevance scoring.</li>
+                        <li>✅ <strong>Education (10 pts)</strong> — Required by most ATS for degree-filtered searches.</li>
+                        <li>✅ <strong>Projects (10 pts)</strong> — Validates claimed technical skills with real-world proof.</li>
+                        <li>✅ <strong>Certifications (8 pts)</strong> — Industry certifications are high-value ATS keywords.</li>
+                    </ul>
+                    <Link href="/dashboard/my-resume">
+                        <Button size="sm" className="mt-2 gap-2">
+                            <FileUser className="w-4 h-4" /> Improve My Resume Now
+                        </Button>
+                    </Link>
                 </CardContent>
             </Card>
         </div>
