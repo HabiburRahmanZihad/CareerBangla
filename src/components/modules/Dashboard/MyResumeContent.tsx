@@ -66,7 +66,21 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
     });
 
     const profileCompletion = resume?.profileCompletion ?? 0;
-    const isProfileCompleted = profileCompletion === 100;
+
+    // Charge 15 coins if profile is 100% OR any of the 4 chargeable sections is already filled
+    const isSectionChargeable = profileCompletion === 100 || !!(
+        resume?.fullName ||
+        resume?.contactNumber ||
+        resume?.professionalTitle ||
+        resume?.linkedinUrl ||
+        resume?.githubUrl ||
+        resume?.portfolioUrl ||
+        resume?.professionalSummary ||
+        (resume?.technicalSkills?.length ?? 0) > 0 ||
+        (resume?.softSkills?.length ?? 0) > 0 ||
+        (resume?.education?.length ?? 0) > 0
+    );
+
     const form = useForm({
         defaultValues: {
             fullName: resume?.fullName || "",
@@ -204,7 +218,7 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                 }));
             }
 
-            if (isProfileCompleted) {
+            if (isSectionChargeable) {
                 setPendingPayload(payload);
             } else {
                 await mutateAsync(payload);
@@ -224,11 +238,11 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
             <AlertDialog open={!!pendingPayload} onOpenChange={(open) => !open && setPendingPayload(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Profile Update</AlertDialogTitle>
+                        <AlertDialogTitle>Confirm Section Update — 15 Coins</AlertDialogTitle>
                         <AlertDialogDescription asChild>
                             <div className="space-y-3 pt-2">
                                 <p>
-                                    Your profile has already been completed. Any further updates will charge <strong>15 coins</strong> from your wallet.
+                                    You are updating sections that were already filled (<strong>Basic Information</strong>, <strong>Social Profiles</strong>, <strong>Skills &amp; Summary</strong>, or <strong>Education</strong>). This will cost <strong>15 coins</strong>.
                                 </p>
                                 <div className="bg-muted p-4 rounded-lg space-y-2 text-foreground">
                                     <div className="flex justify-between">
@@ -271,22 +285,20 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
 
             <ProfileCompletionBar completion={profileCompletion} />
 
-            {isProfileCompleted && (
-                <Alert>
-                    <Coins className="h-4 w-4" />
-                    <AlertDescription>
-                        Your profile is at 100% completion! Any further updates will cost <strong>15 coins</strong>.
-                    </AlertDescription>
-                </Alert>
-            )}
-
-            {!isProfileCompleted && (
-                <Alert>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                        Reach 100% Profile Completion to maximize visibility. Updates are free until you hit 100%!
-                    </AlertDescription>
-                </Alert>
+            {isSectionChargeable ? (
+                <div className="flex items-center gap-3 rounded-lg border border-yellow-300 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-800 px-4 py-3 text-sm text-yellow-800 dark:text-yellow-300">
+                    <Coins className="h-5 w-5 shrink-0 text-yellow-600 dark:text-yellow-400" />
+                    <span>
+                        Updating <strong>Basic Information</strong>, <strong>Social Profiles</strong>, <strong>Skills &amp; Summary</strong>, or <strong>Education</strong> costs <strong>15 coins</strong> per save.
+                    </span>
+                </div>
+            ) : (
+                <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 px-4 py-3 text-sm text-blue-800 dark:text-blue-300">
+                    <AlertCircle className="h-5 w-5 shrink-0 text-blue-500" />
+                    <span>
+                        Fill in your profile sections for the first time — it&apos;s <strong>free</strong>! Updates to already-filled sections cost <strong>15 coins</strong>.
+                    </span>
+                </div>
             )}
 
             <Card>
@@ -708,7 +720,7 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
 
                         <div className="pt-4">
                             <AppSubmitButton isPending={isPending} pendingLabel="Saving...">
-                                {isProfileCompleted ? "Update Resume (15 coins)" : "Save Resume"}
+                                {isSectionChargeable ? "Update Resume (15 coins)" : "Save Resume"}
                             </AppSubmitButton>
                         </div>
                     </form>
