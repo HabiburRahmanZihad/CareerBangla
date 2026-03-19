@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { UserInfo } from "@/types/user.types";
 
@@ -23,13 +24,14 @@ interface SubscriptionsContentProps {
 const SubscriptionsContent = ({ userRole, userInfo }: SubscriptionsContentProps) => {
     const [couponCode, setCouponCode] = useState("");
     const [referralCode, setReferralCode] = useState("");
+    const [gateway, setGateway] = useState<"STRIPE" | "SSLCOMMERZ">("SSLCOMMERZ");
     const { data: plansData, isLoading: plansLoading } = useQuery({
         queryKey: ["subscription-plans"],
         queryFn: () => getSubscriptionPlans(),
     });
 
     const { mutateAsync: purchase, isPending } = useMutation({
-        mutationFn: (planName: string) => purchaseSubscription({ planName, couponCode: couponCode || undefined, referralCode: referralCode || undefined }),
+        mutationFn: (planName: string) => purchaseSubscription({ planName, couponCode: couponCode || undefined, referralCode: referralCode || undefined, gateway }),
         onSuccess: (response: any) => {
             if (response?.data?.redirectUrl) {
                 window.location.href = response.data.redirectUrl;
@@ -95,7 +97,7 @@ const SubscriptionsContent = ({ userRole, userInfo }: SubscriptionsContentProps)
 
             <div className="bg-card border rounded-xl p-6 shadow-sm space-y-4 max-w-xl">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Crown className="w-5 h-5 text-yellow-500" /> Optional Codes
+                    <Crown className="w-5 h-5 text-yellow-500" /> Subscription Setup
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -117,7 +119,22 @@ const SubscriptionsContent = ({ userRole, userInfo }: SubscriptionsContentProps)
                         />
                     </div>
                 </div>
-                <p className="text-xs text-muted-foreground">Any valid discounts or referral bonuses will be applied automatically during checkout.</p>
+                <p className="text-xs text-muted-foreground p-2 bg-muted/50 rounded-md">
+                    Note: Referral and Coupon codes are currently used for <strong>tracking purposes only</strong> and will not apply a financial discount to your checkout total.
+                </p>
+
+                <div className="space-y-2 pt-2 border-t">
+                    <Label htmlFor="gateway" className="font-medium">Selected Payment Gateway</Label>
+                    <Select value={gateway} onValueChange={(val: any) => setGateway(val)}>
+                        <SelectTrigger id="gateway" className="w-full font-semibold">
+                            <SelectValue placeholder="Select Payment Gateway" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="SSLCOMMERZ">💳 SSLCommerz (Local BDT Cards/bKash)</SelectItem>
+                            <SelectItem value="STRIPE">🌍 Stripe (International Debit/Credit)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">

@@ -7,7 +7,7 @@ export async function getSubscriptionPlans() {
     return serverHttpClient.get<ISubscriptionPlan[]>("/subscriptions/plans");
 }
 
-export async function purchaseSubscription(data: { planName: string; couponCode?: string; referralCode?: string }) {
+export async function purchaseSubscription(data: { planName: string; couponCode?: string; referralCode?: string; gateway?: "STRIPE" | "SSLCOMMERZ" }) {
     return serverHttpClient.post<{ url: string }>("/subscriptions/purchase", data);
 }
 

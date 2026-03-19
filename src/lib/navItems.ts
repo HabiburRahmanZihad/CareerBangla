@@ -123,6 +123,11 @@ export const adminNavItems: NavSection[] = [
                 href: "/admin/dashboard/coupons-management",
                 icon: "Ticket",
             },
+            {
+                title: "Tracking & Analytics",
+                href: "/admin/dashboard/tracking",
+                icon: "Activity",
+            },
         ],
     },
 ];
