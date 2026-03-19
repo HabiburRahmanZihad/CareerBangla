@@ -1,5 +1,6 @@
 "use client";
 
+import AtsScoreContent from "@/components/modules/Dashboard/AtsScoreContent";
 import CoinBalance from "@/components/shared/CoinBalance";
 import ProfileCompletionBar from "@/components/shared/ProfileCompletionBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -103,6 +104,16 @@ const UserDashboardContent = ({ userInfo }: UserDashboardContentProps) => {
                     </Card>
                 </Link>
             </div>
+
+            {/* ATS Score */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>ATS Score</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <AtsScoreContent />
+                </CardContent>
+            </Card>
 
             {/* Recent Applications */}
             <Card>
