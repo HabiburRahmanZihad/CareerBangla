@@ -3,7 +3,7 @@ import { protectPageByRole } from "@/lib/protectedPageHelpers";
 
 const SubscriptionsPage = async () => {
     await protectPageByRole("USER");
-    return <SubscriptionsContent />;
+    return <SubscriptionsContent userRole="USER" />;
 };
 
 export default SubscriptionsPage;
