@@ -66,11 +66,6 @@ export const recruiterNavItems: NavSection[] = [
         title: "Account",
         items: [
             {
-                title: "Wallet",
-                href: "/recruiter/dashboard/wallet",
-                icon: "Wallet",
-            },
-            {
                 title: "Subscriptions",
                 href: "/recruiter/dashboard/subscriptions",
                 icon: "CreditCard",
@@ -167,9 +162,9 @@ export const userNavItems: NavSection[] = [
         title: "Account",
         items: [
             {
-                title: "Wallet",
-                href: "/dashboard/wallet",
-                icon: "Wallet",
+                title: "Referrals",
+                href: "/dashboard/referrals",
+                icon: "Users",
             },
             {
                 title: "Subscriptions",

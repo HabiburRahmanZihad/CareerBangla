@@ -23,17 +23,17 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyResume, updateMyResume } from "@/services/resume.services";
-import { getMyWallet } from "@/services/wallet.services";
+
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Coins, Plus, Trash2, Info } from "lucide-react";
+import { AlertCircle, Crown, Plus, Trash2, Info, Lock, ArrowDownToLine } from "lucide-react";
 import { toast } from "sonner";
 
-const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
+const MyResumeForm = ({ resume, isPremium }: { resume: any, isPremium: boolean }) => {
     const queryClient = useQueryClient();
 
     const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
-    const [pendingPayload, setPendingPayload] = useState<Record<string, unknown> | null>(null);
+
 
     const { mutateAsync, isPending } = useMutation({
         mutationFn: (payload: Record<string, unknown>) => updateMyResume(payload),
@@ -66,20 +66,7 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
     });
 
     const profileCompletion = resume?.profileCompletion ?? 0;
-
-    // Charge 10 coins if profile is 100% OR any of the 4 chargeable sections is already filled
-    const isSectionChargeable = profileCompletion === 100 || !!(
-        resume?.fullName ||
-        resume?.contactNumber ||
-        resume?.professionalTitle ||
-        resume?.linkedinUrl ||
-        resume?.githubUrl ||
-        resume?.portfolioUrl ||
-        resume?.professionalSummary ||
-        (resume?.technicalSkills?.length ?? 0) > 0 ||
-        (resume?.softSkills?.length ?? 0) > 0 ||
-        (resume?.education?.length ?? 0) > 0
-    );
+    const isLocked = !isPremium && profileCompletion === 100;
 
     const form = useForm({
         defaultValues: {
@@ -218,85 +205,61 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                 }));
             }
 
-            if (isSectionChargeable) {
-                setPendingPayload(payload);
-            } else {
-                await mutateAsync(payload);
-            }
+            await mutateAsync(payload);
         },
     });
 
-    const confirmUpdate = async (e: React.MouseEvent) => {
-        e.preventDefault();
-        if (pendingPayload) {
-            await mutateAsync(pendingPayload);
-            setPendingPayload(null);
-        }
-    };
     return (
         <div className="space-y-6">
-            <AlertDialog open={!!pendingPayload} onOpenChange={(open) => !open && setPendingPayload(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Section Update — 10 Coins</AlertDialogTitle>
-                        <AlertDialogDescription asChild>
-                            <div className="space-y-3 pt-2">
-                                <p>
-                                    You are updating sections that were already filled (<strong>Basic Information</strong>, <strong>Social Profiles</strong>, <strong>Skills &amp; Summary</strong>, or <strong>Education</strong>). This will cost <strong>10 coins</strong>.
-                                </p>
-                                <div className="bg-muted p-4 rounded-lg space-y-2 text-foreground">
-                                    <div className="flex justify-between">
-                                        <span>Current Balance:</span>
-                                        <span className="font-semibold">{coins} coins</span>
-                                    </div>
-                                    <div className="flex justify-between text-red-600 dark:text-red-400 font-medium">
-                                        <span>Cost</span>
-                                        <span className="font-semibold">-10 coins</span>
-                                    </div>
-                                    <div className="flex justify-between border-t border-border pt-2 font-bold">
-                                        <span>Remaining</span>
-                                        <span className={coins < 10 ? "text-destructive" : ""}>{coins - 10} coins</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={confirmUpdate}
-                            disabled={isPending || coins < 10}
-                            className={coins < 10 ? "opacity-50 cursor-not-allowed" : ""}
-                        >
-                            {isPending ? "Updating..." : coins < 10 ? "Insufficient Coins" : "Confirm Update"}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
 
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">My Resume</h1>
-                <Link href="/dashboard/profile-completion-guide">
-                    <Button variant="outline" size="sm">
-                        <Info className="w-4 h-4 mr-2" /> ATS Scoring Guide
-                    </Button>
-                </Link>
+                <div className="flex gap-2">
+                    {isPremium ? (
+                        <Button variant="outline" size="sm" onClick={() => window.print()}>
+                            <ArrowDownToLine className="w-4 h-4 mr-2" /> Download PDF
+                        </Button>
+                    ) : (
+                        <Link href="/dashboard/subscriptions">
+                            <Button variant="outline" size="sm" className="text-yellow-600 border-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-950">
+                                <Crown className="w-4 h-4 mr-2" /> Download PDF (Premium)
+                            </Button>
+                        </Link>
+                    )}
+                    <Link href="/dashboard/profile-completion-guide">
+                        <Button variant="outline" size="sm">
+                            <Info className="w-4 h-4 mr-2" /> ATS Scoring Guide
+                        </Button>
+                    </Link>
+                </div>
             </div>
 
             <ProfileCompletionBar completion={profileCompletion} />
 
-            {isSectionChargeable ? (
+            {isPremium ? (
                 <div className="flex items-center gap-3 rounded-lg border border-yellow-300 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-800 px-4 py-3 text-sm text-yellow-800 dark:text-yellow-300">
-                    <Coins className="h-5 w-5 shrink-0 text-yellow-600 dark:text-yellow-400" />
+                    <Crown className="h-5 w-5 shrink-0 text-yellow-600 dark:text-yellow-400" />
                     <span>
-                        Updating <strong>Basic Information</strong>, <strong>Social Profiles</strong>, <strong>Skills &amp; Summary</strong>, or <strong>Education</strong> costs <strong>10 coins</strong> per save.
+                        You have <strong>Premium Access</strong>! You can update your profile limitlessly and download professional ATS CVs.
                     </span>
+                </div>
+            ) : isLocked ? (
+                <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-300">
+                    <div className="flex items-center gap-3">
+                        <Lock className="h-5 w-5 shrink-0 text-red-500" />
+                        <span>
+                            Your profile is 100% complete and is now <strong>locked</strong>. Upgrade to Premium to continue editing your profile.
+                        </span>
+                    </div>
+                    <Link href="/dashboard/subscriptions">
+                        <Button size="sm" variant="destructive">Upgrade Now</Button>
+                    </Link>
                 </div>
             ) : (
                 <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 px-4 py-3 text-sm text-blue-800 dark:text-blue-300">
                     <AlertCircle className="h-5 w-5 shrink-0 text-blue-500" />
                     <span>
-                        Fill in your profile sections for the first time — it&apos;s <strong>free</strong>! Updates to already-filled sections cost <strong>10 coins</strong>.
+                        Fill in your profile sections to reach 100%. Once you reach 100%, editing will be disabled on the Free tier.
                     </span>
                 </div>
             )}
@@ -719,8 +682,8 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                         </form.Field>
 
                         <div className="pt-4">
-                            <AppSubmitButton isPending={isPending} pendingLabel="Saving...">
-                                {isSectionChargeable ? "Update Resume (10 coins)" : "Save Resume"}
+                            <AppSubmitButton isPending={isPending} disabled={isLocked} pendingLabel="Saving...">
+                                {isLocked ? "Profile Locked" : "Save Resume"}
                             </AppSubmitButton>
                         </div>
                     </form>
@@ -736,12 +699,7 @@ const MyResumeContent = () => {
         queryFn: () => getMyResume(),
     });
 
-    const { data: walletRes, isLoading: isWalletLoading } = useQuery({
-        queryKey: ["my-wallet"],
-        queryFn: () => getMyWallet(),
-    });
-
-    if (isResumeLoading || isWalletLoading) {
+    if (isResumeLoading) {
         return (
             <div className="space-y-4">
                 <Skeleton className="h-8 w-48" />
@@ -751,7 +709,7 @@ const MyResumeContent = () => {
         );
     }
 
-    return <MyResumeForm resume={data?.data} coins={walletRes?.data?.balance || 0} />;
+    return <MyResumeForm resume={data?.data} isPremium={data?.data?.user?.isPremium || false} />;
 };
 
 export default MyResumeContent;

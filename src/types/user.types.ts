@@ -12,6 +12,9 @@ export interface UserInfo {
     emailVerified?: boolean;
     isDeleted?: boolean;
     needPasswordChange?: boolean;
+    isPremium?: boolean;
+    premiumUntil?: string;
+    referralCode?: string;
 }
 
 export interface IUserWithDetails extends UserInfo {

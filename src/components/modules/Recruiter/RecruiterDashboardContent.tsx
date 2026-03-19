@@ -1,11 +1,5 @@
 "use client";
 
-import CoinBalance from "@/components/shared/CoinBalance";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { getMyJobs } from "@/services/job.services";
-import { getMyWallet } from "@/services/wallet.services";
 import { IUserWithDetails } from "@/types/user.types";
 import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, Briefcase, FileText, Users } from "lucide-react";
@@ -23,13 +17,7 @@ const RecruiterDashboardContent = ({ userInfo }: RecruiterDashboardContentProps)
         queryFn: () => getMyJobs({ limit: "100" }),
     });
 
-    const { data: walletData, isLoading: walletLoading } = useQuery({
-        queryKey: ["my-wallet"],
-        queryFn: () => getMyWallet(),
-    });
-
     const totalJobs = jobsData?.meta?.total ?? 0;
-    const coinBalance = walletData?.data?.balance ?? 0;
 
     return (
         <div className="space-y-6">
@@ -38,11 +26,6 @@ const RecruiterDashboardContent = ({ userInfo }: RecruiterDashboardContentProps)
                     <h1 className="text-2xl font-bold">Recruiter Dashboard</h1>
                     <p className="text-muted-foreground">Welcome, {userInfo.name}</p>
                 </div>
-                {walletLoading ? (
-                    <Skeleton className="h-8 w-24" />
-                ) : (
-                    <CoinBalance balance={coinBalance} linkTo="/recruiter/dashboard/wallet" />
-                )}
             </div>
 
             {!isVerified && (

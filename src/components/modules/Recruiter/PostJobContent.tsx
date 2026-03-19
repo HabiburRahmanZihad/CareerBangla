@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { createJob, getJobCategories } from "@/services/job.services";
 import { getMyRecruiterProfile } from "@/services/recruiter.services";
-import { getMyWallet } from "@/services/wallet.services";
 import { createJobZodSchema } from "@/zod/job.validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -19,8 +18,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-
-const POST_JOB_COST = 20;
 
 const PostJobContent = () => {
     const router = useRouter();
@@ -36,18 +33,11 @@ const PostJobContent = () => {
         queryFn: () => getMyRecruiterProfile(),
     });
 
-    const { data: walletData, isLoading: walletLoading } = useQuery({
-        queryKey: ["my-wallet"],
-        queryFn: () => getMyWallet(),
-    });
-
     const isVerified = profileData?.data?.isVerified ?? false;
     const profileCompletion = profileData?.data?.profileCompletion ?? 0;
     const isProfileComplete = profileCompletion >= 100;
-    const coinBalance = walletData?.data?.balance ?? 0;
-    const hasEnoughCoins = coinBalance >= POST_JOB_COST;
-    const canPost = isVerified && isProfileComplete && hasEnoughCoins;
-    const isGuardLoading = profileLoading || walletLoading;
+    const canPost = isVerified && isProfileComplete;
+    const isGuardLoading = profileLoading;
 
     const { mutateAsync, isPending } = useMutation({
         mutationFn: (data: Record<string, unknown>) => createJob(data),
@@ -113,23 +103,6 @@ const PostJobContent = () => {
                             <AlertCircle className="h-4 w-4" />
                             <AlertDescription>
                                 Your profile is {profileCompletion}% complete. You must complete your profile to 100% before posting jobs.
-                            </AlertDescription>
-                        </Alert>
-                    )}
-                    {!hasEnoughCoins && isVerified && isProfileComplete && (
-                        <Alert variant="destructive">
-                            <Coins className="h-4 w-4" />
-                            <AlertDescription>
-                                Insufficient coins. You need {POST_JOB_COST} coins to post a job. Your balance: {coinBalance}.{" "}
-                                <Link href="/recruiter/dashboard/wallet" className="underline font-medium">Buy Coins</Link>
-                            </AlertDescription>
-                        </Alert>
-                    )}
-                    {canPost && (
-                        <Alert>
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertDescription>
-                                Posting a job costs <strong>{POST_JOB_COST} coins</strong>. Your balance: {coinBalance} coins.
                             </AlertDescription>
                         </Alert>
                     )}
@@ -260,7 +233,7 @@ const PostJobContent = () => {
                         )}
 
                         <AppSubmitButton isPending={isPending} pendingLabel="Posting Job..." disabled={!canPost || isGuardLoading}>
-                            Post Job ({POST_JOB_COST} coins)
+                            Post Job
                         </AppSubmitButton>
                     </form>
                 </CardContent>

@@ -1,13 +1,11 @@
 "use client";
 
-import CoinBalance from "@/components/shared/CoinBalance";
 import ProfileCompletionBar from "@/components/shared/ProfileCompletionBar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyResume } from "@/services/resume.services";
-import { getMyWallet } from "@/services/wallet.services";
 import { IUserWithDetails } from "@/types/user.types";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, Mail, Shield, User } from "lucide-react";
@@ -20,11 +18,6 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
     const { data: resumeData, isLoading: resumeLoading } = useQuery({
         queryKey: ["my-resume"],
         queryFn: () => getMyResume(),
-    });
-
-    const { data: walletData, isLoading: walletLoading } = useQuery({
-        queryKey: ["my-wallet"],
-        queryFn: () => getMyWallet(),
     });
 
     const profileCompletion = resumeData?.data?.profileCompletion ?? 0;
@@ -56,13 +49,6 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                                     <Mail className="h-3.5 w-3.5" />
                                     {userInfo.email}
                                 </span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                {walletLoading ? (
-                                    <Skeleton className="h-8 w-24" />
-                                ) : (
-                                    <CoinBalance balance={walletData?.data?.balance ?? 0} />
-                                )}
                             </div>
                         </div>
                     </div>

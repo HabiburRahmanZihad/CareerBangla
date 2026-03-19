@@ -8,11 +8,10 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { applyToJob } from "@/services/application.services";
 import { getMyResume } from "@/services/resume.services";
-import { getMyWallet } from "@/services/wallet.services";
 import { IJob } from "@/types/user.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { AlertCircle, ArrowLeft, Briefcase, Building2, Calendar, Clock, Coins, MapPin } from "lucide-react";
+import { AlertCircle, ArrowLeft, Briefcase, Building2, Calendar, Clock, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -37,8 +36,6 @@ const experienceLevelLabels: Record<string, string> = {
     EXECUTIVE: "Executive",
 };
 
-const APPLY_COST = 5;
-
 const JobDetailsContent = ({ job }: JobDetailsContentProps) => {
     const [coverLetter, setCoverLetter] = useState("");
     const [showApplyForm, setShowApplyForm] = useState(false);
@@ -48,16 +45,9 @@ const JobDetailsContent = ({ job }: JobDetailsContentProps) => {
         queryFn: () => getMyResume(),
     });
 
-    const { data: walletData } = useQuery({
-        queryKey: ["my-wallet"],
-        queryFn: () => getMyWallet(),
-    });
-
     const profileCompletion = resumeData?.data?.profileCompletion ?? 0;
-    const coinBalance = walletData?.data?.balance ?? 0;
     const isProfileComplete = profileCompletion >= 100;
-    const hasEnoughCoins = coinBalance >= APPLY_COST;
-    const canApply = isProfileComplete && hasEnoughCoins;
+    const canApply = isProfileComplete;
 
     const { mutateAsync: apply, isPending } = useMutation({
         mutationFn: () => applyToJob({ jobId: job.id, coverLetter: coverLetter || undefined }),
@@ -178,21 +168,12 @@ const JobDetailsContent = ({ job }: JobDetailsContentProps) => {
                                                     </AlertDescription>
                                                 </Alert>
                                             )}
-                                            {!hasEnoughCoins && isProfileComplete && (
-                                                <Alert variant="destructive">
-                                                    <Coins className="h-4 w-4" />
-                                                    <AlertDescription>
-                                                        Insufficient coins. You need {APPLY_COST} coins to apply. Your balance: {coinBalance}.{" "}
-                                                        <Link href="/dashboard/wallet" className="underline font-medium">Buy Coins</Link>
-                                                    </AlertDescription>
-                                                </Alert>
-                                            )}
                                             <Button
                                                 className="w-full"
                                                 onClick={() => setShowApplyForm(true)}
                                                 disabled={!canApply}
                                             >
-                                                Apply Now ({APPLY_COST} coins)
+                                                Apply Now
                                             </Button>
                                         </div>
                                     ) : (
@@ -204,12 +185,6 @@ const JobDetailsContent = ({ job }: JobDetailsContentProps) => {
                                                 onChange={(e) => setCoverLetter(e.target.value)}
                                                 rows={5}
                                             />
-                                            <Alert>
-                                                <AlertCircle className="h-4 w-4" />
-                                                <AlertDescription>
-                                                    Applying costs {APPLY_COST} coins. Your balance: {coinBalance} coins.
-                                                </AlertDescription>
-                                            </Alert>
                                             <div className="flex gap-2">
                                                 <Button
                                                     className="flex-1"

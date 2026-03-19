@@ -1,13 +1,10 @@
 "use client";
 
 import AtsScoreContent from "@/components/modules/Dashboard/AtsScoreContent";
-import CoinBalance from "@/components/shared/CoinBalance";
 import ProfileCompletionBar from "@/components/shared/ProfileCompletionBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyApplications } from "@/services/application.services";
-import { getMyResume } from "@/services/resume.services";
-import { getMyWallet } from "@/services/wallet.services";
 import { IUserWithDetails } from "@/types/user.types";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, FileText, FileUser } from "lucide-react";
@@ -23,18 +20,12 @@ const UserDashboardContent = ({ userInfo }: UserDashboardContentProps) => {
         queryFn: () => getMyResume(),
     });
 
-    const { data: walletData, isLoading: walletLoading } = useQuery({
-        queryKey: ["my-wallet"],
-        queryFn: () => getMyWallet(),
-    });
-
     const { data: applicationsData, isLoading: applicationsLoading } = useQuery({
         queryKey: ["my-applications"],
         queryFn: () => getMyApplications({ limit: "5" }),
     });
 
     const profileCompletion = resumeData?.data?.profileCompletion ?? 0;
-    const coinBalance = walletData?.data?.balance ?? 0;
     const applicationCount = applicationsData?.meta?.total ?? 0;
 
     return (
@@ -44,11 +35,6 @@ const UserDashboardContent = ({ userInfo }: UserDashboardContentProps) => {
                     <h1 className="text-2xl font-bold">Welcome back, {userInfo.name}!</h1>
                     <p className="text-muted-foreground">Here&apos;s your career overview</p>
                 </div>
-                {walletLoading ? (
-                    <Skeleton className="h-8 w-24" />
-                ) : (
-                    <CoinBalance balance={coinBalance} linkTo="/dashboard/wallet" />
-                )}
             </div>
 
             {/* Profile Completion */}
