@@ -67,7 +67,7 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
 
     const profileCompletion = resume?.profileCompletion ?? 0;
 
-    // Charge 15 coins if profile is 100% OR any of the 4 chargeable sections is already filled
+    // Charge 10 coins if profile is 100% OR any of the 4 chargeable sections is already filled
     const isSectionChargeable = profileCompletion === 100 || !!(
         resume?.fullName ||
         resume?.contactNumber ||
@@ -238,24 +238,24 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
             <AlertDialog open={!!pendingPayload} onOpenChange={(open) => !open && setPendingPayload(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Section Update — 15 Coins</AlertDialogTitle>
+                        <AlertDialogTitle>Confirm Section Update — 10 Coins</AlertDialogTitle>
                         <AlertDialogDescription asChild>
                             <div className="space-y-3 pt-2">
                                 <p>
-                                    You are updating sections that were already filled (<strong>Basic Information</strong>, <strong>Social Profiles</strong>, <strong>Skills &amp; Summary</strong>, or <strong>Education</strong>). This will cost <strong>15 coins</strong>.
+                                    You are updating sections that were already filled (<strong>Basic Information</strong>, <strong>Social Profiles</strong>, <strong>Skills &amp; Summary</strong>, or <strong>Education</strong>). This will cost <strong>10 coins</strong>.
                                 </p>
                                 <div className="bg-muted p-4 rounded-lg space-y-2 text-foreground">
                                     <div className="flex justify-between">
                                         <span>Current Balance:</span>
                                         <span className="font-semibold">{coins} coins</span>
                                     </div>
-                                    <div className="flex justify-between text-destructive">
-                                        <span>Update Cost:</span>
-                                        <span className="font-semibold">-15 coins</span>
+                                    <div className="flex justify-between text-red-600 dark:text-red-400 font-medium">
+                                        <span>Cost</span>
+                                        <span className="font-semibold">-10 coins</span>
                                     </div>
-                                    <div className="border-t pt-2 flex justify-between font-bold">
-                                        <span>Remaining Balance:</span>
-                                        <span className={coins < 15 ? "text-destructive" : ""}>{coins - 15} coins</span>
+                                    <div className="flex justify-between border-t border-border pt-2 font-bold">
+                                        <span>Remaining</span>
+                                        <span className={coins < 10 ? "text-destructive" : ""}>{coins - 10} coins</span>
                                     </div>
                                 </div>
                             </div>
@@ -265,10 +265,10 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                         <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={confirmUpdate}
-                            disabled={isPending || coins < 15}
-                            className={coins < 15 ? "opacity-50 cursor-not-allowed" : ""}
+                            disabled={isPending || coins < 10}
+                            className={coins < 10 ? "opacity-50 cursor-not-allowed" : ""}
                         >
-                            {isPending ? "Updating..." : coins < 15 ? "Insufficient Coins" : "Confirm Update"}
+                            {isPending ? "Updating..." : coins < 10 ? "Insufficient Coins" : "Confirm Update"}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -289,14 +289,14 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                 <div className="flex items-center gap-3 rounded-lg border border-yellow-300 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-800 px-4 py-3 text-sm text-yellow-800 dark:text-yellow-300">
                     <Coins className="h-5 w-5 shrink-0 text-yellow-600 dark:text-yellow-400" />
                     <span>
-                        Updating <strong>Basic Information</strong>, <strong>Social Profiles</strong>, <strong>Skills &amp; Summary</strong>, or <strong>Education</strong> costs <strong>15 coins</strong> per save.
+                        Updating <strong>Basic Information</strong>, <strong>Social Profiles</strong>, <strong>Skills &amp; Summary</strong>, or <strong>Education</strong> costs <strong>10 coins</strong> per save.
                     </span>
                 </div>
             ) : (
                 <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 px-4 py-3 text-sm text-blue-800 dark:text-blue-300">
                     <AlertCircle className="h-5 w-5 shrink-0 text-blue-500" />
                     <span>
-                        Fill in your profile sections for the first time — it&apos;s <strong>free</strong>! Updates to already-filled sections cost <strong>15 coins</strong>.
+                        Fill in your profile sections for the first time — it&apos;s <strong>free</strong>! Updates to already-filled sections cost <strong>10 coins</strong>.
                     </span>
                 </div>
             )}
@@ -720,7 +720,7 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
 
                         <div className="pt-4">
                             <AppSubmitButton isPending={isPending} pendingLabel="Saving...">
-                                {isSectionChargeable ? "Update Resume (15 coins)" : "Save Resume"}
+                                {isSectionChargeable ? "Update Resume (10 coins)" : "Save Resume"}
                             </AppSubmitButton>
                         </div>
                     </form>
