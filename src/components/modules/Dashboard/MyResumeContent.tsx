@@ -302,8 +302,9 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                         }}
                         className="space-y-8"
                     >
+                        {/* BASIC INFORMATION */}
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Basic Information</h3>
+                            <h3 className="text-lg font-semibold flex items-center justify-between">Basic Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <form.Field name="fullName">
                                     {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Full Name" placeholder="John Doe" />}
@@ -360,7 +361,13 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                                         )
                                     }}
                                 </form.Field>
+                            </div>
+                        </div>
 
+                        {/* SOCIAL PROFILES */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold flex items-center justify-between">Social Profiles</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <form.Field name="linkedinUrl">
                                     {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="LinkedIn URL" placeholder="https://linkedin.com/in/..." />}
                                 </form.Field>
@@ -373,7 +380,11 @@ const MyResumeForm = ({ resume, coins }: { resume: any, coins: number }) => {
                                     {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Portfolio URL" placeholder="https://..." />}
                                 </form.Field>
                             </div>
+                        </div>
 
+                        {/* SKILLS & SUMMARY */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold flex items-center justify-between">Skills & Summary</h3>
                             <form.Field name="technicalSkills">
                                 {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Technical Skills (comma separated)" placeholder="React, TypeScript, Node.js, ..." />}
                             </form.Field>
