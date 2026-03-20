@@ -414,6 +414,38 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
         },
     });
 
+    // Calculate profile completion based on actual form fields filled
+    const calculateProfileCompletion = (formValue: any) => {
+        const checklist: Record<string, boolean> = {
+            fullName: !!formValue?.fullName?.trim(),
+            email: !!formValue?.email?.trim(),
+            professionalTitle: !!formValue?.professionalTitle?.trim(),
+            professionalSummary: !!formValue?.professionalSummary?.trim(),
+            technicalSkills: !!formValue?.technicalSkills?.trim(),
+            softSkills: !!formValue?.softSkills?.trim(),
+            toolsAndTechnologies: !!formValue?.toolsAndTechnologies?.trim(),
+            contactNumber: !!formValue?.contactNumber?.trim(),
+            address: !!formValue?.address?.trim(),
+            dateOfBirth: !!formValue?.dateOfBirth?.trim(),
+            gender: !!formValue?.gender?.trim(),
+            linkedinUrl: !!formValue?.linkedinUrl?.trim(),
+            githubUrl: !!formValue?.githubUrl?.trim(),
+            portfolioUrl: !!formValue?.portfolioUrl?.trim(),
+            hasEducation: (formValue?.education || []).some((edu: any) => edu.degree?.trim()),
+            hasWorkExperience: (formValue?.workExperience || []).some((we: any) => we.jobTitle?.trim()),
+            hasProjects: (formValue?.projects || []).some((proj: any) => proj.projectName?.trim()),
+            hasLanguages: (formValue?.languages || []).some((lang: any) => lang.language?.trim()),
+        };
+
+        const completedFields = Object.values(checklist).filter(Boolean).length;
+        const totalFields = Object.keys(checklist).length;
+        return Math.round((completedFields / totalFields) * 100);
+    };
+
+    const computedCompletion = calculateProfileCompletion(form.state.values);
+    const profileCompletion = computedCompletion || (resume?.profileCompletion ?? 0);
+    const isLocked = !isPremium && profileCompletion === 100;
+
 
     const handleDownloadPdf = async () => {
         if (!isPremium) return;
@@ -1031,7 +1063,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                             </h3>
                             <Badge variant="outline" className="text-xs">Auto-updates</Badge>
                         </div>
-                        <div className="max-h-[calc(100vh-140px)] overflow-y-auto rounded-lg border border-gray-200 shadow-sm bg-white p-4">
+                        <div className="max-h-[calc(100vh-140px)] overflow-y-auto rounded-lg border border-gray-200 shadow-sm bg-white px-6 pt-8 pb-6">
                             <form.Subscribe selector={(s) => s.values}>
                                 {(values) => <ResumeTwoPageLayout values={values} />}
                             </form.Subscribe>
