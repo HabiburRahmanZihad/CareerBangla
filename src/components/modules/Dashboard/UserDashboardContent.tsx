@@ -5,6 +5,7 @@ import ProfileCompletionBar from "@/components/shared/ProfileCompletionBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyApplications } from "@/services/application.services";
+import { getMyResume } from "@/services/resume.services";
 import { IUserWithDetails } from "@/types/user.types";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, FileText, FileUser } from "lucide-react";
