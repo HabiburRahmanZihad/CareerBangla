@@ -1,28 +1,52 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import { Copy, Gift, HelpCircle, Share2, Users } from "lucide-react";
-import { toast } from "sonner";
-import { UserInfo } from "@/types/user.types";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { IReferralStats } from "@/services/referral.services";
+import { UserInfo } from "@/types/user.types";
+import { format } from "date-fns";
+import { CheckCircle, Clock, Copy, Gift, HelpCircle, Share2, Trophy, Users } from "lucide-react";
+import { toast } from "sonner";
 
 interface ReferralContentProps {
     userInfo?: UserInfo;
+    referralStats?: IReferralStats;
 }
 
-const ReferralContent = ({ userInfo }: ReferralContentProps) => {
+const ReferralContent = ({ userInfo, referralStats }: ReferralContentProps) => {
+    const referralCode = referralStats?.referralCode || userInfo?.referralCode || "N/A";
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const referralLink = `${origin}/register?ref=${referralCode}`;
 
-    const referralCode = userInfo?.referralCode || "N/A";
-    const referralLink = `${window.location.origin}/register?ref=${referralCode}`;
-    const paidReferrals = 0; // The backend isn't returning this right now in my-profile, but ideally we'd pass it. We'll default to 0 for the UI demo.
-    const progressPercentage = (paidReferrals % 10) * 10;
+    const totalPaidReferrals = referralStats?.totalPaidReferrals ?? 0;
+    const progressToNext = referralStats?.progressToNext ?? 0;
+    const rewardsEarned = referralStats?.rewardsEarned ?? 0;
+    const progressPercentage = progressToNext * 10;
+    const recentReferrals = referralStats?.recentReferrals ?? [];
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
         toast.success("Copied to clipboard!");
+    };
+
+    const handleShare = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: "Join CareerBangla",
+                    text: `Sign up on CareerBangla using my referral code: ${referralCode}`,
+                    url: referralLink,
+                });
+            } catch {
+                copyToClipboard(referralLink);
+            }
+        } else {
+            copyToClipboard(referralLink);
+        }
     };
 
     return (
@@ -43,15 +67,29 @@ const ReferralContent = ({ userInfo }: ReferralContentProps) => {
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
                             <div className="flex justify-between items-center text-sm font-medium">
-                                <span>Referrals Progress</span>
-                                <span className="text-primary">{paidReferrals % 10} / 10</span>
+                                <span>Progress to Next Reward</span>
+                                <span className="text-primary">{progressToNext} / 10</span>
                             </div>
                             <Progress value={progressPercentage} className="h-4 w-full" />
                         </div>
-                        <div className="bg-card p-4 rounded-xl shadow-sm border text-center">
-                            <h4 className="font-bold text-2xl text-card-foreground">{paidReferrals}</h4>
-                            <p className="text-sm text-muted-foreground">Total Successful Referrals</p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-card p-4 rounded-xl shadow-sm border text-center">
+                                <h4 className="font-bold text-2xl text-card-foreground">{totalPaidReferrals}</h4>
+                                <p className="text-xs text-muted-foreground">Successful Referrals</p>
+                            </div>
+                            <div className="bg-card p-4 rounded-xl shadow-sm border text-center">
+                                <div className="flex items-center justify-center gap-1">
+                                    <Trophy className="w-5 h-5 text-yellow-500" />
+                                    <h4 className="font-bold text-2xl text-card-foreground">{rewardsEarned}</h4>
+                                </div>
+                                <p className="text-xs text-muted-foreground">Rewards Earned</p>
+                            </div>
                         </div>
+                        {rewardsEarned > 0 && (
+                            <p className="text-sm text-green-600 font-medium text-center">
+                                You&apos;ve earned {rewardsEarned * 30} days of free Premium!
+                            </p>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -78,13 +116,61 @@ const ReferralContent = ({ userInfo }: ReferralContentProps) => {
                             <div className="flex gap-2">
                                 <Input readOnly value={referralLink} className="text-sm bg-muted whitespace-nowrap overflow-hidden text-clip" />
                                 <Button variant="secondary" onClick={() => copyToClipboard(referralLink)}>
-                                    <Share2 className="w-4 h-4" />
+                                    <Copy className="w-4 h-4" />
                                 </Button>
                             </div>
                         </div>
+
+                        <Button onClick={handleShare} className="w-full" variant="outline">
+                            <Share2 className="w-4 h-4 mr-2" /> Share with Friends
+                        </Button>
                     </CardContent>
                 </Card>
             </div>
+
+            {recentReferrals.length > 0 && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                            <Users className="w-5 h-5" /> Your Referrals
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b text-left">
+                                        <th className="pb-2 font-medium text-muted-foreground">Name</th>
+                                        <th className="pb-2 font-medium text-muted-foreground">Joined</th>
+                                        <th className="pb-2 font-medium text-muted-foreground text-right">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y">
+                                    {recentReferrals.map((ref) => (
+                                        <tr key={ref.id}>
+                                            <td className="py-3 font-medium">{ref.referredUserName}</td>
+                                            <td className="py-3 text-muted-foreground">
+                                                {format(new Date(ref.createdAt), "MMM d, yyyy")}
+                                            </td>
+                                            <td className="py-3 text-right">
+                                                {ref.hasPaid ? (
+                                                    <Badge variant="default" className="bg-green-500/10 text-green-600 border-green-200">
+                                                        <CheckCircle className="w-3 h-3 mr-1" /> Paid
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge variant="secondary">
+                                                        <Clock className="w-3 h-3 mr-1" /> Pending
+                                                    </Badge>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             <Card className="bg-muted/30">
                 <CardHeader>

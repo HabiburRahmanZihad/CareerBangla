@@ -14,7 +14,11 @@ import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-const RegisterForm = () => {
+interface RegisterFormProps {
+    referralCode?: string;
+}
+
+const RegisterForm = ({ referralCode }: RegisterFormProps) => {
     const [serverError, setServerError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -27,6 +31,7 @@ const RegisterForm = () => {
             name: "",
             email: "",
             password: "",
+            referralCode: referralCode || "",
         },
         onSubmit: async ({ value }) => {
             setServerError(null);
@@ -114,6 +119,19 @@ const RegisterForm = () => {
                                         )}
                                     </Button>
                                 }
+                            />
+                        )}
+                    </form.Field>
+
+                    <form.Field
+                        name="referralCode"
+                    >
+                        {(field) => (
+                            <AppField
+                                field={field}
+                                label="Referral Code (Optional)"
+                                type="text"
+                                placeholder="Enter referral code if you have one"
                             />
                         )}
                     </form.Field>

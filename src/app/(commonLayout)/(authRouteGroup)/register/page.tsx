@@ -3,7 +3,11 @@ import { getDefaultDashboardRoute } from "@/lib/authUtils";
 import { getUserInfo } from "@/services/auth.services";
 import { redirect } from "next/navigation";
 
-const RegisterPage = async () => {
+interface RegisterPageProps {
+    searchParams: Promise<{ ref?: string }>;
+}
+
+const RegisterPage = async ({ searchParams }: RegisterPageProps) => {
     const userInfo = await getUserInfo();
 
     // If user is already logged in, redirect to their dashboard
@@ -11,7 +15,10 @@ const RegisterPage = async () => {
         redirect(getDefaultDashboardRoute(userInfo.role));
     }
 
-    return <RegisterForm />;
+    const params = await searchParams;
+    const referralCode = params.ref || undefined;
+
+    return <RegisterForm referralCode={referralCode} />;
 };
 
 export default RegisterPage;
