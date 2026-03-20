@@ -15,7 +15,7 @@ import envConfig from "@/lib/envConfig";
 import { getMyResume, updateMyResume } from "@/services/resume.services";
 import Link from "next/link";
 import { useRef, useState } from "react";
-import ResumePreview from "./ResumePreview";
+import ResumeTwoPageLayout from "./ResumeTwoPageLayout";
 
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -985,9 +985,9 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                             </h3>
                             <Badge variant="outline" className="text-xs">Auto-updates</Badge>
                         </div>
-                        <div className="max-h-[calc(100vh-140px)] overflow-y-auto rounded-lg border shadow-sm">
+                        <div className="max-h-[calc(100vh-140px)] overflow-y-auto rounded-lg border shadow-sm bg-gray-50">
                             <form.Subscribe selector={(s) => s.values}>
-                                {(values) => <ResumePreview values={values} />}
+                                {(values) => <ResumeTwoPageLayout values={values} />}
                             </form.Subscribe>
                         </div>
                     </div>
