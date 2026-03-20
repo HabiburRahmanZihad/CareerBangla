@@ -205,7 +205,7 @@ const TextareaField = ({
 };
 
 /** Card for array items with delete button */
-const ItemCard = ({ index, onRemove, children }: { index: number; onRemove: () => void; children: React.ReactNode }) => (
+const ItemCard = ({ index, onRemove, children, isLocked }: { index: number; onRemove: () => void; children: React.ReactNode; isLocked?: boolean }) => (
     <Card className="relative bg-muted/20 border-border/60">
         <Button
             type="button"
@@ -213,7 +213,9 @@ const ItemCard = ({ index, onRemove, children }: { index: number; onRemove: () =
             size="icon"
             className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
             onClick={onRemove}
+            disabled={isLocked}
             aria-label={`Remove item ${index + 1}`}
+            title={isLocked ? "Profile is locked - unable to delete" : "Delete"}
         >
             <Trash2 className="w-3.5 h-3.5" />
         </Button>
@@ -672,7 +674,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                                 <EmptyState label="Work Experience" />
                                             ) : (
                                                 field.state.value.map((_: any, i: number) => (
-                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)}>
+                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)} isLocked={isLocked}>
                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                             <form.Field name={`workExperience[${i}].jobTitle`}>
                                                                 {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Job Title" placeholder="Software Engineer" />}
@@ -717,7 +719,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                                 <EmptyState label="Education" />
                                             ) : (
                                                 field.state.value.map((_: any, i: number) => (
-                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)}>
+                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)} isLocked={isLocked}>
                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                             <form.Field name={`education[${i}].degree`}>
                                                                 {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Degree" placeholder="BSc in Computer Science" />}
@@ -758,7 +760,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                                 <EmptyState label="Certifications" />
                                             ) : (
                                                 field.state.value.map((_: any, i: number) => (
-                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)}>
+                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)} isLocked={isLocked}>
                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                             <form.Field name={`certifications[${i}].certificationName`}>
                                                                 {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Certification Name" placeholder="AWS Certified Solutions Architect" />}
@@ -793,7 +795,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                                 <EmptyState label="Projects" />
                                             ) : (
                                                 field.state.value.map((_: any, i: number) => (
-                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)}>
+                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)} isLocked={isLocked}>
                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                             <form.Field name={`projects[${i}].projectName`}>
                                                                 {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Project Name" placeholder="E-commerce Platform" />}
@@ -852,7 +854,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                                 <EmptyState label="Languages" />
                                             ) : (
                                                 field.state.value.map((_: any, i: number) => (
-                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)}>
+                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)} isLocked={isLocked}>
                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                             <form.Field name={`languages[${i}].language`}>
                                                                 {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Language" placeholder="English" />}
@@ -891,7 +893,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                                 <EmptyState label="Awards" />
                                             ) : (
                                                 field.state.value.map((_: any, i: number) => (
-                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)}>
+                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)} isLocked={isLocked}>
                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                             <form.Field name={`awards[${i}].title`}>
                                                                 {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Title" placeholder="Employee of the Month" />}
@@ -931,7 +933,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                                 <EmptyState label="References" />
                                             ) : (
                                                 field.state.value.map((_: any, i: number) => (
-                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)}>
+                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)} isLocked={isLocked}>
                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                             <form.Field name={`references[${i}].name`}>
                                                                 {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Name" placeholder="Jane Doe" />}
