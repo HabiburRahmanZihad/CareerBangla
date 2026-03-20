@@ -1,14 +1,16 @@
 import DashboardNavbar from "@/components/modules/Dashboord/DashboardNavbar"
 import DashboardSidebar from "@/components/modules/Dashboord/DashboardSidebar"
+import { LogoutAndRedirect } from "@/components/shared/LogoutAndRedirect"
 import { getUserInfo } from "@/services/auth.services"
-import { redirect } from "next/navigation"
 import React from "react"
 
 const RootDashboardLayout = async ({ children }: { children: React.ReactNode }) => {
     const userInfo = await getUserInfo()
 
     if (!userInfo) {
-        redirect("/login")
+        // User not found (deleted or invalid session)
+        // Render client component to clear cookies and redirect
+        return <LogoutAndRedirect />
     }
 
     return (

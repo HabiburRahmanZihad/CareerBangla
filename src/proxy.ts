@@ -6,14 +6,14 @@ import { jwtUtils } from "./lib/jwtUtils";
 export async function proxy(request: NextRequest) {
     try {
         const { pathname } = request.nextUrl;
-        
+
         // PRIMARY AUTH: better-auth.session_token
         const sessionToken = request.cookies.get("better-auth.session_token")?.value;
         const accessToken = request.cookies.get("accessToken")?.value;
 
         const isAuthenticated = !!sessionToken;
         let isEmailVerified = true; // Assume true unless accessToken specifically marks it false
-        
+
         // SECONDARY (Optional): Get role from accessToken if available for routing hints
         let userRole: UserRole | null = null;
         if (accessToken) {
@@ -22,7 +22,7 @@ export async function proxy(request: NextRequest) {
             if (decodedResult.success && decodedResult.data) {
                 const role = decodedResult.data.role as UserRole;
                 userRole = role === "SUPER_ADMIN" ? "ADMIN" : role;
-                
+
                 if (decodedResult.data.emailVerified !== undefined) {
                     isEmailVerified = decodedResult.data.emailVerified;
                 }
@@ -75,7 +75,8 @@ export async function proxy(request: NextRequest) {
             }
         }
 
-        return NextResponse.next();
+        const response = NextResponse.next();
+        return response;
     } catch (error) {
         console.error("Error in middleware:", error);
         return NextResponse.redirect(new URL("/login", request.url));
