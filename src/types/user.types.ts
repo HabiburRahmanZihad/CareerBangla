@@ -112,6 +112,10 @@ export interface IResume {
     profileCompletedAt?: string;
     createdAt?: string;
     updatedAt?: string;
+
+    // Subscription & Premium
+    isPremium?: boolean;
+    profileCompletion?: number;
 }
 
 export interface IWorkExperience {

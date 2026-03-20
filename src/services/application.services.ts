@@ -16,9 +16,9 @@ export async function getAllApplications(params?: Record<string, unknown>) {
 }
 
 export async function getApplicationsByJob(jobId: string, params?: Record<string, unknown>) {
-    return serverHttpClient.get<IApplication[]>(`/applications/job/${jobId}`, { params });
+    return serverHttpClient.get<{ applications: IApplication[]; isPremiumRecruiter: boolean }>(`/applications/job/${jobId}`, { params });
 }
 
-export async function updateApplicationStatus(id: string, data: { status: string }) {
+export async function updateApplicationStatus(id: string, data: { status: string; interviewDate?: string; interviewNote?: string }) {
     return serverHttpClient.patch<IApplication>(`/applications/status/${id}`, data);
 }

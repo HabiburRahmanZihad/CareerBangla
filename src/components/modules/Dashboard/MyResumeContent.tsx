@@ -2,38 +2,240 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import AppField from "@/components/shared/form/AppField";
-import { useState } from "react";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import ProfileCompletionBar from "@/components/shared/ProfileCompletionBar";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import Link from "next/link";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import envConfig from "@/lib/envConfig";
 import { getMyResume, updateMyResume } from "@/services/resume.services";
+import Link from "next/link";
+import { useRef, useState } from "react";
+import ResumePreview from "./ResumePreview";
 
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Crown, Plus, Trash2, Info, Lock, ArrowDownToLine } from "lucide-react";
+import {
+    AlertCircle,
+    ArrowDownToLine,
+    Award, BookOpen,
+    Briefcase,
+    Camera,
+    ChevronDown,
+    Code2,
+    Crown,
+    FileText,
+    Globe,
+    GraduationCap,
+    Info,
+    Languages,
+    Loader2,
+    Lock,
+    Plus,
+    Star,
+    Trash2,
+    Upload,
+    User,
+    Users,
+} from "lucide-react";
+import Image from "next/image";
 import { toast } from "sonner";
 
-const MyResumeForm = ({ resume, isPremium }: { resume: any, isPremium: boolean }) => {
+// ─── Reusable helpers ────────────────────────────────────────────────────────
+
+/** Inline Select wired to a TanStack form field */
+const SelectField = ({
+    field,
+    label,
+    placeholder,
+    options,
+    serverErrors,
+}: {
+    field: any;
+    label: string;
+    placeholder: string;
+    options: { value: string; label: string }[];
+    serverErrors: Record<string, string>;
+}) => {
+    const error =
+        field.state.meta.isTouched && field.state.meta.errors.length > 0
+            ? field.state.meta.errors[0]
+            : null;
+    const serverErr = serverErrors[field.name];
+    const finalError = error || serverErr;
+    const errorMsg =
+        typeof finalError === "string"
+            ? finalError
+            : (finalError as any)?.message || String(finalError || "");
+
+    return (
+        <div className="space-y-1.5">
+            <Label htmlFor={field.name} className={error ? "text-destructive" : ""}>
+                {label}
+            </Label>
+            <Select
+                value={(field.state.value as string) || undefined}
+                onValueChange={(v) => field.handleChange(v)}
+            >
+                <SelectTrigger
+                    id={field.name}
+                    className={error ? "border-destructive focus:ring-destructive" : ""}
+                >
+                    <SelectValue placeholder={placeholder} />
+                </SelectTrigger>
+                <SelectContent>
+                    {options.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                            {o.label}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            {errorMsg && <p className="text-sm text-destructive">{errorMsg}</p>}
+        </div>
+    );
+};
+
+/** Collapsible section wrapper with icon, title, count badge, and Add button */
+const FormSection = ({
+    icon: Icon,
+    title,
+    count,
+    onAdd,
+    children,
+    defaultOpen = true,
+}: {
+    icon: React.ElementType;
+    title: string;
+    count?: number;
+    onAdd?: () => void;
+    children: React.ReactNode;
+    defaultOpen?: boolean;
+}) => {
+    const [open, setOpen] = useState(defaultOpen);
+
+    return (
+        <div className="space-y-3">
+            <button
+                type="button"
+                onClick={() => setOpen((v) => !v)}
+                className="flex w-full items-center justify-between rounded-lg px-1 py-1 text-left hover:bg-muted/40 transition-colors"
+            >
+                <span className="flex items-center gap-2 text-base font-semibold">
+                    <Icon className="w-4 h-4 text-primary shrink-0" />
+                    {title}
+                    {count !== undefined && count > 0 && (
+                        <Badge variant="secondary" className="text-xs px-1.5 py-0 h-5">
+                            {count}
+                        </Badge>
+                    )}
+                </span>
+                <ChevronDown
+                    className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+                />
+            </button>
+            {open && (
+                <div className="space-y-3">
+                    {onAdd && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="w-full border-dashed"
+                            onClick={onAdd}
+                        >
+                            <Plus className="w-4 h-4 mr-2" /> Add {title}
+                        </Button>
+                    )}
+                    {children}
+                </div>
+            )}
+        </div>
+    );
+};
+
+/** Textarea field wired to TanStack form */
+const TextareaField = ({
+    field,
+    label,
+    placeholder,
+    hint,
+    serverErrors,
+}: {
+    field: any;
+    label: string;
+    placeholder?: string;
+    hint?: string;
+    serverErrors: Record<string, string>;
+}) => {
+    const error =
+        field.state.meta.isTouched && field.state.meta.errors.length > 0
+            ? field.state.meta.errors[0]
+            : null;
+    const serverErr = serverErrors[field.name];
+    const finalError = error || serverErr;
+    const errorMsg =
+        typeof finalError === "string"
+            ? finalError
+            : (finalError as any)?.message || String(finalError || "");
+
+    return (
+        <div className="space-y-1.5">
+            <Label htmlFor={field.name} className={errorMsg ? "text-destructive" : ""}>
+                {label}
+            </Label>
+            <Textarea
+                id={field.name}
+                name={field.name}
+                value={field.state.value as string}
+                placeholder={placeholder}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className={errorMsg ? "border-destructive focus-visible:ring-destructive/20 min-h-20" : "min-h-20"}
+            />
+            {hint && !errorMsg && <p className="text-xs text-muted-foreground">{hint}</p>}
+            {errorMsg && <p className="text-sm text-destructive">{errorMsg}</p>}
+        </div>
+    );
+};
+
+/** Card for array items with delete button */
+const ItemCard = ({ index, onRemove, children }: { index: number; onRemove: () => void; children: React.ReactNode }) => (
+    <Card className="relative bg-muted/20 border-border/60">
+        <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            onClick={onRemove}
+            aria-label={`Remove item ${index + 1}`}
+        >
+            <Trash2 className="w-3.5 h-3.5" />
+        </Button>
+        <CardContent className="pt-5 pb-4 pr-10">
+            {children}
+        </CardContent>
+    </Card>
+);
+
+const EmptyState = ({ label }: { label: string }) => (
+    <p className="text-xs text-muted-foreground text-center py-4 border border-dashed rounded-lg">
+        No {label} added yet. Click &ldquo;Add {label}&rdquo; above.
+    </p>
+);
+
+// ─── Main form ────────────────────────────────────────────────────────────────
+
+const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }) => {
     const queryClient = useQueryClient();
-
+    const photoInputRef = useRef<HTMLInputElement>(null);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
     const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
-
 
     const { mutateAsync, isPending } = useMutation({
         mutationFn: (payload: Record<string, unknown>) => updateMyResume(payload),
@@ -50,7 +252,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any, isPremium: boolean }
                         newErrors[formattedPath] = source.message;
                     });
                     setServerErrors(newErrors);
-                    toast.error("Please fix the specific field errors marked below.");
+                    toast.error("Please fix the field errors marked below.");
                 } else {
                     toast.error(response.message || "Failed to update resume");
                 }
@@ -138,40 +340,39 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any, isPremium: boolean }
         onSubmit: async ({ value }) => {
             const payload: Record<string, unknown> = { ...value };
 
-            // Sanitize URLs to prevent Zod 400 Validation errors on empty inputs or missing protocol
+            // Sanitize URL fields
             const urlFields = ["linkedinUrl", "githubUrl", "portfolioUrl"];
-            urlFields.forEach((field) => {
-                if (typeof payload[field] === "string") {
-                    let trimmed = (payload[field] as string).trim();
+            urlFields.forEach((f) => {
+                if (typeof payload[f] === "string") {
+                    let trimmed = (payload[f] as string).trim();
                     if (!trimmed) {
-                        delete payload[field];
+                        delete payload[f];
                     } else {
                         if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
                             trimmed = "https://" + trimmed;
                         }
-                        payload[field] = trimmed;
+                        payload[f] = trimmed;
                     }
                 }
             });
 
-            if (!payload.gender) {
-                delete payload.gender;
-            }
+            if (!payload.gender) delete payload.gender;
 
-            const arrayFields = ["technicalSkills", "softSkills", "toolsAndTechnologies", "interests"];
-            arrayFields.forEach(field => {
-                const val = (value as Record<string, unknown>)[field];
+            const csvFields = ["technicalSkills", "softSkills", "toolsAndTechnologies", "interests"];
+            csvFields.forEach((f) => {
+                const val = (value as Record<string, unknown>)[f];
                 if (typeof val === "string") {
-                    payload[field] = val.split(",").map((s: string) => s.trim()).filter(Boolean);
+                    payload[f] = val.split(",").map((s: string) => s.trim()).filter(Boolean);
                 }
             });
+
+            const csvArr = (s: string | string[]) =>
+                typeof s === "string" ? s.split(",").map((x) => x.trim()).filter(Boolean) : s;
 
             if (Array.isArray(value.workExperience)) {
                 payload.workExperience = value.workExperience.map((exp: any) => ({
                     ...exp,
-                    responsibilities: typeof exp.responsibilities === "string"
-                        ? exp.responsibilities.split(",").map((s: string) => s.trim()).filter(Boolean)
-                        : exp.responsibilities,
+                    responsibilities: csvArr(exp.responsibilities),
                     startDate: exp.startDate ? new Date(exp.startDate).toISOString() : new Date().toISOString(),
                     endDate: exp.endDate ? new Date(exp.endDate).toISOString() : undefined,
                 }));
@@ -192,8 +393,8 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any, isPremium: boolean }
             if (Array.isArray(value.projects)) {
                 payload.projects = value.projects.map((proj: any) => ({
                     ...proj,
-                    technologiesUsed: typeof proj.technologiesUsed === "string" ? proj.technologiesUsed.split(",").map((s: string) => s.trim()).filter(Boolean) : proj.technologiesUsed,
-                    highlights: typeof proj.highlights === "string" ? proj.highlights.split(",").map((s: string) => s.trim()).filter(Boolean) : proj.highlights,
+                    technologiesUsed: csvArr(proj.technologiesUsed),
+                    highlights: csvArr(proj.highlights),
                     startDate: proj.startDate ? new Date(proj.startDate).toISOString() : undefined,
                     endDate: proj.endDate ? new Date(proj.endDate).toISOString() : undefined,
                 }));
@@ -209,47 +410,110 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any, isPremium: boolean }
         },
     });
 
+
+    const handleDownloadPdf = async () => {
+        if (!isPremium) return;
+        setIsDownloading(true);
+        try {
+            const res = await fetch(`${envConfig.apiBaseUrl}/resumes/download-pdf`, { credentials: "include" });
+            if (!res.ok) {
+                const err = await res.json().catch(() => null);
+                throw new Error(err?.message || "Failed to download PDF");
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${form.store.state.values.fullName || "Resume"}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            toast.success("Resume PDF downloaded!");
+        } catch (err: any) {
+            toast.error(err.message || "Failed to download PDF");
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith("image/")) { toast.error("Please select an image file"); return; }
+        if (file.size > 5 * 1024 * 1024) { toast.error("Image must be less than 5MB"); return; }
+
+        setIsUploadingPhoto(true);
+        try {
+            const formData = new FormData();
+            formData.append("photo", file);
+            const res = await fetch(`${envConfig.apiBaseUrl}/resumes/upload-photo`, {
+                method: "POST",
+                credentials: "include",
+                body: formData,
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => null);
+                throw new Error(err?.message || "Failed to upload photo");
+            }
+            toast.success("Profile photo uploaded!");
+            queryClient.invalidateQueries({ queryKey: ["my-resume"] });
+        } catch (err: any) {
+            toast.error(err.message || "Failed to upload photo");
+        } finally {
+            setIsUploadingPhoto(false);
+            if (photoInputRef.current) photoInputRef.current.value = "";
+        }
+    };
+
+    const se = serverErrors; // shorthand
+
     return (
         <div className="space-y-6">
-
-            <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">My Resume</h1>
-                <div className="flex gap-2">
+            {/* ── Header ── */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">My Resume</h1>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                        Build your ATS-optimised resume
+                    </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
                     {isPremium ? (
-                        <Button variant="outline" size="sm" onClick={() => window.print()}>
-                            <ArrowDownToLine className="w-4 h-4 mr-2" /> Download PDF
+                        <Button variant="outline" size="sm" onClick={handleDownloadPdf} disabled={isDownloading}>
+                            {isDownloading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ArrowDownToLine className="w-4 h-4 mr-2" />}
+                            {isDownloading ? "Downloading…" : "Download PDF"}
                         </Button>
                     ) : (
                         <Link href="/dashboard/subscriptions">
-                            <Button variant="outline" size="sm" className="text-yellow-600 border-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-950">
-                                <Crown className="w-4 h-4 mr-2" /> Download PDF (Premium)
+                            <Button variant="outline" size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950">
+                                <Crown className="w-4 h-4 mr-2" /> Download PDF
+                                <Badge variant="secondary" className="ml-2 text-[10px] py-0 px-1.5">PRO</Badge>
                             </Button>
                         </Link>
                     )}
                     <Link href="/dashboard/profile-completion-guide">
                         <Button variant="outline" size="sm">
-                            <Info className="w-4 h-4 mr-2" /> ATS Scoring Guide
+                            <Info className="w-4 h-4 mr-2" /> ATS Guide
                         </Button>
                     </Link>
                 </div>
             </div>
 
+            {/* ── Profile completion bar ── */}
             <ProfileCompletionBar completion={profileCompletion} />
 
+            {/* ── Status banner ── */}
             {isPremium ? (
-                <div className="flex items-center gap-3 rounded-lg border border-yellow-300 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-800 px-4 py-3 text-sm text-yellow-800 dark:text-yellow-300">
-                    <Crown className="h-5 w-5 shrink-0 text-yellow-600 dark:text-yellow-400" />
-                    <span>
-                        You have <strong>Premium Access</strong>! You can update your profile limitlessly and download professional ATS CVs.
-                    </span>
+                <div className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
+                    <Crown className="h-5 w-5 shrink-0 text-amber-500" />
+                    <span>You have <strong>Career Boost</strong> — unlimited updates & professional ATS PDF downloads.</span>
                 </div>
             ) : isLocked ? (
-                <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-300">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-300">
                     <div className="flex items-center gap-3">
                         <Lock className="h-5 w-5 shrink-0 text-red-500" />
-                        <span>
-                            Your profile is 100% complete and is now <strong>locked</strong>. Upgrade to Premium to continue editing your profile.
-                        </span>
+                        <span>Your profile is 100% complete and <strong>locked</strong>. Upgrade to keep editing.</span>
                     </div>
                     <Link href="/dashboard/subscriptions">
                         <Button size="sm" variant="destructive">Upgrade Now</Button>
@@ -258,458 +522,517 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any, isPremium: boolean }
             ) : (
                 <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 px-4 py-3 text-sm text-blue-800 dark:text-blue-300">
                     <AlertCircle className="h-5 w-5 shrink-0 text-blue-500" />
-                    <span>
-                        Fill in your profile sections to reach 100%. Once you reach 100%, editing will be disabled on the Free tier.
-                    </span>
+                    <span>Fill in all sections to reach 100%. Editing is disabled at 100% on the Free tier.</span>
                 </div>
             )}
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Profile Information</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <form
-                        noValidate
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            form.handleSubmit();
-                        }}
-                        className="space-y-8"
-                    >
-                        {/* BASIC INFORMATION */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold flex items-center justify-between">Basic Information</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <form.Field name="fullName">
-                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Full Name" placeholder="John Doe" />}
-                                </form.Field>
+            {/* ── Side-by-side layout ── */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
-                                <form.Field name="email">
-                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Email" type="email" placeholder="john@example.com" />}
-                                </form.Field>
-
-                                <form.Field name="professionalTitle">
-                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Professional Title" placeholder="e.g. Full Stack Developer" />}
-                                </form.Field>
-
-                                <form.Field name="contactNumber">
-                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Contact Number" placeholder="+880..." />}
-                                </form.Field>
-
-                                <form.Field name="address">
-                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Address" placeholder="Dhaka, Bangladesh" />}
-                                </form.Field>
-
-                                <form.Field name="nationality">
-                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Nationality" placeholder="e.g. Bangladeshi" />}
-                                </form.Field>
-
-                                <form.Field name="dateOfBirth">
-                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Date of Birth" type="date" />}
-                                </form.Field>
-
-                                <form.Field name="gender">
-                                    {(field) => {
-                                        const error = field.state.meta.isTouched && field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : null;
-                                        const serverErr = serverErrors[field.name];
-                                        const finalError = error || serverErr;
-                                        const errorMsg = typeof finalError === "string" ? finalError : (finalError as any)?.message || String(finalError || "");
-                                        return (
-                                            <div className="space-y-1.5">
-                                                <Label htmlFor={field.name} className={error ? "text-destructive" : ""}>Gender</Label>
-                                                <Select
-                                                    value={(field.state.value as string) || undefined}
-                                                    onValueChange={(value) => field.handleChange(value)}
-                                                >
-                                                    <SelectTrigger id={field.name} className={error ? "border-destructive focus:ring-destructive" : ""}>
-                                                        <SelectValue placeholder="Select Gender" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="MALE">Male</SelectItem>
-                                                        <SelectItem value="FEMALE">Female</SelectItem>
-                                                        <SelectItem value="OTHER">Other</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                {error && <p className="text-sm text-destructive">{errorMsg}</p>}
-                                            </div>
-                                        )
-                                    }}
-                                </form.Field>
-                            </div>
-                        </div>
-
-                        {/* SOCIAL PROFILES */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold flex items-center justify-between">Social Profiles</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <form.Field name="linkedinUrl">
-                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="LinkedIn URL" placeholder="https://linkedin.com/in/..." />}
-                                </form.Field>
-
-                                <form.Field name="githubUrl">
-                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="GitHub URL" placeholder="https://github.com/..." />}
-                                </form.Field>
-
-                                <form.Field name="portfolioUrl">
-                                    {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Portfolio URL" placeholder="https://..." />}
-                                </form.Field>
-                            </div>
-                        </div>
-
-                        {/* SKILLS & SUMMARY */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold flex items-center justify-between">Skills & Summary</h3>
-                            <form.Field name="technicalSkills">
-                                {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Technical Skills (comma separated)" placeholder="React, TypeScript, Node.js, ..." />}
-                            </form.Field>
-                            <form.Field name="softSkills">
-                                {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Soft Skills (comma separated)" placeholder="Communication, Teamwork, Leadership, ..." />}
-                            </form.Field>
-                            <form.Field name="toolsAndTechnologies">
-                                {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Tools & Technologies (comma separated)" placeholder="Git, Docker, VS Code, ..." />}
-                            </form.Field>
-                            <form.Field name="interests">
-                                {(field) => <AppField field={field} serverError={serverErrors[field.name]} label="Interests (comma separated)" placeholder="Reading, Traveling, Open Source, ..." />}
-                            </form.Field>
-
-                            <form.Field name="professionalSummary">
-                                {(field) => (
-                                    <div className="space-y-1">
-                                        <AppField field={field} serverError={serverErrors[field.name]} label="Professional Summary" placeholder="Brief summary of your experience and goals..." />
-                                        <p className="text-xs text-muted-foreground mt-1">A brief description will significantly boost your ATS Profile Completion score.</p>
+                {/* ─── LEFT: Form ─── */}
+                <div>
+                    <Card>
+                        <CardHeader className="pb-4">
+                            <CardTitle className="flex items-center gap-2">
+                                <FileText className="w-5 h-5 text-primary" />
+                                Profile Information
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <form
+                                noValidate
+                                onSubmit={(e) => { e.preventDefault(); form.handleSubmit(); }}
+                                className="space-y-6"
+                            >
+                                {/* ── PROFILE PHOTO ── */}
+                                <FormSection icon={Camera} title="Profile Photo" defaultOpen={true}>
+                                    <div className="flex items-center gap-5">
+                                        <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-border bg-muted shrink-0">
+                                            {resume?.profilePhoto ? (
+                                                <Image src={resume.profilePhoto} alt="Profile" fill className="object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                                                    <Camera className="w-7 h-7" />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <input ref={photoInputRef} type="file" accept="image/*" className="hidden" aria-label="Upload profile photo" onChange={handlePhotoUpload} />
+                                            <Button type="button" variant="outline" size="sm" disabled={isUploadingPhoto} onClick={() => photoInputRef.current?.click()}>
+                                                {isUploadingPhoto
+                                                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Uploading…</>
+                                                    : <><Upload className="w-4 h-4 mr-2" /> Upload Photo</>
+                                                }
+                                            </Button>
+                                            <p className="text-xs text-muted-foreground">Max 5 MB · JPG, PNG, or WebP</p>
+                                        </div>
                                     </div>
-                                )}
-                            </form.Field>
-                        </div>
+                                </FormSection>
 
-                        {/* WORK EXPERIENCE */}
-                        <form.Field name="workExperience" mode="array">
-                            {(field) => (
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold flex items-center justify-between">
-                                        Work Experience
-                                        <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue({ jobTitle: "", companyName: "", startDate: "", endDate: "", responsibilities: "" })}>
-                                            <Plus className="w-4 h-4 mr-2" /> Add
-                                        </Button>
-                                    </h3>
-                                    {field.state.value.map((_: any, i: number) => (
-                                        <Card key={i} className="relative bg-muted/30">
-                                            <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2 text-destructive" onClick={() => field.removeValue(i)}>
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <form.Field name={`workExperience[${i}].jobTitle`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Job Title" placeholder="Software Engineer" />}
-                                                </form.Field>
-                                                <form.Field name={`workExperience[${i}].companyName`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Company Name" placeholder="Google" />}
-                                                </form.Field>
-                                                <form.Field name={`workExperience[${i}].startDate`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Start Date" type="date" />}
-                                                </form.Field>
-                                                <form.Field name={`workExperience[${i}].endDate`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="End Date" type="date" />}
-                                                </form.Field>
-                                                <div className="md:col-span-2">
-                                                    <form.Field name={`workExperience[${i}].responsibilities`}>
-                                                        {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Responsibilities (comma separated)" />}
-                                                    </form.Field>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-                            )}
-                        </form.Field>
+                                <hr className="border-border/60" />
 
-                        {/* EDUCATION */}
-                        <form.Field name="education" mode="array">
-                            {(field) => (
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold flex items-center justify-between">
-                                        Education
-                                        <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue({ degree: "", institutionName: "", fieldOfStudy: "", startDate: "", endDate: "" })}>
-                                            <Plus className="w-4 h-4 mr-2" /> Add
-                                        </Button>
-                                    </h3>
-                                    {field.state.value.map((_: any, i: number) => (
-                                        <Card key={i} className="relative bg-muted/30">
-                                            <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2 text-destructive" onClick={() => field.removeValue(i)}>
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <form.Field name={`education[${i}].degree`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Degree" placeholder="BSc in Computer Science" />}
-                                                </form.Field>
-                                                <form.Field name={`education[${i}].institutionName`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Institution" placeholder="University Name" />}
-                                                </form.Field>
-                                                <form.Field name={`education[${i}].fieldOfStudy`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Field of Study" placeholder="Computer Science" />}
-                                                </form.Field>
-                                                <form.Field name={`education[${i}].startDate`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Start Date" type="date" />}
-                                                </form.Field>
-                                                <form.Field name={`education[${i}].endDate`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="End Date" type="date" />}
-                                                </form.Field>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-                            )}
-                        </form.Field>
+                                {/* ── BASIC INFO ── */}
+                                <FormSection icon={User} title="Basic Information" defaultOpen={true}>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <form.Field name="fullName">
+                                            {(f) => <AppField field={f} serverError={se[f.name]} label="Full Name" placeholder="John Doe" />}
+                                        </form.Field>
+                                        <form.Field name="email">
+                                            {(f) => <AppField field={f} serverError={se[f.name]} label="Email" type="email" placeholder="john@example.com" />}
+                                        </form.Field>
+                                        <form.Field name="professionalTitle">
+                                            {(f) => <AppField field={f} serverError={se[f.name]} label="Professional Title" placeholder="e.g. Full Stack Developer" />}
+                                        </form.Field>
+                                        <form.Field name="contactNumber">
+                                            {(f) => <AppField field={f} serverError={se[f.name]} label="Contact Number" placeholder="+880…" />}
+                                        </form.Field>
+                                        <form.Field name="address">
+                                            {(f) => <AppField field={f} serverError={se[f.name]} label="Address" placeholder="Dhaka, Bangladesh" />}
+                                        </form.Field>
+                                        <form.Field name="nationality">
+                                            {(f) => <AppField field={f} serverError={se[f.name]} label="Nationality" placeholder="e.g. Bangladeshi" />}
+                                        </form.Field>
+                                        <form.Field name="dateOfBirth">
+                                            {(f) => <AppField field={f} serverError={se[f.name]} label="Date of Birth" type="date" />}
+                                        </form.Field>
+                                        <form.Field name="gender">
+                                            {(f) => (
+                                                <SelectField field={f} label="Gender" placeholder="Select gender" serverErrors={se} options={[
+                                                    { value: "MALE", label: "Male" },
+                                                    { value: "FEMALE", label: "Female" },
+                                                    { value: "OTHER", label: "Other" },
+                                                ]} />
+                                            )}
+                                        </form.Field>
+                                    </div>
+                                </FormSection>
 
-                        {/* CERTIFICATIONS */}
-                        <form.Field name="certifications" mode="array">
-                            {(field) => (
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold flex items-center justify-between">
-                                        Certifications
-                                        <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue({ certificationName: "", issuingOrganization: "", issueDate: "" })}>
-                                            <Plus className="w-4 h-4 mr-2" /> Add
-                                        </Button>
-                                    </h3>
-                                    {field.state.value.map((_: any, i: number) => (
-                                        <Card key={i} className="relative bg-muted/30">
-                                            <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2 text-destructive" onClick={() => field.removeValue(i)}>
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <form.Field name={`certifications[${i}].certificationName`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Certification Name" placeholder="AWS Certified Solutions Architect" />}
-                                                </form.Field>
-                                                <form.Field name={`certifications[${i}].issuingOrganization`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Issuing Organization" placeholder="Amazon Web Services" />}
-                                                </form.Field>
-                                                <form.Field name={`certifications[${i}].issueDate`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Issue Date" type="date" />}
-                                                </form.Field>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-                            )}
-                        </form.Field>
+                                <hr className="border-border/60" />
 
-                        {/* PROJECTS */}
-                        <form.Field name="projects" mode="array">
-                            {(field) => (
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold flex items-center justify-between">
-                                        Projects
-                                        <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue({ projectName: "", role: "", description: "", technologiesUsed: "", liveUrl: "", githubUrl: "", startDate: "", endDate: "", highlights: "" })}>
-                                            <Plus className="w-4 h-4 mr-2" /> Add
-                                        </Button>
-                                    </h3>
-                                    {field.state.value.map((_: any, i: number) => (
-                                        <Card key={i} className="relative bg-muted/30">
-                                            <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2 text-destructive" onClick={() => field.removeValue(i)}>
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <form.Field name={`projects[${i}].projectName`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Project Name" placeholder="E-commerce Platform" />}
-                                                </form.Field>
-                                                <form.Field name={`projects[${i}].role`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Role" placeholder="Lead Developer" />}
-                                                </form.Field>
-                                                <div className="md:col-span-2">
-                                                    <form.Field name={`projects[${i}].description`}>
-                                                        {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Description" placeholder="Project summary..." />}
-                                                    </form.Field>
-                                                </div>
-                                                <div className="md:col-span-2">
-                                                    <form.Field name={`projects[${i}].technologiesUsed`}>
-                                                        {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Technologies Used (comma separated)" placeholder="React, Node.js..." />}
-                                                    </form.Field>
-                                                </div>
-                                                <form.Field name={`projects[${i}].liveUrl`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Live URL" placeholder="https://..." />}
-                                                </form.Field>
-                                                <form.Field name={`projects[${i}].githubUrl`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="GitHub URL" placeholder="https://github.com/..." />}
-                                                </form.Field>
-                                                <form.Field name={`projects[${i}].startDate`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Start Date" type="date" />}
-                                                </form.Field>
-                                                <form.Field name={`projects[${i}].endDate`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="End Date" type="date" />}
-                                                </form.Field>
-                                                <div className="md:col-span-2">
-                                                    <form.Field name={`projects[${i}].highlights`}>
-                                                        {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Highlights (comma separated)" placeholder="Increased performance by 50%..." />}
-                                                    </form.Field>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-                            )}
-                        </form.Field>
+                                {/* ── SOCIAL PROFILES ── */}
+                                <FormSection icon={Globe} title="Social Profiles" defaultOpen={true}>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <form.Field name="linkedinUrl">
+                                            {(f) => <AppField field={f} serverError={se[f.name]} label="LinkedIn URL" placeholder="linkedin.com/in/…" />}
+                                        </form.Field>
+                                        <form.Field name="githubUrl">
+                                            {(f) => <AppField field={f} serverError={se[f.name]} label="GitHub URL" placeholder="github.com/…" />}
+                                        </form.Field>
+                                        <form.Field name="portfolioUrl">
+                                            {(f) => <AppField field={f} serverError={se[f.name]} label="Portfolio URL" placeholder="https://…" />}
+                                        </form.Field>
+                                    </div>
+                                </FormSection>
 
-                        {/* LANGUAGES */}
-                        <form.Field name="languages" mode="array">
-                            {(field) => (
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold flex items-center justify-between">
-                                        Languages
-                                        <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue({ language: "", proficiencyLevel: "" })}>
-                                            <Plus className="w-4 h-4 mr-2" /> Add
-                                        </Button>
-                                    </h3>
-                                    {field.state.value.map((_: any, i: number) => (
-                                        <Card key={i} className="relative bg-muted/30">
-                                            <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2 text-destructive" onClick={() => field.removeValue(i)}>
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <form.Field name={`languages[${i}].language`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Language" placeholder="English" />}
-                                                </form.Field>
-                                                <form.Field name={`languages[${i}].proficiencyLevel`}>
-                                                    {(subField) => {
-                                                        const error = subField.state.meta.isTouched && subField.state.meta.errors.length > 0 ? subField.state.meta.errors[0] : null;
-                                                        const serverErr = serverErrors[subField.name];
-                                                        const finalError = error || serverErr;
-                                                        const errorMsg = typeof finalError === "string" ? finalError : (finalError as any)?.message || String(finalError || "");
-                                                        return (
-                                                            <div className="space-y-1.5">
-                                                                <Label htmlFor={subField.name} className={errorMsg ? "text-destructive" : ""}>Proficiency Level</Label>
-                                                                <Select
-                                                                    value={(subField.state.value as string) || undefined}
-                                                                    onValueChange={(value) => subField.handleChange(value)}
-                                                                >
-                                                                    <SelectTrigger id={subField.name} className={errorMsg ? "border-destructive focus:ring-destructive" : ""}>
-                                                                        <SelectValue placeholder="Select Proficiency" />
-                                                                    </SelectTrigger>
-                                                                    <SelectContent>
-                                                                        <SelectItem value="Native">Native</SelectItem>
-                                                                        <SelectItem value="Fluent">Fluent</SelectItem>
-                                                                        <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                                                        <SelectItem value="Beginner">Beginner</SelectItem>
-                                                                    </SelectContent>
-                                                                </Select>
-                                                                {errorMsg && <p className="text-sm text-destructive">{errorMsg}</p>}
+                                <hr className="border-border/60" />
+
+                                {/* ── SKILLS & SUMMARY ── */}
+                                <FormSection icon={Code2} title="Skills & Summary" defaultOpen={true}>
+                                    <div className="space-y-4">
+                                        <form.Field name="technicalSkills">
+                                            {(f) => <AppField field={f} serverError={se[f.name]} label="Technical Skills" placeholder="React, TypeScript, Node.js, …  (comma-separated)" />}
+                                        </form.Field>
+                                        <form.Field name="softSkills">
+                                            {(f) => <AppField field={f} serverError={se[f.name]} label="Soft Skills" placeholder="Communication, Leadership, …  (comma-separated)" />}
+                                        </form.Field>
+                                        <form.Field name="toolsAndTechnologies">
+                                            {(f) => <AppField field={f} serverError={se[f.name]} label="Tools & Technologies" placeholder="Git, Docker, Figma, …  (comma-separated)" />}
+                                        </form.Field>
+                                        <form.Field name="interests">
+                                            {(f) => <AppField field={f} serverError={se[f.name]} label="Interests" placeholder="Open Source, Reading, …  (comma-separated)" />}
+                                        </form.Field>
+                                        <form.Field name="professionalSummary">
+                                            {(f) => (
+                                                <TextareaField
+                                                    field={f}
+                                                    label="Professional Summary"
+                                                    placeholder="A concise overview of your experience, skills, and career goals…"
+                                                    hint="A strong summary significantly boosts your ATS score."
+                                                    serverErrors={se}
+                                                />
+                                            )}
+                                        </form.Field>
+                                    </div>
+                                </FormSection>
+
+                                <hr className="border-border/60" />
+
+                                {/* ── WORK EXPERIENCE ── */}
+                                <form.Field name="workExperience" mode="array">
+                                    {(field) => (
+                                        <FormSection
+                                            icon={Briefcase}
+                                            title="Work Experience"
+                                            count={field.state.value.length}
+                                            onAdd={() => field.pushValue({ jobTitle: "", companyName: "", startDate: "", endDate: "", responsibilities: "" })}
+                                            defaultOpen={true}
+                                        >
+                                            {field.state.value.length === 0 ? (
+                                                <EmptyState label="Work Experience" />
+                                            ) : (
+                                                field.state.value.map((_: any, i: number) => (
+                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)}>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                            <form.Field name={`workExperience[${i}].jobTitle`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Job Title" placeholder="Software Engineer" />}
+                                                            </form.Field>
+                                                            <form.Field name={`workExperience[${i}].companyName`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Company" placeholder="Google" />}
+                                                            </form.Field>
+                                                            <form.Field name={`workExperience[${i}].startDate`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Start Date" type="date" />}
+                                                            </form.Field>
+                                                            <form.Field name={`workExperience[${i}].endDate`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="End Date (leave blank if current)" type="date" />}
+                                                            </form.Field>
+                                                            <div className="sm:col-span-2">
+                                                                <form.Field name={`workExperience[${i}].responsibilities`}>
+                                                                    {(sf) => (
+                                                                        <TextareaField field={sf as any} label="Responsibilities (comma-separated)" placeholder="Built RESTful APIs, Improved performance by 40%, …" serverErrors={se} />
+                                                                    )}
+                                                                </form.Field>
                                                             </div>
-                                                        )
-                                                    }}
-                                                </form.Field>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-                            )}
-                        </form.Field>
+                                                        </div>
+                                                    </ItemCard>
+                                                ))
+                                            )}
+                                        </FormSection>
+                                    )}
+                                </form.Field>
 
-                        {/* AWARDS */}
-                        <form.Field name="awards" mode="array">
-                            {(field) => (
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold flex items-center justify-between">
-                                        Awards
-                                        <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue({ title: "", issuer: "", date: "", description: "" })}>
-                                            <Plus className="w-4 h-4 mr-2" /> Add
-                                        </Button>
-                                    </h3>
-                                    {field.state.value.map((_: any, i: number) => (
-                                        <Card key={i} className="relative bg-muted/30">
-                                            <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2 text-destructive" onClick={() => field.removeValue(i)}>
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <form.Field name={`awards[${i}].title`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Title" placeholder="Employee of the Month" />}
-                                                </form.Field>
-                                                <form.Field name={`awards[${i}].issuer`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Issuer" placeholder="Google" />}
-                                                </form.Field>
-                                                <form.Field name={`awards[${i}].date`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Date" type="date" />}
-                                                </form.Field>
-                                                <div className="md:col-span-2">
-                                                    <form.Field name={`awards[${i}].description`}>
-                                                        {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Description" />}
-                                                    </form.Field>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-                            )}
-                        </form.Field>
+                                <hr className="border-border/60" />
 
-                        {/* REFERENCES */}
-                        <form.Field name="references" mode="array">
-                            {(field) => (
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold flex items-center justify-between">
-                                        References
-                                        <Button type="button" variant="outline" size="sm" onClick={() => field.pushValue({ name: "", designation: "", company: "", email: "", phone: "", relationship: "" })}>
-                                            <Plus className="w-4 h-4 mr-2" /> Add
-                                        </Button>
-                                    </h3>
-                                    {field.state.value.map((_: any, i: number) => (
-                                        <Card key={i} className="relative bg-muted/30">
-                                            <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2 text-destructive" onClick={() => field.removeValue(i)}>
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <form.Field name={`references[${i}].name`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Name" placeholder="Jane Doe" />}
-                                                </form.Field>
-                                                <form.Field name={`references[${i}].designation`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Designation" placeholder="Manager" />}
-                                                </form.Field>
-                                                <form.Field name={`references[${i}].company`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Company" placeholder="Google" />}
-                                                </form.Field>
-                                                <form.Field name={`references[${i}].email`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Email" type="email" placeholder="jane@example.com" />}
-                                                </form.Field>
-                                                <form.Field name={`references[${i}].phone`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Phone" placeholder="+1..." />}
-                                                </form.Field>
-                                                <form.Field name={`references[${i}].relationship`}>
-                                                    {(subField) => <AppField field={subField as any} serverError={serverErrors[subField.name]} label="Relationship" placeholder="Manager" />}
-                                                </form.Field>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-                            )}
-                        </form.Field>
+                                {/* ── EDUCATION ── */}
+                                <form.Field name="education" mode="array">
+                                    {(field) => (
+                                        <FormSection
+                                            icon={GraduationCap}
+                                            title="Education"
+                                            count={field.state.value.length}
+                                            onAdd={() => field.pushValue({ degree: "", institutionName: "", fieldOfStudy: "", startDate: "", endDate: "" })}
+                                            defaultOpen={true}
+                                        >
+                                            {field.state.value.length === 0 ? (
+                                                <EmptyState label="Education" />
+                                            ) : (
+                                                field.state.value.map((_: any, i: number) => (
+                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)}>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                            <form.Field name={`education[${i}].degree`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Degree" placeholder="BSc in Computer Science" />}
+                                                            </form.Field>
+                                                            <form.Field name={`education[${i}].institutionName`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Institution" placeholder="University Name" />}
+                                                            </form.Field>
+                                                            <form.Field name={`education[${i}].fieldOfStudy`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Field of Study" placeholder="Computer Science" />}
+                                                            </form.Field>
+                                                            <form.Field name={`education[${i}].startDate`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Start Date" type="date" />}
+                                                            </form.Field>
+                                                            <form.Field name={`education[${i}].endDate`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="End Date" type="date" />}
+                                                            </form.Field>
+                                                        </div>
+                                                    </ItemCard>
+                                                ))
+                                            )}
+                                        </FormSection>
+                                    )}
+                                </form.Field>
 
-                        <div className="pt-4">
-                            <AppSubmitButton isPending={isPending} disabled={isLocked} pendingLabel="Saving...">
-                                {isLocked ? "Profile Locked" : "Save Resume"}
-                            </AppSubmitButton>
+                                <hr className="border-border/60" />
+
+                                {/* ── CERTIFICATIONS ── */}
+                                <form.Field name="certifications" mode="array">
+                                    {(field) => (
+                                        <FormSection
+                                            icon={BookOpen}
+                                            title="Certifications"
+                                            count={field.state.value.length}
+                                            onAdd={() => field.pushValue({ certificationName: "", issuingOrganization: "", issueDate: "" })}
+                                            defaultOpen={false}
+                                        >
+                                            {field.state.value.length === 0 ? (
+                                                <EmptyState label="Certifications" />
+                                            ) : (
+                                                field.state.value.map((_: any, i: number) => (
+                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)}>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                            <form.Field name={`certifications[${i}].certificationName`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Certification Name" placeholder="AWS Certified Solutions Architect" />}
+                                                            </form.Field>
+                                                            <form.Field name={`certifications[${i}].issuingOrganization`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Issuing Organization" placeholder="Amazon Web Services" />}
+                                                            </form.Field>
+                                                            <form.Field name={`certifications[${i}].issueDate`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Issue Date" type="date" />}
+                                                            </form.Field>
+                                                        </div>
+                                                    </ItemCard>
+                                                ))
+                                            )}
+                                        </FormSection>
+                                    )}
+                                </form.Field>
+
+                                <hr className="border-border/60" />
+
+                                {/* ── PROJECTS ── */}
+                                <form.Field name="projects" mode="array">
+                                    {(field) => (
+                                        <FormSection
+                                            icon={Star}
+                                            title="Projects"
+                                            count={field.state.value.length}
+                                            onAdd={() => field.pushValue({ projectName: "", role: "", description: "", technologiesUsed: "", liveUrl: "", githubUrl: "", startDate: "", endDate: "", highlights: "" })}
+                                            defaultOpen={false}
+                                        >
+                                            {field.state.value.length === 0 ? (
+                                                <EmptyState label="Projects" />
+                                            ) : (
+                                                field.state.value.map((_: any, i: number) => (
+                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)}>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                            <form.Field name={`projects[${i}].projectName`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Project Name" placeholder="E-commerce Platform" />}
+                                                            </form.Field>
+                                                            <form.Field name={`projects[${i}].role`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Role" placeholder="Lead Developer" />}
+                                                            </form.Field>
+                                                            <div className="sm:col-span-2">
+                                                                <form.Field name={`projects[${i}].description`}>
+                                                                    {(sf) => <TextareaField field={sf as any} label="Description" placeholder="What the project does and your contribution…" serverErrors={se} />}
+                                                                </form.Field>
+                                                            </div>
+                                                            <div className="sm:col-span-2">
+                                                                <form.Field name={`projects[${i}].technologiesUsed`}>
+                                                                    {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Technologies Used" placeholder="React, Node.js, …  (comma-separated)" />}
+                                                                </form.Field>
+                                                            </div>
+                                                            <form.Field name={`projects[${i}].liveUrl`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Live URL" placeholder="https://…" />}
+                                                            </form.Field>
+                                                            <form.Field name={`projects[${i}].githubUrl`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="GitHub URL" placeholder="https://github.com/…" />}
+                                                            </form.Field>
+                                                            <form.Field name={`projects[${i}].startDate`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Start Date" type="date" />}
+                                                            </form.Field>
+                                                            <form.Field name={`projects[${i}].endDate`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="End Date" type="date" />}
+                                                            </form.Field>
+                                                            <div className="sm:col-span-2">
+                                                                <form.Field name={`projects[${i}].highlights`}>
+                                                                    {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Key Highlights" placeholder="Increased performance by 50%, …  (comma-separated)" />}
+                                                                </form.Field>
+                                                            </div>
+                                                        </div>
+                                                    </ItemCard>
+                                                ))
+                                            )}
+                                        </FormSection>
+                                    )}
+                                </form.Field>
+
+                                <hr className="border-border/60" />
+
+                                {/* ── LANGUAGES ── */}
+                                <form.Field name="languages" mode="array">
+                                    {(field) => (
+                                        <FormSection
+                                            icon={Languages}
+                                            title="Languages"
+                                            count={field.state.value.length}
+                                            onAdd={() => field.pushValue({ language: "", proficiencyLevel: "" })}
+                                            defaultOpen={false}
+                                        >
+                                            {field.state.value.length === 0 ? (
+                                                <EmptyState label="Languages" />
+                                            ) : (
+                                                field.state.value.map((_: any, i: number) => (
+                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)}>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                            <form.Field name={`languages[${i}].language`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Language" placeholder="English" />}
+                                                            </form.Field>
+                                                            <form.Field name={`languages[${i}].proficiencyLevel`}>
+                                                                {(sf) => (
+                                                                    <SelectField field={sf as any} label="Proficiency" placeholder="Select level" serverErrors={se} options={[
+                                                                        { value: "Native", label: "Native" },
+                                                                        { value: "Fluent", label: "Fluent" },
+                                                                        { value: "Intermediate", label: "Intermediate" },
+                                                                        { value: "Beginner", label: "Beginner" },
+                                                                    ]} />
+                                                                )}
+                                                            </form.Field>
+                                                        </div>
+                                                    </ItemCard>
+                                                ))
+                                            )}
+                                        </FormSection>
+                                    )}
+                                </form.Field>
+
+                                <hr className="border-border/60" />
+
+                                {/* ── AWARDS ── */}
+                                <form.Field name="awards" mode="array">
+                                    {(field) => (
+                                        <FormSection
+                                            icon={Award}
+                                            title="Awards & Achievements"
+                                            count={field.state.value.length}
+                                            onAdd={() => field.pushValue({ title: "", issuer: "", date: "", description: "" })}
+                                            defaultOpen={false}
+                                        >
+                                            {field.state.value.length === 0 ? (
+                                                <EmptyState label="Awards" />
+                                            ) : (
+                                                field.state.value.map((_: any, i: number) => (
+                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)}>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                            <form.Field name={`awards[${i}].title`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Title" placeholder="Employee of the Month" />}
+                                                            </form.Field>
+                                                            <form.Field name={`awards[${i}].issuer`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Issuer" placeholder="Google" />}
+                                                            </form.Field>
+                                                            <form.Field name={`awards[${i}].date`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Date" type="date" />}
+                                                            </form.Field>
+                                                            <div className="sm:col-span-2">
+                                                                <form.Field name={`awards[${i}].description`}>
+                                                                    {(sf) => <TextareaField field={sf as any} label="Description" serverErrors={se} />}
+                                                                </form.Field>
+                                                            </div>
+                                                        </div>
+                                                    </ItemCard>
+                                                ))
+                                            )}
+                                        </FormSection>
+                                    )}
+                                </form.Field>
+
+                                <hr className="border-border/60" />
+
+                                {/* ── REFERENCES ── */}
+                                <form.Field name="references" mode="array">
+                                    {(field) => (
+                                        <FormSection
+                                            icon={Users}
+                                            title="References"
+                                            count={field.state.value.length}
+                                            onAdd={() => field.pushValue({ name: "", designation: "", company: "", email: "", phone: "", relationship: "" })}
+                                            defaultOpen={false}
+                                        >
+                                            {field.state.value.length === 0 ? (
+                                                <EmptyState label="References" />
+                                            ) : (
+                                                field.state.value.map((_: any, i: number) => (
+                                                    <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)}>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                            <form.Field name={`references[${i}].name`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Name" placeholder="Jane Doe" />}
+                                                            </form.Field>
+                                                            <form.Field name={`references[${i}].designation`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Designation" placeholder="Engineering Manager" />}
+                                                            </form.Field>
+                                                            <form.Field name={`references[${i}].company`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Company" placeholder="Google" />}
+                                                            </form.Field>
+                                                            <form.Field name={`references[${i}].relationship`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Relationship" placeholder="Direct Manager" />}
+                                                            </form.Field>
+                                                            <form.Field name={`references[${i}].email`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Email" type="email" placeholder="jane@example.com" />}
+                                                            </form.Field>
+                                                            <form.Field name={`references[${i}].phone`}>
+                                                                {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Phone" placeholder="+1…" />}
+                                                            </form.Field>
+                                                        </div>
+                                                    </ItemCard>
+                                                ))
+                                            )}
+                                        </FormSection>
+                                    )}
+                                </form.Field>
+
+                                {/* ── Submit ── */}
+                                <div className="pt-2 sticky bottom-0 bg-card pb-2">
+                                    <AppSubmitButton isPending={isPending} disabled={isLocked} pendingLabel="Saving…">
+                                        {isLocked ? (
+                                            <><Lock className="w-4 h-4 mr-2" /> Profile Locked</>
+                                        ) : "Save Resume"}
+                                    </AppSubmitButton>
+                                    {isLocked && (
+                                        <p className="text-xs text-center text-muted-foreground mt-2">
+                                            <Link href="/dashboard/subscriptions" className="underline font-medium">Upgrade to Career Boost</Link> to continue editing.
+                                        </p>
+                                    )}
+                                </div>
+                            </form>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* ─── RIGHT: Live Preview ─── */}
+                <div className="hidden xl:block">
+                    <div className="sticky top-6">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-base font-semibold flex items-center gap-2">
+                                <FileText className="w-4 h-4 text-primary" /> Live Preview
+                            </h3>
+                            <Badge variant="outline" className="text-xs">Auto-updates</Badge>
                         </div>
-                    </form>
-                </CardContent>
-            </Card>
+                        <div className="max-h-[calc(100vh-140px)] overflow-y-auto rounded-lg border shadow-sm">
+                            <form.Subscribe selector={(s) => s.values}>
+                                {(values) => <ResumePreview values={values} />}
+                            </form.Subscribe>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
 
+// ─── Loading skeleton ─────────────────────────────────────────────────────────
+
+const ResumeSkeleton = () => (
+    <div className="space-y-6">
+        <div className="flex items-center justify-between">
+            <div className="space-y-2">
+                <Skeleton className="h-7 w-40" />
+                <Skeleton className="h-4 w-56" />
+            </div>
+            <div className="flex gap-2">
+                <Skeleton className="h-8 w-32" />
+                <Skeleton className="h-8 w-24" />
+            </div>
+        </div>
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-150 w-full rounded-xl" />
+    </div>
+);
+
+// ─── Root component ───────────────────────────────────────────────────────────
+
 const MyResumeContent = () => {
-    const { data, isLoading: isResumeLoading } = useQuery({
+    const { data, isLoading } = useQuery({
         queryKey: ["my-resume"],
         queryFn: () => getMyResume(),
     });
 
-    if (isResumeLoading) {
-        return (
-            <div className="space-y-4">
-                <Skeleton className="h-8 w-48" />
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-96 w-full" />
-            </div>
-        );
-    }
+    if (isLoading) return <ResumeSkeleton />;
 
-    return <MyResumeForm resume={data?.data} isPremium={data?.data?.user?.isPremium || false} />;
+    return (
+        <MyResumeForm
+            resume={data?.data}
+            isPremium={data?.data?.isPremium || false}
+        />
+    );
 };
 
 export default MyResumeContent;
