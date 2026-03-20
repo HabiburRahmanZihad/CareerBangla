@@ -1,20 +1,47 @@
 "use server";
 
 import { serverHttpClient } from "@/lib/axios/serverHttpClient";
-import { ISubscription, ISubscriptionPlan } from "@/types/user.types";
+
+export interface ISubscriptionPlanResponse {
+    name: string;
+    planKey: string;
+    amount: number;
+    durationDays: number;
+    description: string;
+    features: string[];
+    popular: boolean;
+}
+
+export interface IMySubscription {
+    id: string;
+    plan: string;
+    amount: number;
+    transactionId: string | null;
+    status: "PAID" | "UNPAID" | "FAILED";
+    currentPeriodStart: string | null;
+    currentPeriodEnd: string | null;
+    couponId: string | null;
+    paymentGatewayData: Record<string, unknown> | null;
+    createdAt: string;
+    updatedAt: string;
+}
 
 export async function getSubscriptionPlans() {
-    return serverHttpClient.get<ISubscriptionPlan[]>("/subscriptions/plans");
+    return serverHttpClient.get<{ plans: ISubscriptionPlanResponse[] }>("/subscriptions/plans");
 }
 
 export async function purchaseSubscription(data: { planName: string; couponCode?: string; referralCode?: string; gateway?: "STRIPE" | "SSLCOMMERZ" }) {
-    return serverHttpClient.post<{ url: string }>("/subscriptions/purchase", data);
+    return serverHttpClient.post<{ paymentUrl: string }>("/subscriptions/purchase", data);
 }
 
 export async function cancelSubscription(subscriptionId: string) {
-    return serverHttpClient.post<ISubscription>(`/subscriptions/cancel/${subscriptionId}`, {});
+    return serverHttpClient.post<IMySubscription>(`/subscriptions/cancel/${subscriptionId}`, {});
 }
 
 export async function getMySubscriptions() {
-    return serverHttpClient.get<ISubscription[]>("/subscriptions/my-subscriptions");
+    return serverHttpClient.get<IMySubscription[]>("/subscriptions/my-subscriptions");
+}
+
+export async function validateCoupon(code: string) {
+    return serverHttpClient.post<{ id: string; code: string; discountPercent: number | null; discountAmount: number | null }>("/coupons/validate", { code });
 }

@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,7 +28,7 @@ const SubscriptionsManagementContent = () => {
         );
     }
 
-    const plans = data?.data || [];
+    const plans: any[] = (data?.data as any)?.plans || [];
 
     return (
         <div className="space-y-6">
@@ -39,29 +41,29 @@ const SubscriptionsManagementContent = () => {
                     </CardContent>
                 </Card>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {plans.map((plan) => (
-                        <Card key={plan.id}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {plans.map((plan: any) => (
+                        <Card key={plan.planKey || plan.name}>
                             <CardHeader>
                                 <div className="flex items-center justify-between">
                                     <CardTitle className="text-lg flex items-center gap-2">
                                         <CreditCard className="h-5 w-5 text-primary" />
                                         {plan.name}
                                     </CardTitle>
-                                    <Badge variant={plan.isActive ? "default" : "secondary"}>
-                                        {plan.isActive ? "Active" : "Inactive"}
+                                    <Badge variant={plan.popular ? "default" : "secondary"}>
+                                        {plan.popular ? "Popular" : "Active"}
                                     </Badge>
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-3xl font-bold">&#2547;{plan.price}</span>
-                                    <span className="text-muted-foreground">/ {plan.duration} days</span>
+                                    <span className="text-3xl font-bold">&#2547;{plan.amount}</span>
+                                    <span className="text-muted-foreground">/ {plan.durationDays} days</span>
                                 </div>
-                                <p className="text-sm text-primary font-medium">{plan.coins} coins included</p>
+                                <p className="text-sm text-muted-foreground">{plan.description}</p>
                                 {plan.features && plan.features.length > 0 && (
                                     <ul className="space-y-1.5">
-                                        {plan.features.map((feature, i) => (
+                                        {plan.features.map((feature: string, i: number) => (
                                             <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
                                                 <CheckCircle className="h-3.5 w-3.5 text-green-600 shrink-0" />
                                                 {feature}
