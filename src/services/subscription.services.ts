@@ -29,8 +29,8 @@ export async function getSubscriptionPlans() {
     return serverHttpClient.get<{ plans: ISubscriptionPlanResponse[] }>("/subscriptions/plans");
 }
 
-export async function purchaseSubscription(data: { planName: string; couponCode?: string; referralCode?: string; gateway?: "STRIPE" | "SSLCOMMERZ" }) {
-    return serverHttpClient.post<{ paymentUrl: string }>("/subscriptions/purchase", data);
+export async function purchaseSubscription(data: { planKey?: string; couponCode?: string; referralCode?: string; gateway?: "STRIPE" | "SSLCOMMERZ" }) {
+    return serverHttpClient.post<{ paymentUrl: string }>("/subscriptions/purchase", { ...data, planKey: data.planKey || "BOOST_LIFETIME" });
 }
 
 export async function cancelSubscription(subscriptionId: string) {

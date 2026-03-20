@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import envConfig from "@/lib/envConfig";
 import { getMyResume, updateMyResume } from "@/services/resume.services";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import ResumeTwoPageLayout from "./ResumeTwoPageLayout";
 
 import { useForm } from "@tanstack/react-form";
@@ -24,7 +24,6 @@ import {
     ArrowDownToLine,
     Award, BookOpen,
     Briefcase,
-    Camera,
     ChevronDown,
     Code2,
     Crown,
@@ -39,11 +38,9 @@ import {
     Plus,
     Star,
     Trash2,
-    Upload,
     User,
     Users,
 } from "lucide-react";
-import Image from "next/image";
 import { toast } from "sonner";
 
 // ─── Reusable helpers ────────────────────────────────────────────────────────
@@ -239,9 +236,7 @@ const EmptyState = ({ label }: { label: string }) => (
 
 const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }) => {
     const queryClient = useQueryClient();
-    const photoInputRef = useRef<HTMLInputElement>(null);
     const [isDownloading, setIsDownloading] = useState(false);
-    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
     const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
 
     const { mutateAsync, isPending } = useMutation({
@@ -469,35 +464,6 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
         }
     };
 
-    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        if (!file.type.startsWith("image/")) { toast.error("Please select an image file"); return; }
-        if (file.size > 5 * 1024 * 1024) { toast.error("Image must be less than 5MB"); return; }
-
-        setIsUploadingPhoto(true);
-        try {
-            const formData = new FormData();
-            formData.append("photo", file);
-            const res = await fetch(`${envConfig.apiBaseUrl}/resumes/upload-photo`, {
-                method: "POST",
-                credentials: "include",
-                body: formData,
-            });
-            if (!res.ok) {
-                const err = await res.json().catch(() => null);
-                throw new Error(err?.message || "Failed to upload photo");
-            }
-            toast.success("Profile photo uploaded!");
-            queryClient.invalidateQueries({ queryKey: ["my-resume"] });
-        } catch (err: any) {
-            toast.error(err.message || "Failed to upload photo");
-        } finally {
-            setIsUploadingPhoto(false);
-            if (photoInputRef.current) photoInputRef.current.value = "";
-        }
-    };
-
     const se = serverErrors; // shorthand
 
     return (
@@ -592,33 +558,6 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                             onSubmit={(e) => { e.preventDefault(); form.handleSubmit(); }}
                                             className="space-y-6"
                                         >
-                                            {/* ── PROFILE PHOTO ── */}
-                                            <FormSection icon={Camera} title="Profile Photo" defaultOpen={true}>
-                                                <div className="flex items-center gap-5">
-                                                    <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-border bg-muted shrink-0">
-                                                        {resume?.profilePhoto ? (
-                                                            <Image src={resume.profilePhoto} alt="Profile" fill className="object-cover" />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                                                                <Camera className="w-7 h-7" />
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div className="space-y-1.5">
-                                                        <input ref={photoInputRef} type="file" accept="image/*" className="hidden" aria-label="Upload profile photo" onChange={handlePhotoUpload} />
-                                                        <Button type="button" variant="outline" size="sm" disabled={isUploadingPhoto} onClick={() => photoInputRef.current?.click()}>
-                                                            {isUploadingPhoto
-                                                                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Uploading…</>
-                                                                : <><Upload className="w-4 h-4 mr-2" /> Upload Photo</>
-                                                            }
-                                                        </Button>
-                                                        <p className="text-xs text-muted-foreground">Max 5 MB · JPG, PNG, or WebP</p>
-                                                    </div>
-                                                </div>
-                                            </FormSection>
-
-                                            <hr className="border-border/60" />
-
                                             {/* ── BASIC INFO ── */}
                                             <FormSection icon={User} title="Basic Information" defaultOpen={true}>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -8,32 +8,32 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import envConfig from "@/lib/envConfig";
 import {
-    purchaseSubscription,
     getMySubscriptions,
-    validateCoupon,
     IMySubscription,
+    purchaseSubscription,
+    validateCoupon,
 } from "@/services/subscription.services";
 import { UserInfo } from "@/types/user.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
+    AlertCircle,
     ArrowLeft,
     CheckCircle,
-    Rocket,
     CreditCard,
     Download,
+    Loader2,
+    Rocket,
+    Sparkles,
     Tag,
     X,
-    Loader2,
-    AlertCircle,
     XCircle,
-    Sparkles,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useSearchParams } from "next/navigation";
-import envConfig from "@/lib/envConfig";
 
 interface SubscriptionsContentProps {
     userRole?: "USER" | "RECRUITER" | string;
@@ -78,7 +78,7 @@ const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
     const { mutateAsync: purchase, isPending: purchasePending } = useMutation({
         mutationFn: () =>
             purchaseSubscription({
-                planName: "PREMIUM",
+                planKey: "BOOST_LIFETIME",
                 couponCode: appliedCoupon?.code || undefined,
                 referralCode: referralCode || undefined,
                 gateway,
