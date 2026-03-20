@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Github, Globe, Linkedin, Mail, MapPin, Phone } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface ResumeTwoPageLayoutProps {
     values: any;
@@ -34,10 +35,33 @@ const ResumeTwoPageLayout = ({ values }: ResumeTwoPageLayoutProps) => {
     const validAwards = (values.awards || []).filter((a: any) => a.title);
     const validReferences = (values.references || []).filter((r: any) => r.name);
 
+    const pageOneRef = useRef<HTMLDivElement>(null);
+    const [needsPage2, setNeedsPage2] = useState(false);
+
+    const hasPage2Content =
+        validProjects.length > 3 ||
+        validWorkExp.length > 0 ||
+        validCertifications.length > 0 ||
+        validAwards.length > 0 ||
+        validReferences.length > 0 ||
+        interests.length > 0;
+
+    useEffect(() => {
+        if (pageOneRef.current) {
+            // Defer state update to avoid cascading renders
+            const timeoutId = setTimeout(() => {
+                const contentHeight = pageOneRef.current?.scrollHeight || 0;
+                const pageHeightThreshold = 950;
+                setNeedsPage2(contentHeight > pageHeightThreshold && hasPage2Content);
+            }, 0);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [values, hasPage2Content]);
+
     return (
         <div className="bg-white text-black leading-tight">
-            {/* ========== PAGE 1 ========== */}
-            <div className="min-h-screen p-10 border-b-4 border-gray-300" style={{ pageBreakAfter: "always" }}>
+            {/* PAGE 1 */}
+            <div ref={pageOneRef} className="p-10" style={{ pageBreakAfter: needsPage2 ? "always" : "avoid" }}>
                 {/* HEADER */}
                 <div className="text-center border-b-2 border-[#1a3a52] pb-3 mb-4">
                     <h1 className="text-3xl font-bold text-[#1a3a52] tracking-wider">
@@ -105,17 +129,8 @@ const ResumeTwoPageLayout = ({ values }: ResumeTwoPageLayoutProps) => {
                         <div className="space-y-1">
                             {technicalSkills.length > 0 && (
                                 <div>
-                                    <span className="font-semibold text-xs">Frontend:</span>
-                                    <span className="text-xs text-gray-800 ml-1">
-                                        {technicalSkills.slice(0, 4).join(", ")}
-                                        {technicalSkills.length > 4 && `, ${technicalSkills.slice(4).join(", ")}`}
-                                    </span>
-                                </div>
-                            )}
-                            {softSkills.length > 0 && (
-                                <div>
-                                    <span className="font-semibold text-xs">Soft Skills:</span>
-                                    <span className="text-xs text-gray-800 ml-1">{softSkills.join(", ")}</span>
+                                    <span className="font-semibold text-xs">Technical:</span>
+                                    <span className="text-xs text-gray-800 ml-1">{technicalSkills.join(", ")}</span>
                                 </div>
                             )}
                             {tools.length > 0 && (
@@ -124,31 +139,39 @@ const ResumeTwoPageLayout = ({ values }: ResumeTwoPageLayoutProps) => {
                                     <span className="text-xs text-gray-800 ml-1">{tools.join(", ")}</span>
                                 </div>
                             )}
+                            {softSkills.length > 0 && (
+                                <div>
+                                    <span className="font-semibold text-xs">Additional Skills:</span>
+                                    <span className="text-xs text-gray-800 ml-1">{softSkills.join(", ")}</span>
+                                </div>
+                            )}
                         </div>
                     </section>
                 )}
 
-                {/* PROJECTS - Up to 3 on page 1 */}
+                {/* PROJECTS - Max 3 on page 1 */}
                 {validProjects.length > 0 && (
                     <section className="mb-3">
                         <h2 className="text-xs font-bold text-[#1a3a52] uppercase tracking-widest border-b border-gray-400 pb-1 mb-2">
                             Projects
                         </h2>
-                        <div className="space-y-2">
+                        <div className="space-y-2.5">
                             {validProjects.slice(0, 3).map((proj: any, i: number) => (
                                 <div key={i}>
-                                    <div className="flex justify-between items-baseline gap-2">
+                                    <div className="flex justify-between items-start gap-2 mb-1">
                                         <h3 className="font-bold text-xs text-[#1a3a52]">{proj.projectName}</h3>
-                                        {proj.liveUrl && (
-                                            <a href={proj.liveUrl} className="text-blue-600 text-[10px] underline whitespace-nowrap">
-                                                LIVE
-                                            </a>
-                                        )}
-                                        {proj.githubUrl && (
-                                            <a href={proj.githubUrl} className="text-blue-600 text-[10px] underline whitespace-nowrap">
-                                                SERVER
-                                            </a>
-                                        )}
+                                        <div className="flex gap-2 whitespace-nowrap">
+                                            {proj.liveUrl && (
+                                                <a href={proj.liveUrl} className="text-blue-600 text-[10px] underline">
+                                                    LIVE
+                                                </a>
+                                            )}
+                                            {proj.githubUrl && (
+                                                <a href={proj.githubUrl} className="text-blue-600 text-[10px] underline">
+                                                    SERVER
+                                                </a>
+                                            )}
+                                        </div>
                                     </div>
                                     {proj.description && (
                                         <p className="text-xs text-gray-800 leading-tight mb-1">{proj.description}</p>
@@ -169,7 +192,7 @@ const ResumeTwoPageLayout = ({ values }: ResumeTwoPageLayoutProps) => {
                                             {(typeof proj.highlights === "string"
                                                 ? proj.highlights.split(",").map((s: string) => s.trim()).filter(Boolean)
                                                 : proj.highlights
-                                            ).slice(0, 2).map((highlight: string, j: number) => (
+                                            ).slice(0, 3).map((highlight: string, j: number) => (
                                                 <li key={j} className="pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-[#1a3a52]">
                                                     {highlight}
                                                 </li>
@@ -223,11 +246,123 @@ const ResumeTwoPageLayout = ({ values }: ResumeTwoPageLayoutProps) => {
                         </ul>
                     </section>
                 )}
+
+                {/* WORK EXPERIENCE */}
+                {validWorkExp.length > 0 && (
+                    <section className="mb-3">
+                        <h2 className="text-xs font-bold text-[#1a3a52] uppercase tracking-widest border-b border-gray-400 pb-1 mb-2">
+                            Work Experience
+                        </h2>
+                        <div className="space-y-2">
+                            {validWorkExp.map((exp: any, i: number) => (
+                                <div key={i}>
+                                    <div className="flex justify-between items-baseline gap-2">
+                                        <h3 className="font-semibold text-xs text-gray-800">{exp.jobTitle}</h3>
+                                        <span className="text-[10px] text-gray-600 whitespace-nowrap">
+                                            {formatDate(exp.startDate)} - {formatDate(exp.endDate)}
+                                        </span>
+                                    </div>
+                                    {exp.companyName && (
+                                        <p className="text-xs text-gray-700 italic">{exp.companyName}</p>
+                                    )}
+                                    {exp.responsibilities && (
+                                        <ul className="mt-1 space-y-0.5">
+                                            {(typeof exp.responsibilities === "string"
+                                                ? exp.responsibilities.split(",").map((s: string) => s.trim()).filter(Boolean)
+                                                : exp.responsibilities
+                                            ).slice(0, 2).map((r: string, j: number) => (
+                                                <li key={j} className="text-xs text-gray-800 pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-[#1a3a52]">
+                                                    {r}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* CERTIFICATIONS */}
+                {validCertifications.length > 0 && (
+                    <section className="mb-3">
+                        <h2 className="text-xs font-bold text-[#1a3a52] uppercase tracking-widest border-b border-gray-400 pb-1 mb-2">
+                            Certifications
+                        </h2>
+                        <div className="space-y-1">
+                            {validCertifications.slice(0, 3).map((cert: any, i: number) => (
+                                <div key={i} className="flex justify-between items-baseline gap-2">
+                                    <div>
+                                        <span className="font-semibold text-xs">{cert.certificationName}</span>
+                                        {cert.issuingOrganization && (
+                                            <span className="text-gray-700 text-xs"> - {cert.issuingOrganization}</span>
+                                        )}
+                                    </div>
+                                    <span className="text-[10px] text-gray-600 whitespace-nowrap">{formatDate(cert.issueDate)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* AWARDS */}
+                {validAwards.length > 0 && (
+                    <section className="mb-3">
+                        <h2 className="text-xs font-bold text-[#1a3a52] uppercase tracking-widest border-b border-gray-400 pb-1 mb-2">
+                            Awards & Achievements
+                        </h2>
+                        <div className="space-y-1">
+                            {validAwards.slice(0, 3).map((award: any, i: number) => (
+                                <div key={i} className="flex justify-between items-baseline gap-2">
+                                    <div>
+                                        <span className="font-semibold text-xs">{award.title}</span>
+                                        {award.issuer && (
+                                            <span className="text-gray-700 text-xs"> - {award.issuer}</span>
+                                        )}
+                                    </div>
+                                    <span className="text-[10px] text-gray-600 whitespace-nowrap">{formatDate(award.date)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* REFERENCES */}
+                {validReferences.length > 0 && (
+                    <section className="mb-3">
+                        <h2 className="text-xs font-bold text-[#1a3a52] uppercase tracking-widest border-b border-gray-400 pb-1 mb-2">
+                            References
+                        </h2>
+                        <div className="grid grid-cols-2 gap-2">
+                            {validReferences.slice(0, 2).map((ref: any, i: number) => (
+                                <div key={i} className="text-[10px]">
+                                    <p className="font-semibold">{ref.name}</p>
+                                    {ref.designation && (
+                                        <p className="text-gray-600">
+                                            {ref.designation}{ref.company ? ` at ${ref.company}` : ""}
+                                        </p>
+                                    )}
+                                    {ref.email && <p className="text-gray-600">{ref.email}</p>}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* INTERESTS */}
+                {interests.length > 0 && (
+                    <section className="mb-3">
+                        <h2 className="text-xs font-bold text-[#1a3a52] uppercase tracking-widest border-b border-gray-400 pb-1 mb-2">
+                            Interests
+                        </h2>
+                        <p className="text-xs text-gray-800">{interests.slice(0, 5).join(", ")}</p>
+                    </section>
+                )}
             </div>
 
-            {/* ========== PAGE 2 ========== */}
-            {(validProjects.length > 3 || validWorkExp.length > 0 || validCertifications.length > 0 || validAwards.length > 0 || validReferences.length > 0 || interests.length > 0) && (
-                <div className="min-h-screen p-10">
+            {/* PAGE 2 - Only if needed */}
+            {needsPage2 && (
+                <div className="p-10">
                     {/* Header on page 2 */}
                     <div className="mb-4 pb-2 border-b-2 border-[#1a3a52]">
                         <h1 className="text-xl font-bold text-[#1a3a52]">{values.fullName || "YOUR NAME"}</h1>
@@ -281,11 +416,18 @@ const ResumeTwoPageLayout = ({ values }: ResumeTwoPageLayoutProps) => {
                                     <div key={i}>
                                         <div className="flex justify-between items-baseline gap-2">
                                             <h3 className="font-bold text-xs text-[#1a3a52]">{proj.projectName}</h3>
-                                            {proj.liveUrl && (
-                                                <a href={proj.liveUrl} className="text-blue-600 text-[10px] underline">
-                                                    LIVE
-                                                </a>
-                                            )}
+                                            <div className="flex gap-2 whitespace-nowrap">
+                                                {proj.liveUrl && (
+                                                    <a href={proj.liveUrl} className="text-blue-600 text-[10px] underline">
+                                                        LIVE
+                                                    </a>
+                                                )}
+                                                {proj.githubUrl && (
+                                                    <a href={proj.githubUrl} className="text-blue-600 text-[10px] underline">
+                                                        SERVER
+                                                    </a>
+                                                )}
+                                            </div>
                                         </div>
                                         {proj.description && (
                                             <p className="text-xs text-gray-800">{proj.description}</p>

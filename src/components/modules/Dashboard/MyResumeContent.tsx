@@ -33,6 +33,7 @@ import {
     GraduationCap,
     Info,
     Languages,
+    Lightbulb,
     Loader2,
     Lock,
     Plus,
@@ -954,6 +955,41 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                                     </ItemCard>
                                                 ))
                                             )}
+                                        </FormSection>
+                                    )}
+                                </form.Field>
+
+                                <hr className="border-border/60" />
+
+                                {/* ── INTERESTS ── */}
+                                <form.Field name="interests">
+                                    {(field) => (
+                                        <FormSection
+                                            icon={Lightbulb}
+                                            title="Interests"
+                                            count={field.state.value?.length || 0}
+                                            defaultOpen={false}
+                                        >
+                                            <div className="space-y-3">
+                                                <AppField
+                                                    field={field as any}
+                                                    serverError={se[field.name]}
+                                                    label="Your Interests"
+                                                    placeholder="Machine Learning, Open Source, Cloud Computing… (comma-separated)"
+                                                />
+                                                {field.state.value && field.state.value.length > 0 && (
+                                                    <div className="flex flex-wrap gap-2 pt-2">
+                                                        {(typeof field.state.value === 'string'
+                                                            ? field.state.value.split(',').map((item: string) => item.trim()).filter(Boolean)
+                                                            : field.state.value
+                                                        ).map((interest: string, idx: number) => (
+                                                            <Badge key={idx} variant="outline" className="text-xs">
+                                                                {interest}
+                                                            </Badge>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </FormSection>
                                     )}
                                 </form.Field>
