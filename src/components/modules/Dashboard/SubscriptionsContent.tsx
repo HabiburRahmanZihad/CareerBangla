@@ -4,24 +4,24 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { getSubscriptionPlans, purchaseSubscription } from "@/services/subscription.services";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { CheckCircle, Crown } from "lucide-react";
-import { toast } from "sonner";
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getSubscriptionPlans, purchaseSubscription } from "@/services/subscription.services";
 import { UserInfo } from "@/types/user.types";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { CheckCircle, Crown } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface SubscriptionsContentProps {
     userRole?: "USER" | "RECRUITER" | string;
     userInfo?: UserInfo;
 }
 
-const SubscriptionsContent = ({ userRole, userInfo }: SubscriptionsContentProps) => {
+const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
     const [couponCode, setCouponCode] = useState("");
     const [referralCode, setReferralCode] = useState("");
     const [gateway, setGateway] = useState<"STRIPE" | "SSLCOMMERZ">("SSLCOMMERZ");
@@ -63,13 +63,33 @@ const SubscriptionsContent = ({ userRole, userInfo }: SubscriptionsContentProps)
         );
     }
 
-    const plans: { durationDays: number; amount: number; plan: string; }[] =
+    const rawPlans: any[] =
         Array.isArray(plansData?.data) ? plansData.data : (plansData?.data as any)?.plans || [];
+
+    const PLAN_DURATIONS: Record<string, number> = {
+        FREE: 0,
+        MONTHLY: 30,
+        QUARTERLY: 90,
+        BIANNUAL: 180,
+        YEARLY: 365,
+    };
+
+    const plans: { durationDays: number; amount: number; plan: string; }[] = rawPlans
+        .filter((p: any) => (p.name || p.plan)?.toUpperCase() !== "FREE")
+        .map((p: any) => {
+            const planName = (p.plan || p.name || "").toUpperCase();
+            return {
+                plan: planName,
+                amount: p.amount ?? 0,
+                durationDays: p.durationDays ?? PLAN_DURATIONS[planName] ?? 0,
+            };
+        });
 
     const isPremium = userInfo?.isPremium;
     const premiumUntil = userInfo?.premiumUntil;
 
     const formatPlanName = (plan: string) => {
+        if (!plan) return "";
         return plan.charAt(0).toUpperCase() + plan.slice(1).toLowerCase();
     };
 
@@ -102,20 +122,20 @@ const SubscriptionsContent = ({ userRole, userInfo }: SubscriptionsContentProps)
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="couponCode">Coupon Code</Label>
-                        <Input 
-                            id="couponCode" 
-                            placeholder="e.g. SUMMER50" 
-                            value={couponCode} 
-                            onChange={(e) => setCouponCode(e.target.value)} 
+                        <Input
+                            id="couponCode"
+                            placeholder="e.g. SUMMER50"
+                            value={couponCode}
+                            onChange={(e) => setCouponCode(e.target.value)}
                         />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="referralCode">Referral Code</Label>
-                        <Input 
-                            id="referralCode" 
-                            placeholder="If referred by a friend" 
-                            value={referralCode} 
-                            onChange={(e) => setReferralCode(e.target.value)} 
+                        <Input
+                            id="referralCode"
+                            placeholder="If referred by a friend"
+                            value={referralCode}
+                            onChange={(e) => setReferralCode(e.target.value)}
                         />
                     </div>
                 </div>
@@ -130,8 +150,8 @@ const SubscriptionsContent = ({ userRole, userInfo }: SubscriptionsContentProps)
                             <SelectValue placeholder="Select Payment Gateway" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="SSLCOMMERZ">💳 SSLCommerz (Local BDT Cards/bKash)</SelectItem>
-                            <SelectItem value="STRIPE">🌍 Stripe (International Debit/Credit)</SelectItem>
+                            <SelectItem value="SSLCOMMERZ">SSLCommerz (Local BDT Cards/bKash)</SelectItem>
+                            <SelectItem value="STRIPE">Stripe (International Debit/Credit)</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
