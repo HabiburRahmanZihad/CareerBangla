@@ -274,9 +274,6 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
         },
     });
 
-    const profileCompletion = resume?.profileCompletion ?? 0;
-    const isLocked = !isPremium && profileCompletion === 100;
-
     const form = useForm({
         defaultValues: {
             fullName: resume?.fullName || "",
@@ -1034,7 +1031,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                             </h3>
                             <Badge variant="outline" className="text-xs">Auto-updates</Badge>
                         </div>
-                        <div className="max-h-[calc(100vh-140px)] overflow-y-auto rounded-lg border shadow-sm bg-gray-50">
+                        <div className="max-h-[calc(100vh-140px)] overflow-y-auto rounded-lg border border-gray-200 shadow-sm bg-white p-4">
                             <form.Subscribe selector={(s) => s.values}>
                                 {(values) => <ResumeTwoPageLayout values={values} />}
                             </form.Subscribe>
