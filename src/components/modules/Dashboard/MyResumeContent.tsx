@@ -109,6 +109,7 @@ const FormSection = ({
     onAdd,
     children,
     defaultOpen = true,
+    isLocked = false,
 }: {
     icon: React.ElementType;
     title: string;
@@ -116,6 +117,7 @@ const FormSection = ({
     onAdd?: () => void;
     children: React.ReactNode;
     defaultOpen?: boolean;
+    isLocked?: boolean;
 }) => {
     const [open, setOpen] = useState(defaultOpen);
 
@@ -148,6 +150,8 @@ const FormSection = ({
                             size="sm"
                             className="w-full border-dashed"
                             onClick={onAdd}
+                            disabled={isLocked}
+                            title={isLocked ? "Profile is locked - unable to add" : ""}
                         >
                             <Plus className="w-4 h-4 mr-2" /> Add {title}
                         </Button>
@@ -669,6 +673,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                             count={field.state.value.length}
                                             onAdd={() => field.pushValue({ jobTitle: "", companyName: "", startDate: "", endDate: "", responsibilities: "" })}
                                             defaultOpen={true}
+                                            isLocked={isLocked}
                                         >
                                             {field.state.value.length === 0 ? (
                                                 <EmptyState label="Work Experience" />
@@ -714,6 +719,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                             count={field.state.value.length}
                                             onAdd={() => field.pushValue({ degree: "", institutionName: "", fieldOfStudy: "", startDate: "", endDate: "" })}
                                             defaultOpen={true}
+                                            isLocked={isLocked}
                                         >
                                             {field.state.value.length === 0 ? (
                                                 <EmptyState label="Education" />
@@ -755,6 +761,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                             count={field.state.value.length}
                                             onAdd={() => field.pushValue({ certificationName: "", issuingOrganization: "", issueDate: "" })}
                                             defaultOpen={false}
+                                            isLocked={isLocked}
                                         >
                                             {field.state.value.length === 0 ? (
                                                 <EmptyState label="Certifications" />
@@ -790,6 +797,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                             count={field.state.value.length}
                                             onAdd={() => field.pushValue({ projectName: "", role: "", description: "", technologiesUsed: "", liveUrl: "", githubUrl: "", startDate: "", endDate: "", highlights: "" })}
                                             defaultOpen={false}
+                                            isLocked={isLocked}
                                         >
                                             {field.state.value.length === 0 ? (
                                                 <EmptyState label="Projects" />
@@ -849,6 +857,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                             count={field.state.value.length}
                                             onAdd={() => field.pushValue({ language: "", proficiencyLevel: "" })}
                                             defaultOpen={false}
+                                            isLocked={isLocked}
                                         >
                                             {field.state.value.length === 0 ? (
                                                 <EmptyState label="Languages" />
@@ -888,6 +897,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                             count={field.state.value.length}
                                             onAdd={() => field.pushValue({ title: "", issuer: "", date: "", description: "" })}
                                             defaultOpen={false}
+                                            isLocked={isLocked}
                                         >
                                             {field.state.value.length === 0 ? (
                                                 <EmptyState label="Awards" />
@@ -928,6 +938,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                             count={field.state.value.length}
                                             onAdd={() => field.pushValue({ name: "", designation: "", company: "", email: "", phone: "", relationship: "" })}
                                             defaultOpen={false}
+                                            isLocked={isLocked}
                                         >
                                             {field.state.value.length === 0 ? (
                                                 <EmptyState label="References" />
