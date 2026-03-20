@@ -30,6 +30,7 @@ const RegisterForm = ({ referralCode }: RegisterFormProps) => {
         defaultValues: {
             name: "",
             email: "",
+            phone: "",
             password: "",
             referralCode: referralCode || "",
         },
@@ -91,6 +92,20 @@ const RegisterForm = ({ referralCode }: RegisterFormProps) => {
                                 label="Email"
                                 type="email"
                                 placeholder="Enter your email"
+                            />
+                        )}
+                    </form.Field>
+
+                    <form.Field
+                        name="phone"
+                        validators={{ onChange: registerZodSchema.shape.phone }}
+                    >
+                        {(field) => (
+                            <AppField
+                                field={field}
+                                label="Phone Number"
+                                type="tel"
+                                placeholder="01XXXXXXXXX"
                             />
                         )}
                     </form.Field>

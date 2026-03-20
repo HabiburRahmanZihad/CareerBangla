@@ -1,7 +1,21 @@
 import { z } from "zod";
 
+const BD_PHONE_REGEX = /^01[3-9]\d{8}$/;
+
+const bdPhoneSchema = z
+    .string()
+    .min(1, "Phone number is required")
+    .regex(BD_PHONE_REGEX, "Enter a valid 11-digit phone number starting with 01 (e.g. 01818652760)");
+
 export const loginZodSchema = z.object({
-    email: z.email("Invalid email address"),
+    identifier: z
+        .string()
+        .min(1, "Email or phone number is required")
+        .refine(
+            (v) =>
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || BD_PHONE_REGEX.test(v),
+            "Enter a valid email address or 11-digit BD phone number"
+        ),
     password: z.string()
         .min(1, "Password is required")
         .min(8, "Password must be at least 8 characters long"),
@@ -14,6 +28,7 @@ export const registerZodSchema = z.object({
         .min(1, "Name is required")
         .min(2, "Name must be at least 2 characters"),
     email: z.email("Invalid email address"),
+    phone: bdPhoneSchema,
     password: z.string()
         .min(1, "Password is required")
         .min(8, "Password must be at least 8 characters long"),
@@ -24,6 +39,7 @@ export type IRegisterPayload = z.infer<typeof registerZodSchema>;
 
 export const forgotPasswordZodSchema = z.object({
     email: z.email("Invalid email address"),
+    phone: bdPhoneSchema,
 });
 
 export type IForgotPasswordPayload = z.infer<typeof forgotPasswordZodSchema>;

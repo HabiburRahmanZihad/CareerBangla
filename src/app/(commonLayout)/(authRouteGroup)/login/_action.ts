@@ -68,12 +68,16 @@ export const loginAction = async (payload: ILoginPayload, redirectPath?: string)
     } catch (error: any) {
         console.log(error, "error");
 
-        // Check for email verification error (401 with specific message)
+        // Handle email verification redirect
         if (error?.response?.status === 401 && error?.response?.data?.message === "Email not verified") {
+            const { identifier } = parsedPayload.data;
+            // If identifier was an email, pass it through; if phone, backend returned user.email in error data
+            const emailForRedirect = error?.response?.data?.email || (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier) ? identifier : "");
+            const redirectTarget = emailForRedirect ? `/verify-email?email=${emailForRedirect}` : `/verify-email`;
             return {
                 success: true,
                 message: "Email verification required",
-                redirectPath: `/verify-email?email=${payload.email}`,
+                redirectPath: redirectTarget,
             };
         }
 

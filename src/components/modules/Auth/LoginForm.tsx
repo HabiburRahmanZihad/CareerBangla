@@ -41,14 +41,14 @@ const LoginForm = ({ redirectPath, oauthError }: LoginFormProps) => {
 
   const form = useForm({
     defaultValues: {
-      email: "",
+      identifier: "",
       password: "",
     },
 
     onSubmit: async ({ value }) => {
       setServerError(null);
       try {
-        console.log("[Login] Submitting login for:", value.email);
+        console.log("[Login] Submitting login for:", value.identifier);
         console.log("[Login] Redirect path from URL:", redirectPath);
 
         const result = await mutateAsync(value) as any;
@@ -93,15 +93,15 @@ const LoginForm = ({ redirectPath, oauthError }: LoginFormProps) => {
           className="space-y-4"
         >
           <form.Field
-            name="email"
-            validators={{ onChange: loginZodSchema.shape.email }}
+            name="identifier"
+            validators={{ onChange: loginZodSchema.shape.identifier }}
           >
             {(field) => (
               <AppField
                 field={field}
-                label="Email"
-                type="email"
-                placeholder="Enter your email"
+                label="Email or Phone Number"
+                type="text"
+                placeholder="Enter your email or phone number"
               />
             )}
           </form.Field>

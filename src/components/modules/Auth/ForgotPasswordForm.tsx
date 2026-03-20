@@ -30,7 +30,7 @@ const ForgotPasswordForm = () => {
     });
 
     const form = useForm({
-        defaultValues: { email: "" },
+        defaultValues: { email: "", phone: "" },
         onSubmit: async ({ value }) => {
             setServerError(null);
             await mutateAsync(value);
@@ -61,6 +61,15 @@ const ForgotPasswordForm = () => {
                     >
                         {(field) => (
                             <AppField field={field} label="Email" type="email" placeholder="Enter your email" />
+                        )}
+                    </form.Field>
+
+                    <form.Field
+                        name="phone"
+                        validators={{ onChange: forgotPasswordZodSchema.shape.phone }}
+                    >
+                        {(field) => (
+                            <AppField field={field} label="Phone Number" type="tel" placeholder="01XXXXXXXXX" />
                         )}
                     </form.Field>
 
