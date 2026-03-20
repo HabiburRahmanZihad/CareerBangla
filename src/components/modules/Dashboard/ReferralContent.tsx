@@ -52,8 +52,8 @@ const ReferralContent = ({ userInfo, referralStats }: ReferralContentProps) => {
     return (
         <div className="max-w-4xl mx-auto space-y-8">
             <div className="space-y-2 text-center">
-                <h1 className="text-3xl font-extrabold tracking-tight lg:text-4xl text-primary">Refer & Earn Premium</h1>
-                <p className="text-lg text-muted-foreground">Invite your friends to CareerBangla and earn free Premium time.</p>
+                <h1 className="text-3xl font-extrabold tracking-tight lg:text-4xl text-primary">Refer & Earn Career Boost</h1>
+                <p className="text-lg text-muted-foreground">Invite your friends to CareerBangla and earn free Career Boost time.</p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
@@ -62,7 +62,7 @@ const ReferralContent = ({ userInfo, referralStats }: ReferralContentProps) => {
                         <CardTitle className="flex items-center gap-2 text-primary">
                             <Gift className="w-6 h-6" /> Your Referral Goal
                         </CardTitle>
-                        <CardDescription>Refer 10 paying users to get 1 Month FREE Premium.</CardDescription>
+                        <CardDescription>Refer 10 paying users to get 30 days of FREE Career Boost.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
@@ -87,7 +87,7 @@ const ReferralContent = ({ userInfo, referralStats }: ReferralContentProps) => {
                         </div>
                         {rewardsEarned > 0 && (
                             <p className="text-sm text-green-600 font-medium text-center">
-                                You&apos;ve earned {rewardsEarned * 30} days of free Premium!
+                                You&apos;ve earned {rewardsEarned * 30} days of free Career Boost!
                             </p>
                         )}
                     </CardContent>
@@ -181,8 +181,8 @@ const ReferralContent = ({ userInfo, referralStats }: ReferralContentProps) => {
                 <CardContent className="space-y-4 text-sm text-muted-foreground">
                     <ol className="list-decimal pl-5 space-y-3">
                         <li><strong>Share your code:</strong> Send your unique referral code or link to your friends.</li>
-                        <li><strong>Friends sign up & pay:</strong> Your friends must register using your code and purchase any Premium subscription plan.</li>
-                        <li><strong>Earn rewards:</strong> For every 10 friends who successfully pay for a subscription, your account is automatically extended with <strong>30 days of free Premium access</strong>!</li>
+                        <li><strong>Friends sign up & purchase:</strong> Your friends must register using your code and purchase the Career Boost plan.</li>
+                        <li><strong>Earn rewards:</strong> For every 10 friends who successfully purchase Career Boost, you earn <strong>30 days of free Career Boost access</strong>! Rewards stack (20 referrals = 60 days, 30 = 90 days, etc.).</li>
                     </ol>
                 </CardContent>
             </Card>

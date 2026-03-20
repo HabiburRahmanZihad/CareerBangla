@@ -6,10 +6,9 @@ export interface ISubscriptionPlanResponse {
     name: string;
     planKey: string;
     amount: number;
-    durationDays: number;
     description: string;
     features: string[];
-    popular: boolean;
+    lifetime: boolean;
 }
 
 export interface IMySubscription {
