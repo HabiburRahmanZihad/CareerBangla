@@ -1,5 +1,6 @@
 "use client";
 
+import envConfig from "@/lib/envConfig";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
@@ -13,7 +14,7 @@ export default function Error({
 }) {
   useEffect(() => {
     // Log the error to an error reporting service
-    if (process.env.NODE_ENV === "development") {
+    if (envConfig.isDevelopment) {
       console.error("[Error Boundary]", error);
     }
   }, [error]);
@@ -41,7 +42,7 @@ export default function Error({
                 ? "The service is temporarily unavailable. Please try again in a moment."
                 : "An unexpected error occurred. Our team has been notified."}
           </p>
-          {process.env.NODE_ENV === "development" && (
+          {envConfig.isDevelopment && (
             <details className="text-left bg-red-50 p-4 rounded-lg border border-red-200 mt-4">
               <summary className="cursor-pointer font-semibold text-red-900 mb-2">Debug Info</summary>
               <code className="text-xs text-red-800 whitespace-pre-wrap wrap-break-word">

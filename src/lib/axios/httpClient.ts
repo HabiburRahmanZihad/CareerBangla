@@ -1,15 +1,10 @@
 
 import { ApiResponse } from "@/types/api.types";
+import envConfig from "@/lib/envConfig";
 import axios, { AxiosError } from "axios";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-if (!API_BASE_URL) {
-    throw new Error("API_BASE_URL is not defined in environment variables");
-}
-
 const axiosInstance = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: envConfig.apiBaseUrl,
     timeout: 30000,
     withCredentials: true,
     headers: {
@@ -21,7 +16,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.response.use(
     response => response,
     async (error: AxiosError) => {
-        if (process.env.NODE_ENV === "development") {
+        if (envConfig.isDevelopment) {
             console.error("[API Error]", {
                 status: error.response?.status,
                 message: error.message,
@@ -59,7 +54,7 @@ const httpGet = async <TData>(endpoint: string, options?: ApiRequestOptions): Pr
         });
         return response.data;
     } catch (error) {
-        if (process.env.NODE_ENV === "development") {
+        if (envConfig.isDevelopment) {
             console.error(`GET request to ${endpoint} failed:`, error);
         }
         throw error;
@@ -74,7 +69,7 @@ const httpPost = async <TData>(endpoint: string, data: unknown, options?: ApiReq
         });
         return response.data;
     } catch (error) {
-        if (process.env.NODE_ENV === "development") {
+        if (envConfig.isDevelopment) {
             console.error(`POST request to ${endpoint} failed:`, error);
         }
         throw error;
@@ -89,7 +84,7 @@ const httpPut = async <TData>(endpoint: string, data: unknown, options?: ApiRequ
         });
         return response.data;
     } catch (error) {
-        if (process.env.NODE_ENV === "development") {
+        if (envConfig.isDevelopment) {
             console.error(`PUT request to ${endpoint} failed:`, error);
         }
         throw error;
@@ -104,7 +99,7 @@ const httpPatch = async <TData>(endpoint: string, data: unknown, options?: ApiRe
         });
         return response.data;
     } catch (error) {
-        if (process.env.NODE_ENV === "development") {
+        if (envConfig.isDevelopment) {
             console.error(`PATCH request to ${endpoint} failed:`, error);
         }
         throw error;
@@ -119,7 +114,7 @@ const httpDelete = async <TData>(endpoint: string, options?: ApiRequestOptions):
         });
         return response.data;
     } catch (error) {
-        if (process.env.NODE_ENV === "development") {
+        if (envConfig.isDevelopment) {
             console.error(`DELETE request to ${endpoint} failed:`, error);
         }
         throw error;

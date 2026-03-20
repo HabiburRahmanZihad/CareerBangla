@@ -1,12 +1,9 @@
+import envConfig from "@/lib/envConfig";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-if (!BASE_API_URL) {
-    throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined");
-}
+const BASE_API_URL = envConfig.apiBaseUrl;
 
 function getTokenExpirationSeconds(token: string): number {
     try {
@@ -63,7 +60,7 @@ export async function POST(request: NextRequest) {
             const accessTokenExpiry = getTokenExpirationSeconds(accessToken);
             response.cookies.set("accessToken", accessToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
+                secure: envConfig.isProduction,
                 sameSite: "lax",
                 path: "/",
                 maxAge: accessTokenExpiry,
@@ -74,7 +71,7 @@ export async function POST(request: NextRequest) {
             const refreshTokenExpiry = getTokenExpirationSeconds(newRefreshToken);
             response.cookies.set("refreshToken", newRefreshToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
+                secure: envConfig.isProduction,
                 sameSite: "lax",
                 path: "/",
                 maxAge: refreshTokenExpiry,
@@ -84,7 +81,7 @@ export async function POST(request: NextRequest) {
         if (newSessionToken) {
             response.cookies.set("better-auth.session_token", newSessionToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
+                secure: envConfig.isProduction,
                 sameSite: "lax",
                 path: "/",
                 maxAge: 24 * 60 * 60, // 1 day

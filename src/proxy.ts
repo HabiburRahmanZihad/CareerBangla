@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDefaultDashboardRoute, getRouteOwner, isAuthRoute, UserRole } from "./lib/authUtils";
+import envConfig from "./lib/envConfig";
 import { jwtUtils } from "./lib/jwtUtils";
 
 export async function proxy(request: NextRequest) {
@@ -17,7 +18,7 @@ export async function proxy(request: NextRequest) {
         let userRole: UserRole | null = null;
         if (accessToken) {
             // Decoded JWT locally on edge (very fast, no DB/API call)
-            const decodedResult = jwtUtils.verifyToken(accessToken, process.env.JWT_ACCESS_SECRET || "your_access_token_secret");
+            const decodedResult = jwtUtils.verifyToken(accessToken, envConfig.jwtAccessSecret);
             if (decodedResult.success && decodedResult.data) {
                 const role = decodedResult.data.role as UserRole;
                 userRole = role === "SUPER_ADMIN" ? "ADMIN" : role;

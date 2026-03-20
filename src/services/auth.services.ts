@@ -1,17 +1,14 @@
 "use server";
 
 import { serverHttpClient } from "@/lib/axios/serverHttpClient";
+import envConfig from "@/lib/envConfig";
 import { setTokenInCookies } from "@/lib/tokenUtils";
 import { UserInfo } from "@/types/user.types";
 import { IChangePasswordPayload } from "@/zod/auth.validation";
 import { cookies } from "next/headers";
 import { cache } from "react";
 
-const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-if (!BASE_API_URL) {
-    throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined");
-}
+const BASE_API_URL = envConfig.apiBaseUrl;
 
 export async function getNewTokensWithRefreshToken(refreshToken: string): Promise<boolean> {
     try {

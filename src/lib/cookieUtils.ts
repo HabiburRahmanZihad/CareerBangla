@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import envConfig from "./envConfig";
 
 export const setCookie = async (
     name : string,
@@ -11,7 +12,7 @@ export const setCookie = async (
 
     cookieStore.set(name, value, {
         httpOnly : true,
-        secure : process.env.NODE_ENV === "production",
+        secure : envConfig.isProduction,
         sameSite : "lax",
         path : "/",
         maxAge : maxAgeInSeconds,

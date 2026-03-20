@@ -2,16 +2,11 @@
 import "server-only";
 
 import { ApiResponse } from "@/types/api.types";
+import envConfig from "@/lib/envConfig";
 import axios from "axios";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { ApiRequestOptions } from "./httpClient";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-if (!API_BASE_URL) {
-    throw new Error("API_BASE_URL is not defined in environment variables");
-}
 
 const axiosInstance = async () => {
     const cookieStore = await cookies();
@@ -26,7 +21,7 @@ const axiosInstance = async () => {
         .join("; ");
 
     return axios.create({
-        baseURL: API_BASE_URL,
+        baseURL: envConfig.apiBaseUrl,
         timeout: 30000,
         headers: {
             "Content-Type": "application/json",
@@ -47,7 +42,7 @@ const httpGet = async <TData>(endpoint: string, options?: ApiRequestOptions): Pr
         if (error.response?.status === 401) {
             redirect("/login");
         }
-        if (error.response?.status !== 400 && process.env.NODE_ENV === "development") {
+        if (error.response?.status !== 400 && envConfig.isDevelopment) {
             console.error(`GET request to ${endpoint} failed:`, error.response?.data?.message || error.message);
         }
         throw error;
@@ -66,7 +61,7 @@ const httpPost = async <TData>(endpoint: string, data: unknown, options?: ApiReq
         if (error.response?.status === 401) {
             redirect("/login");
         }
-        if (error.response?.status !== 400 && process.env.NODE_ENV === "development") {
+        if (error.response?.status !== 400 && envConfig.isDevelopment) {
             console.error(`POST request to ${endpoint} failed:`, error.response?.data?.message || error.message);
         }
         throw error;
@@ -85,7 +80,7 @@ const httpPut = async <TData>(endpoint: string, data: unknown, options?: ApiRequ
         if (error.response?.status === 401) {
             redirect("/login");
         }
-        if (error.response?.status !== 400 && process.env.NODE_ENV === "development") {
+        if (error.response?.status !== 400 && envConfig.isDevelopment) {
             console.error(`PUT request to ${endpoint} failed:`, error.response?.data?.message || error.message);
         }
         throw error;
@@ -104,7 +99,7 @@ const httpPatch = async <TData>(endpoint: string, data: unknown, options?: ApiRe
         if (error.response?.status === 401) {
             redirect("/login");
         }
-        if (error.response?.status !== 400 && process.env.NODE_ENV === "development") {
+        if (error.response?.status !== 400 && envConfig.isDevelopment) {
             console.error(`PATCH request to ${endpoint} failed:`, error.response?.data?.message || error.message);
         }
         throw error;
@@ -123,7 +118,7 @@ const httpDelete = async <TData>(endpoint: string, options?: ApiRequestOptions):
         if (error.response?.status === 401) {
             redirect("/login");
         }
-        if (error.response?.status !== 400 && process.env.NODE_ENV === "development") {
+        if (error.response?.status !== 400 && envConfig.isDevelopment) {
             console.error(`DELETE request to ${endpoint} failed:`, error.response?.data?.message || error.message);
         }
         throw error;

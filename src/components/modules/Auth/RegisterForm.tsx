@@ -6,6 +6,7 @@ import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import envConfig from "@/lib/envConfig";
 import { IRegisterPayload, registerZodSchema } from "@/zod/auth.validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
@@ -151,7 +152,7 @@ const RegisterForm = () => {
                     variant="outline"
                     className="w-full"
                     onClick={() => {
-                        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+                        const baseUrl = envConfig.apiBaseUrl;
                         window.location.href = `${baseUrl}/auth/login/google`;
                     }}
                 >

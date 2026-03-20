@@ -2,6 +2,7 @@
 
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { setCookie } from "./cookieUtils";
+import envConfig from "./envConfig";
 
 
 const getTokenSecondsRemaining = (token: string): number => {
@@ -18,7 +19,7 @@ const getTokenSecondsRemaining = (token: string): number => {
         return remainingSeconds > 0 ? remainingSeconds : 0;
 
     } catch (error) {
-        if (process.env.NODE_ENV === "development") {
+        if (envConfig.isDevelopment) {
             console.error("Error decoding token:", error);
         }
         return 0;
@@ -32,7 +33,7 @@ export const setTokenInCookies = async (
 ) => {
     // Safety check - don't set empty or undefined tokens
     if (!token || token.trim() === "") {
-        if (process.env.NODE_ENV === "development") {
+        if (envConfig.isDevelopment) {
             console.error(`[setTokenInCookies] Token is empty for ${name}`);
         }
         return;
@@ -49,7 +50,7 @@ export const setTokenInCookies = async (
         }
     }
 
-    if (process.env.NODE_ENV === "development") {
+    if (envConfig.isDevelopment) {
         console.log(`[setTokenInCookies] Setting ${name} with maxAge: ${maxAgeInSeconds}s`);
     }
 
