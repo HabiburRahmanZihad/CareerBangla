@@ -68,7 +68,14 @@ export const getUserInfo = cache(async (): Promise<UserInfo | null> => {
         const response = await serverHttpClient.get<UserInfo>("/auth/me");
         return response.data;
     } catch (error: unknown) {
-        console.error("Error fetching user info:", error);
+        // Re-throw NEXT_REDIRECT so Next.js can handle the redirect
+        if (error && typeof error === "object" && "digest" in error &&
+            typeof (error as any).digest === "string" && (error as any).digest.startsWith("NEXT_REDIRECT")) {
+            throw error;
+        }
+        if (envConfig.isDevelopment) {
+            console.error("Error fetching user info:", error);
+        }
         // On 404 (user deleted), return null to trigger logout
         // The dashboard layout will call the logout Server Action
         return null;
@@ -77,6 +84,10 @@ export const getUserInfo = cache(async (): Promise<UserInfo | null> => {
 
 export async function changePassword(payload: IChangePasswordPayload) {
     return serverHttpClient.post("/auth/change-password", payload);
+}
+
+export async function updateMyProfile(data: { name?: string; phone?: string }) {
+    return serverHttpClient.patch<UserInfo>("/auth/update-profile", data);
 }
 
 export async function logoutUser() {

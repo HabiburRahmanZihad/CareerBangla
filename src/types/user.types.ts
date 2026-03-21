@@ -6,6 +6,7 @@ export interface UserInfo {
     id: string;
     name: string;
     email: string;
+    phone?: string;
     role: UserRole;
     image?: string;
     status?: UserStatus;

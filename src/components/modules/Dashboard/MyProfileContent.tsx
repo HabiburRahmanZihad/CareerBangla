@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import envConfig from "@/lib/envConfig";
+import { Input } from "@/components/ui/input";
+import { updateMyProfile } from "@/services/auth.services";
 import { getMyResume } from "@/services/resume.services";
 import { UserInfo } from "@/types/user.types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -30,6 +32,7 @@ import {
     Loader2,
     Mail,
     MapPin,
+    Pencil,
     Phone,
     Rocket,
     Shield,
@@ -115,6 +118,9 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
     const queryClient = useQueryClient();
     const photoInputRef = useRef<HTMLInputElement>(null);
     const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+    const [isEditingPhone, setIsEditingPhone] = useState(false);
+    const [phoneValue, setPhoneValue] = useState(userInfo.phone || "");
+    const [isSavingPhone, setIsSavingPhone] = useState(false);
 
     const { data: resumeData, isLoading: resumeLoading } = useQuery({
         queryKey: ["my-resume"],
@@ -157,6 +163,24 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
         } finally {
             setIsUploadingPhoto(false);
             if (photoInputRef.current) photoInputRef.current.value = "";
+        }
+    };
+
+    const handlePhoneSave = async () => {
+        const trimmed = phoneValue.trim();
+        if (trimmed && (trimmed.length < 11 || trimmed.length > 14)) {
+            toast.error("Phone number must be 11-14 characters");
+            return;
+        }
+        setIsSavingPhone(true);
+        try {
+            await updateMyProfile({ phone: trimmed || undefined });
+            toast.success("Phone number updated!");
+            setIsEditingPhone(false);
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message || "Failed to update phone number");
+        } finally {
+            setIsSavingPhone(false);
         }
     };
 
@@ -235,9 +259,9 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                                 <span className="flex items-center gap-1">
                                     <Mail className="h-3.5 w-3.5" /> {userInfo.email}
                                 </span>
-                                {resume?.contactNumber && (
+                                {(resume?.contactNumber || userInfo.phone) && (
                                     <span className="flex items-center gap-1">
-                                        <Phone className="h-3.5 w-3.5" /> {resume.contactNumber}
+                                        <Phone className="h-3.5 w-3.5" /> {resume?.contactNumber || userInfo.phone}
                                     </span>
                                 )}
                                 {resume?.address && (
@@ -319,6 +343,57 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <InfoRow icon={User} label="Full Name" value={userInfo.name} />
                     <InfoRow icon={Mail} label="Email" value={userInfo.email} />
+                    {/* Phone Number - Editable */}
+                    <div className="flex items-start gap-3 p-3 border rounded-lg">
+                        <Phone className="h-4.5 w-4.5 text-muted-foreground mt-0.5 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                            <p className="text-xs text-muted-foreground">Phone Number</p>
+                            {isEditingPhone ? (
+                                <div className="flex items-center gap-2 mt-1">
+                                    <Input
+                                        type="tel"
+                                        value={phoneValue}
+                                        onChange={(e) => setPhoneValue(e.target.value)}
+                                        placeholder="01XXXXXXXXX"
+                                        className="h-8 text-sm"
+                                    />
+                                    <Button
+                                        size="sm"
+                                        className="h-8"
+                                        onClick={handlePhoneSave}
+                                        disabled={isSavingPhone}
+                                    >
+                                        {isSavingPhone ? <Loader2 className="w-3 h-3 animate-spin" /> : "Save"}
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-8"
+                                        onClick={() => {
+                                            setIsEditingPhone(false);
+                                            setPhoneValue(userInfo.phone || "");
+                                        }}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <p className="text-sm font-medium">
+                                        {userInfo.phone || <span className="text-muted-foreground italic">Not set</span>}
+                                    </p>
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-6 w-6"
+                                        onClick={() => setIsEditingPhone(true)}
+                                    >
+                                        <Pencil className="w-3 h-3" />
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                     <InfoRow icon={Shield} label="Role" value={userInfo.role?.toLowerCase().replace("_", " ")} />
                     <InfoRow
                         icon={userInfo.status === "ACTIVE" ? CheckCircle2 : XCircle}
