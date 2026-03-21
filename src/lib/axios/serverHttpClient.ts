@@ -4,28 +4,22 @@ import "server-only";
 import { ApiResponse } from "@/types/api.types";
 import envConfig from "@/lib/envConfig";
 import axios from "axios";
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { ApiRequestOptions } from "./httpClient";
 
 const axiosInstance = async () => {
-    const cookieStore = await cookies();
-
-
-    // Token refresh is handled by the client-side Route Handler or middleware
-    // Not attempted here to avoid 401 errors and cookie issues
-
-    const cookieHeader = cookieStore
-        .getAll()
-        .map((cookie) => `${cookie.name}=${cookie.value}`)
-        .join("; ");
+    // Use raw Cookie header from the incoming request to preserve exact encoding
+    // This prevents session token corruption from decode/re-encode cycles
+    const headersList = await headers();
+    const rawCookieHeader = headersList.get("cookie") || "";
 
     return axios.create({
         baseURL: envConfig.apiBaseUrl,
         timeout: 30000,
         headers: {
             "Content-Type": "application/json",
-            Cookie: cookieHeader,
+            Cookie: rawCookieHeader,
         },
     });
 };
