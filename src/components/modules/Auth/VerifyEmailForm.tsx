@@ -43,13 +43,8 @@ const VerifyEmailForm = ({ email }: VerifyEmailFormProps) => {
     const { mutateAsync, isPending } = useMutation({
         mutationFn: () => httpClient.post("/auth/verify-email", { email, otp }),
         onSuccess: () => {
-            toast.success("Email verified successfully!");
-            // Refresh the page to get the updated user session
-            router.refresh();
-            // Wait a moment for the refresh, then navigate
-            setTimeout(() => {
-                router.push("/dashboard");
-            }, 500);
+            toast.success("Email verified successfully! Please login to continue.");
+            router.push("/login");
         },
         onError: (err: any) => {
             setError(err?.response?.data?.message || "Verification failed");
