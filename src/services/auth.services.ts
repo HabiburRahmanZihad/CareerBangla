@@ -68,16 +68,13 @@ export const getUserInfo = cache(async (): Promise<UserInfo | null> => {
         const response = await serverHttpClient.get<UserInfo>("/auth/me");
         return response.data;
     } catch (error: unknown) {
-        // Re-throw NEXT_REDIRECT so Next.js can handle the redirect
-        if (error && typeof error === "object" && "digest" in error &&
-            typeof (error as any).digest === "string" && (error as any).digest.startsWith("NEXT_REDIRECT")) {
-            throw error;
-        }
-        if (envConfig.isDevelopment) {
+        // NEXT_REDIRECT from serverHttpClient's 401 handler - don't log as error
+        const isRedirect = error && typeof error === "object" && "digest" in error &&
+            typeof (error as any).digest === "string" && (error as any).digest.startsWith("NEXT_REDIRECT");
+        if (!isRedirect && envConfig.isDevelopment) {
             console.error("Error fetching user info:", error);
         }
-        // On 404 (user deleted), return null to trigger logout
-        // The dashboard layout will call the logout Server Action
+        // Return null so the caller can decide what to do (redirect, logout, etc.)
         return null;
     }
 });
