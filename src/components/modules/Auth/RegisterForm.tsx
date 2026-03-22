@@ -37,11 +37,16 @@ const RegisterForm = ({ referralCode }: RegisterFormProps) => {
         onSubmit: async ({ value }) => {
             setServerError(null);
             try {
+                // Store credentials before registration so they're available after redirect to verify-email
+                sessionStorage.setItem("pendingVerification", JSON.stringify({ email: value.email, password: value.password }));
+
                 const result = (await mutateAsync(value)) as any;
                 if (!result.success) {
+                    sessionStorage.removeItem("pendingVerification");
                     setServerError(result.message || "Registration failed");
                 }
             } catch (error: any) {
+                sessionStorage.removeItem("pendingVerification");
                 setServerError(`Registration failed: ${error.message}`);
             }
         },

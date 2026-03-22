@@ -1,7 +1,9 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { loginAction } from "@/app/(commonLayout)/(authRouteGroup)/login/_action";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
@@ -9,7 +11,6 @@ import { httpClient } from "@/lib/axios/httpClient";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 interface VerifyEmailFormProps {
@@ -42,8 +43,29 @@ const VerifyEmailForm = ({ email }: VerifyEmailFormProps) => {
 
     const { mutateAsync, isPending } = useMutation({
         mutationFn: () => httpClient.post("/auth/verify-email", { email, otp }),
-        onSuccess: () => {
-            toast.success("Email verified successfully! Please login to continue.");
+        onSuccess: async () => {
+            toast.success("Email verified successfully!");
+
+            // Auto-login using stored credentials from registration
+            const stored = sessionStorage.getItem("pendingVerification");
+            if (stored) {
+                try {
+                    const { email: storedEmail, password } = JSON.parse(stored);
+                    const loginResult = await loginAction({ identifier: storedEmail, password }) as any;
+                    sessionStorage.removeItem("pendingVerification");
+
+                    if (loginResult.success) {
+                        const targetPath = loginResult.redirectPath || "/dashboard";
+                        router.push(targetPath);
+                        router.refresh();
+                        return;
+                    }
+                } catch {
+                    sessionStorage.removeItem("pendingVerification");
+                }
+            }
+
+            // Fallback: redirect to login if auto-login fails
             router.push("/login");
         },
         onError: (err: any) => {
@@ -100,7 +122,7 @@ const VerifyEmailForm = ({ email }: VerifyEmailFormProps) => {
 
                     <div className="text-center text-sm pt-2">
                         {timeLeft > 0 ? (
-                            <span className="text-muted-foreground">Didn't receive code? Resend in {timeLeft}s</span>
+                            <span className="text-muted-foreground">Didn&apos;t receive code? Resend in {timeLeft}s</span>
                         ) : (
                             <Button
                                 type="button"
