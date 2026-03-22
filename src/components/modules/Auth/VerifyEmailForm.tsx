@@ -56,8 +56,7 @@ const VerifyEmailForm = ({ email }: VerifyEmailFormProps) => {
 
                     if (loginResult.success) {
                         const targetPath = loginResult.redirectPath || "/dashboard";
-                        router.push(targetPath);
-                        router.refresh();
+                        window.location.href = targetPath;
                         return;
                     }
                 } catch {
@@ -78,8 +77,11 @@ const VerifyEmailForm = ({ email }: VerifyEmailFormProps) => {
             <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-bold">Verify Your Email</CardTitle>
                 <CardDescription>
-                    We sent a 6-digit OTP to <strong>{email}</strong>
+                    Your OTP has been sent to your email. Please check your inbox.
                 </CardDescription>
+                <p className="text-sm text-muted-foreground mt-1">
+                    OTP sent to <strong>{email}</strong>
+                </p>
             </CardHeader>
 
             <CardContent>

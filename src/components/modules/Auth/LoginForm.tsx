@@ -12,7 +12,6 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const oauthErrorMessages: Record<string, string> = {
@@ -28,8 +27,6 @@ interface LoginFormProps {
 }
 
 const LoginForm = ({ redirectPath, oauthError }: LoginFormProps) => {
-  const router = useRouter();
-
   const [serverError, setServerError] = useState<string | null>(
     oauthError ? oauthErrorMessages[oauthError] || "Authentication failed. Please try again." : null
   );
@@ -63,8 +60,9 @@ const LoginForm = ({ redirectPath, oauthError }: LoginFormProps) => {
         const targetPath = result.redirectPath || "/dashboard";
         console.log("[Login] Navigating to:", targetPath);
 
-        router.push(targetPath);
-        router.refresh();
+        // Use full page navigation to ensure cookies are properly sent
+        // router.push + router.refresh can cause race conditions with freshly set cookies
+        window.location.href = targetPath;
       } catch (error: any) {
         console.error("[Login] Error:", error.message);
         setServerError(`Login failed: ${error.message}`);

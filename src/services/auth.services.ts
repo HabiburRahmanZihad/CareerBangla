@@ -59,6 +59,12 @@ export const getUserInfo = cache(async (): Promise<UserInfo | null> => {
     try {
         const cookieStore = await cookies();
         const sessionToken = cookieStore.get("better-auth.session_token")?.value;
+        const accessToken = cookieStore.get("accessToken")?.value;
+
+        if (envConfig.isDevelopment) {
+            console.log("[getUserInfo] sessionToken:", sessionToken ? "present" : "MISSING");
+            console.log("[getUserInfo] accessToken:", accessToken ? "present" : "MISSING");
+        }
 
         // Primary Authentication check: ONLY depend on better-auth.session_token
         if (!sessionToken) {
@@ -66,13 +72,19 @@ export const getUserInfo = cache(async (): Promise<UserInfo | null> => {
         }
 
         const response = await serverHttpClient.get<UserInfo>("/auth/me");
+        if (envConfig.isDevelopment) {
+            console.log("[getUserInfo] Success, user:", response.data?.email);
+        }
         return response.data;
     } catch (error: unknown) {
         // NEXT_REDIRECT from serverHttpClient's 401 handler - don't log as error
         const isRedirect = error && typeof error === "object" && "digest" in error &&
-            typeof (error as any).digest === "string" && (error as any).digest.startsWith("NEXT_REDIRECT");
+            typeof (error as Record<string, unknown>).digest === "string" && (error as Record<string, unknown>).digest === "NEXT_REDIRECT";
+        if (isRedirect && envConfig.isDevelopment) {
+            console.error("[getUserInfo] Backend /auth/me returned 401 - session may be invalid");
+        }
         if (!isRedirect && envConfig.isDevelopment) {
-            console.error("Error fetching user info:", error);
+            console.error("[getUserInfo] Error fetching user info:", error);
         }
         // Return null so the caller can decide what to do (redirect, logout, etc.)
         return null;
