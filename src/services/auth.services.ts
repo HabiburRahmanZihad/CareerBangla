@@ -60,33 +60,93 @@ export const getUserInfo = cache(async (): Promise<UserInfo | null> => {
         const cookieStore = await cookies();
         const sessionToken = cookieStore.get("better-auth.session_token")?.value;
         const accessToken = cookieStore.get("accessToken")?.value;
+        const refreshToken = cookieStore.get("refreshToken")?.value;
 
         if (envConfig.isDevelopment) {
             console.log("[getUserInfo] sessionToken:", sessionToken ? "present" : "MISSING");
             console.log("[getUserInfo] accessToken:", accessToken ? "present" : "MISSING");
         }
 
-        // Primary Authentication check: ONLY depend on better-auth.session_token
-        if (!sessionToken) {
+        // Allow access if user has either session token or access token
+        if (!sessionToken && !accessToken) {
             return null;
         }
 
-        const response = await serverHttpClient.get<UserInfo>("/auth/me");
+        // Build cookie header from cookies() API to ensure proper forwarding
+        const cookieParts: string[] = [];
+        if (accessToken) cookieParts.push(`accessToken=${accessToken}`);
+        if (refreshToken) cookieParts.push(`refreshToken=${refreshToken}`);
+        if (sessionToken) cookieParts.push(`better-auth.session_token=${sessionToken}`);
+        const cookieHeader = cookieParts.join("; ");
+
+        // Use direct fetch instead of serverHttpClient to avoid redirect-on-401
+        // and get actual error details from the backend
+        const res = await fetch(`${BASE_API_URL}/auth/me`, {
+            headers: {
+                "Content-Type": "application/json",
+                Cookie: cookieHeader,
+            },
+            cache: "no-store",
+        });
+
+        if (res.ok) {
+            const responseData = await res.json();
+            if (envConfig.isDevelopment) {
+                console.log("[getUserInfo] Success, user:", responseData.data?.email);
+            }
+            return responseData.data;
+        }
+
         if (envConfig.isDevelopment) {
-            console.log("[getUserInfo] Success, user:", response.data?.email);
+            const errorBody = await res.text().catch(() => "unable to read body");
+            console.error(`[getUserInfo] /auth/me returned ${res.status}:`, errorBody);
         }
-        return response.data;
+
+        // On 401, try token refresh and retry once
+        if (res.status === 401 && refreshToken) {
+            if (envConfig.isDevelopment) {
+                console.log("[getUserInfo] Attempting token refresh...");
+            }
+            const refreshed = await getNewTokensWithRefreshToken(refreshToken);
+            if (refreshed) {
+                // Read refreshed tokens from cookies
+                const newCookieStore = await cookies();
+                const newAccessToken = newCookieStore.get("accessToken")?.value;
+                const newRefreshToken = newCookieStore.get("refreshToken")?.value;
+                const newSessionToken = newCookieStore.get("better-auth.session_token")?.value;
+
+                const newCookieParts: string[] = [];
+                if (newAccessToken) newCookieParts.push(`accessToken=${newAccessToken}`);
+                if (newRefreshToken) newCookieParts.push(`refreshToken=${newRefreshToken}`);
+                if (newSessionToken) newCookieParts.push(`better-auth.session_token=${newSessionToken}`);
+
+                const retryRes = await fetch(`${BASE_API_URL}/auth/me`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Cookie: newCookieParts.join("; "),
+                    },
+                    cache: "no-store",
+                });
+
+                if (retryRes.ok) {
+                    const retryData = await retryRes.json();
+                    if (envConfig.isDevelopment) {
+                        console.log("[getUserInfo] Success after token refresh, user:", retryData.data?.email);
+                    }
+                    return retryData.data;
+                }
+
+                if (envConfig.isDevelopment) {
+                    console.error("[getUserInfo] Still failed after token refresh:", retryRes.status);
+                }
+            }
+        }
+
+        return null;
     } catch (error: unknown) {
-        // NEXT_REDIRECT from serverHttpClient's 401 handler - don't log as error
-        const isRedirect = error && typeof error === "object" && "digest" in error &&
-            typeof (error as Record<string, unknown>).digest === "string" && (error as Record<string, unknown>).digest === "NEXT_REDIRECT";
-        if (isRedirect && envConfig.isDevelopment) {
-            console.error("[getUserInfo] Backend /auth/me returned 401 - session may be invalid");
-        }
-        if (!isRedirect && envConfig.isDevelopment) {
+        if (envConfig.isDevelopment) {
             console.error("[getUserInfo] Error fetching user info:", error);
         }
-        // Return null so the caller can decide what to do (redirect, logout, etc.)
         return null;
     }
 });
