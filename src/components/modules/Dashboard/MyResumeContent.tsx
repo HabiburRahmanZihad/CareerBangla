@@ -552,6 +552,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                             <form.Subscribe selector={(s) => s.values}>
                                 {(values) => {
                                     const computedIsLocked = !isPremium && calculateProfileCompletion(values) === 100;
+                                    const missingRequired = !values.fullName?.trim() || !values.email?.trim();
                                     return (
                                         <form
                                             noValidate
@@ -989,11 +990,16 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
 
                                             {/* ── Submit ── */}
                                             <div className="pt-2 sticky bottom-0 bg-card pb-2">
-                                                <AppSubmitButton isPending={isPending} disabled={computedIsLocked} pendingLabel="Saving…">
+                                                <AppSubmitButton isPending={isPending} disabled={computedIsLocked || missingRequired} pendingLabel="Saving…">
                                                     {computedIsLocked ? (
                                                         <><Lock className="w-4 h-4 mr-2" /> Profile Locked</>
                                                     ) : "Save Resume"}
                                                 </AppSubmitButton>
+                                                {missingRequired && (
+                                                    <p className="text-xs text-center text-destructive mt-2">
+                                                        Full Name and Email are required to save your resume.
+                                                    </p>
+                                                )}
                                                 {computedIsLocked && (
                                                     <p className="text-xs text-center text-muted-foreground mt-2">
                                                         <Link href="/dashboard/subscriptions" className="underline font-medium">Upgrade to Career Boost</Link> to continue editing.
