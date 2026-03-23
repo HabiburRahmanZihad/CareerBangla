@@ -1,14 +1,12 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { getUserInfo } from "@/services/auth.services";
 import { CheckCircle, Crown, Info } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
 
-const PricingPage = () => {
-    const { user } = useAuth();
-    
+const PricingPage = async () => {
+    const user = await getUserInfo();
+
     return (
         <div className="container mx-auto py-16 space-y-12">
             <div className="text-center space-y-4 max-w-2xl mx-auto">

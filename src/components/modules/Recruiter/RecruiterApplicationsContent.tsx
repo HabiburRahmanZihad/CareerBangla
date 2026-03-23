@@ -122,8 +122,9 @@ const RecruiterApplicationsContent = () => {
     };
 
     const jobs = jobsData?.data || [];
-    const applications: any[] = applicationsData?.data?.applications || applicationsData?.data || [];
-    const isPremiumRecruiter: boolean = applicationsData?.data?.isPremiumRecruiter ?? false;
+    const rawData = applicationsData?.data;
+    const applications = (rawData && 'applications' in rawData ? rawData.applications : rawData) || [];
+    const isPremiumRecruiter: boolean = (rawData && 'isPremiumRecruiter' in rawData ? rawData.isPremiumRecruiter : false) ?? false;
 
     return (
         <div className="space-y-6">
