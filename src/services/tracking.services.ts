@@ -1,6 +1,7 @@
 "use server";
 
 import { serverHttpClient } from "@/lib/axios/serverHttpClient";
+import { logger } from "@/lib/logger";
 
 export interface IReferralHistory {
     id: string;
@@ -45,9 +46,11 @@ interface TrackingDataResponse<T> {
 }
 
 export async function getReferralTracking(page: number = 1, limit: number = 20) {
+    logger.read(`Fetching referral tracking → page: ${page}`);
     return serverHttpClient.get<TrackingDataResponse<IReferralHistory>>(`/tracking/referrals?page=${page}&limit=${limit}`);
 }
 
 export async function getCouponUsageTracking(page: number = 1, limit: number = 20) {
+    logger.read(`Fetching coupon usage tracking → page: ${page}`);
     return serverHttpClient.get<TrackingDataResponse<ICouponUsage>>(`/tracking/coupons?page=${page}&limit=${limit}`);
 }

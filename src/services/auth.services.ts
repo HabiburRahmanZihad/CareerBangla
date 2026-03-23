@@ -2,6 +2,7 @@
 
 import { serverHttpClient } from "@/lib/axios/serverHttpClient";
 import envConfig from "@/lib/envConfig";
+import { logger } from "@/lib/logger";
 
 import { UserInfo } from "@/types/user.types";
 import { IChangePasswordPayload } from "@/zod/auth.validation";
@@ -23,6 +24,7 @@ type RefreshResult = {
  */
 export async function getNewTokensWithRefreshToken(refreshToken: string): Promise<RefreshResult> {
     try {
+        logger.auth("Attempting token refresh");
         const cookieStore = await cookies();
         const sessionToken = cookieStore.get("better-auth.session_token")?.value;
 
@@ -51,13 +53,14 @@ export async function getNewTokensWithRefreshToken(refreshToken: string): Promis
             return null;
         }
 
+        logger.auth("Token refresh successful");
         return {
             accessToken,
             refreshToken: newRefreshToken || refreshToken,
             sessionToken: newSessionToken,
         };
     } catch (error) {
-        console.error("Error refreshing token:", error);
+        logger.auth("Token refresh failed");
         return null;
     }
 }
@@ -70,10 +73,10 @@ export const getUserInfo = cache(async (): Promise<UserInfo | null> => {
         const accessToken = cookieStore.get("accessToken")?.value;
         const refreshToken = cookieStore.get("refreshToken")?.value;
 
-        if (envConfig.isDevelopment) {
-            console.log("[getUserInfo] sessionToken:", sessionToken ? "present" : "MISSING");
-            console.log("[getUserInfo] accessToken:", accessToken ? "present" : "MISSING");
-        }
+        logger.auth("getUserInfo check", {
+            sessionToken: sessionToken ? "present" : "MISSING",
+            accessToken: accessToken ? "present" : "MISSING",
+        });
 
         // Allow access if user has either session token or access token
         if (!sessionToken && !accessToken) {
@@ -104,15 +107,13 @@ export const getUserInfo = cache(async (): Promise<UserInfo | null> => {
 
         if (res.ok) {
             const responseData = await res.json();
-            if (envConfig.isDevelopment) {
-                console.log("[getUserInfo] Success, user:", responseData.data?.email);
-            }
+            logger.auth(`getUserInfo success → user: ${responseData.data?.email}`);
             return responseData.data;
         }
 
         if (envConfig.isDevelopment) {
             const errorBody = await res.text().catch(() => "unable to read body");
-            console.error(`[getUserInfo] /auth/me returned ${res.status}:`, errorBody);
+            logger.auth(`getUserInfo /auth/me returned ${res.status}`, { body: errorBody });
         }
 
         // On 401, try token refresh and retry once
@@ -121,9 +122,7 @@ export const getUserInfo = cache(async (): Promise<UserInfo | null> => {
         // The browser will receive updated cookies from the backend's Set-Cookie response headers
         // on the next client-side request.
         if (res.status === 401 && refreshToken) {
-            if (envConfig.isDevelopment) {
-                console.log("[getUserInfo] Attempting token refresh...");
-            }
+            logger.auth("Attempting token refresh for getUserInfo retry");
             const freshTokens = await getNewTokensWithRefreshToken(refreshToken);
             if (freshTokens) {
                 // Use the new tokens directly for the retry — no cookie write needed
@@ -147,36 +146,40 @@ export const getUserInfo = cache(async (): Promise<UserInfo | null> => {
 
                 if (retryRes.ok) {
                     const retryData = await retryRes.json();
-                    if (envConfig.isDevelopment) {
-                        console.log("[getUserInfo] Success after token refresh, user:", retryData.data?.email);
-                    }
+                    logger.auth(`getUserInfo success after refresh → user: ${retryData.data?.email}`);
                     return retryData.data;
                 }
 
-                if (envConfig.isDevelopment) {
-                    console.error("[getUserInfo] Still failed after token refresh:", retryRes.status);
-                }
+                logger.auth(`getUserInfo still failed after refresh → status: ${retryRes.status}`);
             }
         }
 
         return null;
     } catch (error: unknown) {
-        if (envConfig.isDevelopment) {
-            console.error("[getUserInfo] Error fetching user info:", error);
+        // Re-throw Next.js redirect errors
+        if (error && typeof error === "object" && "digest" in error) {
+            const digest = (error as { digest?: string }).digest;
+            if (digest && typeof digest === "string" && digest.startsWith("NEXT_REDIRECT")) {
+                throw error;
+            }
         }
+        logger.auth("getUserInfo error");
         return null;
     }
 });
 
 export async function changePassword(payload: IChangePasswordPayload) {
+    logger.update("Changing password");
     return serverHttpClient.post("/auth/change-password", payload);
 }
 
 export async function updateMyProfile(data: { name?: string; phone?: string }) {
+    logger.update("Updating profile", { fields: Object.keys(data) });
     return serverHttpClient.patch<UserInfo>("/auth/update-profile", data);
 }
 
 export async function logoutUser() {
+    logger.auth("Logging out user");
     const cookieStore = await cookies();
     cookieStore.delete("better-auth.session_token");
     cookieStore.delete("accessToken");

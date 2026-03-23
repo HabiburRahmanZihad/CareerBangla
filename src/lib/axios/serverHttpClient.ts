@@ -3,6 +3,7 @@ import "server-only";
 
 import { ApiResponse } from "@/types/api.types";
 import envConfig from "@/lib/envConfig";
+import { logger } from "@/lib/logger";
 import axios from "axios";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -36,95 +37,95 @@ const axiosInstance = async () => {
 
 const httpGet = async <TData>(endpoint: string, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
     try {
+        logger.apiRequest("GET", endpoint);
         const instance = await axiosInstance();
         const response = await instance.get<ApiResponse<TData>>(endpoint, {
             params: options?.params,
             headers: options?.headers,
         });
+        logger.apiSuccess("GET", endpoint, response.status);
         return response.data;
     } catch (error: any) {
         if (error.response?.status === 401) {
             redirect("/login");
         }
-        if (error.response?.status !== 400 && envConfig.isDevelopment) {
-            console.error(`GET request to ${endpoint} failed:`, error.response?.data?.message || error.message);
-        }
+        logger.apiError("GET", endpoint, { status: error.response?.status, message: error.response?.data?.message || error.message });
         throw error;
     }
 };
 
 const httpPost = async <TData>(endpoint: string, data: unknown, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
     try {
+        logger.apiRequest("POST", endpoint);
         const instance = await axiosInstance();
         const response = await instance.post<ApiResponse<TData>>(endpoint, data, {
             params: options?.params,
             headers: options?.headers,
         });
+        logger.apiSuccess("POST", endpoint, response.status);
         return response.data;
     } catch (error: any) {
         if (error.response?.status === 401) {
             redirect("/login");
         }
-        if (error.response?.status !== 400 && envConfig.isDevelopment) {
-            console.error(`POST request to ${endpoint} failed:`, error.response?.data?.message || error.message);
-        }
+        logger.apiError("POST", endpoint, { status: error.response?.status, message: error.response?.data?.message || error.message });
         throw error;
     }
 };
 
 const httpPut = async <TData>(endpoint: string, data: unknown, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
     try {
+        logger.apiRequest("PUT", endpoint);
         const instance = await axiosInstance();
         const response = await instance.put<ApiResponse<TData>>(endpoint, data, {
             params: options?.params,
             headers: options?.headers,
         });
+        logger.apiSuccess("PUT", endpoint, response.status);
         return response.data;
     } catch (error: any) {
         if (error.response?.status === 401) {
             redirect("/login");
         }
-        if (error.response?.status !== 400 && envConfig.isDevelopment) {
-            console.error(`PUT request to ${endpoint} failed:`, error.response?.data?.message || error.message);
-        }
+        logger.apiError("PUT", endpoint, { status: error.response?.status, message: error.response?.data?.message || error.message });
         throw error;
     }
 };
 
 const httpPatch = async <TData>(endpoint: string, data: unknown, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
     try {
+        logger.apiRequest("PATCH", endpoint);
         const instance = await axiosInstance();
         const response = await instance.patch<ApiResponse<TData>>(endpoint, data, {
             params: options?.params,
             headers: options?.headers,
         });
+        logger.apiSuccess("PATCH", endpoint, response.status);
         return response.data;
     } catch (error: any) {
         if (error.response?.status === 401) {
             redirect("/login");
         }
-        if (error.response?.status !== 400 && envConfig.isDevelopment) {
-            console.error(`PATCH request to ${endpoint} failed:`, error.response?.data?.message || error.message);
-        }
+        logger.apiError("PATCH", endpoint, { status: error.response?.status, message: error.response?.data?.message || error.message });
         throw error;
     }
 };
 
 const httpDelete = async <TData>(endpoint: string, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
     try {
+        logger.apiRequest("DELETE", endpoint);
         const instance = await axiosInstance();
         const response = await instance.delete<ApiResponse<TData>>(endpoint, {
             params: options?.params,
             headers: options?.headers,
         });
+        logger.apiSuccess("DELETE", endpoint, response.status);
         return response.data;
     } catch (error: any) {
         if (error.response?.status === 401) {
             redirect("/login");
         }
-        if (error.response?.status !== 400 && envConfig.isDevelopment) {
-            console.error(`DELETE request to ${endpoint} failed:`, error.response?.data?.message || error.message);
-        }
+        logger.apiError("DELETE", endpoint, { status: error.response?.status, message: error.response?.data?.message || error.message });
         throw error;
     }
 };

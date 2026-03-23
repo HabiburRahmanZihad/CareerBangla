@@ -1,6 +1,7 @@
 
 import { ApiResponse } from "@/types/api.types";
 import envConfig from "@/lib/envConfig";
+import { logger } from "@/lib/logger";
 import axios, { AxiosError } from "axios";
 
 const axiosInstance = axios.create({
@@ -12,23 +13,36 @@ const axiosInstance = axios.create({
     },
 });
 
+// Request interceptor for logging
+axiosInstance.interceptors.request.use(
+    (config) => {
+        logger.apiRequest(config.method?.toUpperCase() || "?", config.url || "");
+        return config;
+    },
+);
+
 // Response interceptor for better error handling
 axiosInstance.interceptors.response.use(
-    response => response,
+    (response) => {
+        logger.apiSuccess(
+            response.config.method?.toUpperCase() || "?",
+            response.config.url || "",
+            response.status,
+        );
+        return response;
+    },
     async (error: AxiosError) => {
-        if (envConfig.isDevelopment) {
-            console.error("[API Error]", {
-                status: error.response?.status,
-                message: error.message,
-                data: error.response?.data,
-            });
-        }
+        logger.apiError(
+            error.config?.method?.toUpperCase() || "?",
+            error.config?.url || "",
+            { status: error.response?.status, message: error.message },
+        );
 
         // Gracefully handle 401 Unauthorized across the app
         if (error.response?.status === 401) {
             const originalRequest = error.config;
             const isAuthRoute = originalRequest?.url?.includes("/auth/login") || originalRequest?.url?.includes("/auth/refresh-token");
-            
+
             // If it's not an auth route, the session might be expired
             if (!isAuthRoute && typeof window !== 'undefined') {
                 if (window.location.pathname !== '/login') {
@@ -47,78 +61,43 @@ export interface ApiRequestOptions {
 }
 
 const httpGet = async <TData>(endpoint: string, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
-    try {
-        const response = await axiosInstance.get<ApiResponse<TData>>(endpoint, {
-            params: options?.params,
-            headers: options?.headers,
-        });
-        return response.data;
-    } catch (error) {
-        if (envConfig.isDevelopment) {
-            console.error(`GET request to ${endpoint} failed:`, error);
-        }
-        throw error;
-    }
+    const response = await axiosInstance.get<ApiResponse<TData>>(endpoint, {
+        params: options?.params,
+        headers: options?.headers,
+    });
+    return response.data;
 };
 
 const httpPost = async <TData>(endpoint: string, data: unknown, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
-    try {
-        const response = await axiosInstance.post<ApiResponse<TData>>(endpoint, data, {
-            params: options?.params,
-            headers: options?.headers,
-        });
-        return response.data;
-    } catch (error) {
-        if (envConfig.isDevelopment) {
-            console.error(`POST request to ${endpoint} failed:`, error);
-        }
-        throw error;
-    }
+    const response = await axiosInstance.post<ApiResponse<TData>>(endpoint, data, {
+        params: options?.params,
+        headers: options?.headers,
+    });
+    return response.data;
 };
 
 const httpPut = async <TData>(endpoint: string, data: unknown, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
-    try {
-        const response = await axiosInstance.put<ApiResponse<TData>>(endpoint, data, {
-            params: options?.params,
-            headers: options?.headers,
-        });
-        return response.data;
-    } catch (error) {
-        if (envConfig.isDevelopment) {
-            console.error(`PUT request to ${endpoint} failed:`, error);
-        }
-        throw error;
-    }
+    const response = await axiosInstance.put<ApiResponse<TData>>(endpoint, data, {
+        params: options?.params,
+        headers: options?.headers,
+    });
+    return response.data;
 };
 
 const httpPatch = async <TData>(endpoint: string, data: unknown, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
-    try {
-        const response = await axiosInstance.patch<ApiResponse<TData>>(endpoint, data, {
-            params: options?.params,
-            headers: options?.headers,
-        });
-        return response.data;
-    } catch (error) {
-        if (envConfig.isDevelopment) {
-            console.error(`PATCH request to ${endpoint} failed:`, error);
-        }
-        throw error;
-    }
+    const response = await axiosInstance.patch<ApiResponse<TData>>(endpoint, data, {
+        params: options?.params,
+        headers: options?.headers,
+    });
+    return response.data;
 };
 
 const httpDelete = async <TData>(endpoint: string, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
-    try {
-        const response = await axiosInstance.delete<ApiResponse<TData>>(endpoint, {
-            params: options?.params,
-            headers: options?.headers,
-        });
-        return response.data;
-    } catch (error) {
-        if (envConfig.isDevelopment) {
-            console.error(`DELETE request to ${endpoint} failed:`, error);
-        }
-        throw error;
-    }
+    const response = await axiosInstance.delete<ApiResponse<TData>>(endpoint, {
+        params: options?.params,
+        headers: options?.headers,
+    });
+    return response.data;
 };
 
 export const httpClient = {

@@ -1,13 +1,16 @@
 "use server";
 
 import { serverHttpClient } from "@/lib/axios/serverHttpClient";
+import { logger } from "@/lib/logger";
 import { IResume } from "@/types/user.types";
 
 export async function getMyResume() {
+    logger.read("Fetching my resume");
     return serverHttpClient.get<IResume & { profileCompletion: number }>("/resumes/my-resume");
 }
 
 export async function updateMyResume(data: Record<string, unknown>) {
+    logger.update("Updating resume", { fields: Object.keys(data) });
     try {
         const res = await serverHttpClient.patch<IResume & { profileCompletion: number }>("/resumes/my-resume", data);
         return res;
@@ -20,10 +23,12 @@ export async function updateMyResume(data: Record<string, unknown>) {
 }
 
 export async function getResumeByUserId(userId: string) {
+    logger.read(`Fetching resume → userId: ${userId}`);
     return serverHttpClient.get<IResume>(`/resumes/user/${userId}`);
 }
 
 export async function getAtsScore(jobId?: string) {
+    logger.read("Calculating ATS score", { jobId });
     try {
         return await serverHttpClient.post<{
             atsScore: number;
@@ -41,5 +46,6 @@ export async function getAtsScore(jobId?: string) {
 
 
 export async function searchCandidates(params?: Record<string, unknown>) {
+    logger.read("Searching candidates", params);
     return serverHttpClient.get<IResume[]>("/resumes/search-candidates", { params });
 }
