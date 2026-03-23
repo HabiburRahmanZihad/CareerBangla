@@ -422,26 +422,28 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
             ) : resume ? (
                 <>
                     {/* Personal Info */}
-                    <Section icon={User} title="Personal Information">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <InfoRow icon={User} label="Full Name" value={resume.fullName} />
-                            <InfoRow icon={FileText} label="Professional Title" value={resume.professionalTitle} />
-                            <InfoRow icon={Mail} label="Resume Email" value={resume.email} />
-                            <InfoRow icon={Phone} label="Contact Number" value={resume.contactNumber} />
-                            <InfoRow icon={MapPin} label="Address" value={resume.address} />
-                            <InfoRow icon={Globe} label="Nationality" value={resume.nationality} />
-                            {resume.dateOfBirth && (
-                                <InfoRow
-                                    icon={Calendar}
-                                    label="Date of Birth"
-                                    value={format(new Date(resume.dateOfBirth), "MMMM d, yyyy")}
-                                />
-                            )}
-                            {resume.gender && (
-                                <InfoRow icon={User} label="Gender" value={resume.gender?.toLowerCase()} />
-                            )}
-                        </div>
-                    </Section>
+                    {(resume.fullName || resume.professionalTitle || resume.email || resume.contactNumber || resume.address || resume.nationality || resume.dateOfBirth || resume.gender) && (
+                        <Section icon={User} title="Personal Information">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <InfoRow icon={User} label="Full Name" value={resume.fullName} />
+                                <InfoRow icon={FileText} label="Professional Title" value={resume.professionalTitle} />
+                                <InfoRow icon={Mail} label="Resume Email" value={resume.email} />
+                                <InfoRow icon={Phone} label="Contact Number" value={resume.contactNumber} />
+                                <InfoRow icon={MapPin} label="Address" value={resume.address} />
+                                <InfoRow icon={Globe} label="Nationality" value={resume.nationality} />
+                                {resume.dateOfBirth && (
+                                    <InfoRow
+                                        icon={Calendar}
+                                        label="Date of Birth"
+                                        value={format(new Date(resume.dateOfBirth), "MMMM d, yyyy")}
+                                    />
+                                )}
+                                {resume.gender && (
+                                    <InfoRow icon={User} label="Gender" value={resume.gender?.toLowerCase()} />
+                                )}
+                            </div>
+                        </Section>
+                    )}
 
                     {/* Social Links */}
                     {(resume.linkedinUrl || resume.githubUrl || resume.portfolioUrl) && (
