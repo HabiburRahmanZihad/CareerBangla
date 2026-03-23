@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -115,6 +116,7 @@ const Section = ({
 // ─── Main component ───────────────────────────────────────────────────────────
 
 const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
+    const router = useRouter();
     const queryClient = useQueryClient();
     const photoInputRef = useRef<HTMLInputElement>(null);
     const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -177,6 +179,7 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
             await updateMyProfile({ phone: trimmed || undefined });
             toast.success("Phone number updated!");
             setIsEditingPhone(false);
+            router.refresh();
         } catch (err: any) {
             toast.error(err?.response?.data?.message || "Failed to update phone number");
         } finally {
