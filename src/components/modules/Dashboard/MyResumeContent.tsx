@@ -52,12 +52,14 @@ const SelectField = ({
     placeholder,
     options,
     serverErrors,
+    disabled = false,
 }: {
     field: any;
     label: string;
     placeholder: string;
     options: { value: string; label: string }[];
     serverErrors: Record<string, string>;
+    disabled?: boolean;
 }) => {
     const error =
         field.state.meta.isTouched && field.state.meta.errors.length > 0
@@ -78,6 +80,7 @@ const SelectField = ({
             <Select
                 value={(field.state.value as string) || undefined}
                 onValueChange={(v) => field.handleChange(v)}
+                disabled={disabled}
             >
                 <SelectTrigger
                     id={field.name}
@@ -167,12 +170,14 @@ const TextareaField = ({
     placeholder,
     hint,
     serverErrors,
+    disabled = false,
 }: {
     field: any;
     label: string;
     placeholder?: string;
     hint?: string;
     serverErrors: Record<string, string>;
+    disabled?: boolean;
 }) => {
     const error =
         field.state.meta.isTouched && field.state.meta.errors.length > 0
@@ -197,6 +202,7 @@ const TextareaField = ({
                 placeholder={placeholder}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
+                disabled={disabled}
                 className={errorMsg ? "border-destructive focus-visible:ring-destructive/20 min-h-20" : "min-h-20"}
             />
             {hint && !errorMsg && <p className="text-xs text-muted-foreground">{hint}</p>}
@@ -552,7 +558,12 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                             <form.Subscribe selector={(s) => s.values}>
                                 {(values) => {
                                     const computedIsLocked = !isPremium && calculateProfileCompletion(values) === 100;
-                                    const missingRequired = !values.fullName?.trim() || !values.email?.trim();
+
+                                    // Lock sections that already have saved data (non-premium only)
+                                    const basicInfoLocked = !isPremium && !!(resume?.fullName || resume?.email || resume?.professionalTitle || resume?.contactNumber || resume?.address || resume?.nationality || resume?.dateOfBirth || resume?.gender);
+                                    const skillsLocked = !isPremium && !!(resume?.technicalSkills?.length || resume?.softSkills?.length || resume?.toolsAndTechnologies?.length || resume?.professionalSummary);
+                                    const workExpLocked = !isPremium && !!(resume?.workExperience?.length);
+                                    const educationLocked = !isPremium && !!(resume?.education?.length);
                                     return (
                                         <form
                                             noValidate
@@ -560,32 +571,38 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                             className="space-y-6"
                                         >
                                             {/* ── BASIC INFO ── */}
-                                            <FormSection icon={User} title="Basic Information" defaultOpen={true}>
+                                            <FormSection icon={User} title="Basic Information" defaultOpen={true} isLocked={basicInfoLocked || computedIsLocked}>
+                                                {basicInfoLocked && (
+                                                    <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-3 py-2 text-xs text-amber-700 dark:text-amber-300 mb-3">
+                                                        <Lock className="w-3.5 h-3.5 shrink-0" />
+                                                        <span>This section is locked. <Link href="/dashboard/subscriptions" className="underline font-medium">Upgrade</Link> to edit again.</span>
+                                                    </div>
+                                                )}
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                     <form.Field name="fullName">
-                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Full Name" placeholder="John Doe" />}
+                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Full Name" placeholder="John Doe" disabled={basicInfoLocked || computedIsLocked} />}
                                                     </form.Field>
                                                     <form.Field name="email">
-                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Email" type="email" placeholder="john@example.com" />}
+                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Email" type="email" placeholder="john@example.com" disabled={basicInfoLocked || computedIsLocked} />}
                                                     </form.Field>
                                                     <form.Field name="professionalTitle">
-                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Professional Title" placeholder="e.g. Full Stack Developer" />}
+                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Professional Title" placeholder="e.g. Full Stack Developer" disabled={basicInfoLocked || computedIsLocked} />}
                                                     </form.Field>
                                                     <form.Field name="contactNumber">
-                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Contact Number" placeholder="+880…" />}
+                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Contact Number" placeholder="+880…" disabled={basicInfoLocked || computedIsLocked} />}
                                                     </form.Field>
                                                     <form.Field name="address">
-                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Address" placeholder="Dhaka, Bangladesh" />}
+                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Address" placeholder="Dhaka, Bangladesh" disabled={basicInfoLocked || computedIsLocked} />}
                                                     </form.Field>
                                                     <form.Field name="nationality">
-                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Nationality" placeholder="e.g. Bangladeshi" />}
+                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Nationality" placeholder="e.g. Bangladeshi" disabled={basicInfoLocked || computedIsLocked} />}
                                                     </form.Field>
                                                     <form.Field name="dateOfBirth">
-                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Date of Birth" type="date" />}
+                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Date of Birth" type="date" disabled={basicInfoLocked || computedIsLocked} />}
                                                     </form.Field>
                                                     <form.Field name="gender">
                                                         {(f) => (
-                                                            <SelectField field={f} label="Gender" placeholder="Select gender" serverErrors={se} options={[
+                                                            <SelectField field={f} label="Gender" placeholder="Select gender" serverErrors={se} disabled={basicInfoLocked || computedIsLocked} options={[
                                                                 { value: "MALE", label: "Male" },
                                                                 { value: "FEMALE", label: "Female" },
                                                                 { value: "OTHER", label: "Other" },
@@ -615,19 +632,25 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                             <hr className="border-border/60" />
 
                                             {/* ── SKILLS & SUMMARY ── */}
-                                            <FormSection icon={Code2} title="Skills & Summary" defaultOpen={true}>
+                                            <FormSection icon={Code2} title="Skills & Summary" defaultOpen={true} isLocked={skillsLocked || computedIsLocked}>
+                                                {skillsLocked && (
+                                                    <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-3 py-2 text-xs text-amber-700 dark:text-amber-300 mb-3">
+                                                        <Lock className="w-3.5 h-3.5 shrink-0" />
+                                                        <span>This section is locked. <Link href="/dashboard/subscriptions" className="underline font-medium">Upgrade</Link> to edit again.</span>
+                                                    </div>
+                                                )}
                                                 <div className="space-y-4">
                                                     <form.Field name="technicalSkills">
-                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Technical Skills" placeholder="React, TypeScript, Node.js, …  (comma-separated)" />}
+                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Technical Skills" placeholder="React, TypeScript, Node.js, …  (comma-separated)" disabled={skillsLocked || computedIsLocked} />}
                                                     </form.Field>
                                                     <form.Field name="softSkills">
-                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Soft Skills" placeholder="Communication, Leadership, …  (comma-separated)" />}
+                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Soft Skills" placeholder="Communication, Leadership, …  (comma-separated)" disabled={skillsLocked || computedIsLocked} />}
                                                     </form.Field>
                                                     <form.Field name="toolsAndTechnologies">
-                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Tools & Technologies" placeholder="Git, Docker, Figma, …  (comma-separated)" />}
+                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Tools & Technologies" placeholder="Git, Docker, Figma, …  (comma-separated)" disabled={skillsLocked || computedIsLocked} />}
                                                     </form.Field>
                                                     <form.Field name="interests">
-                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Interests" placeholder="Open Source, Reading, …  (comma-separated)" />}
+                                                        {(f) => <AppField field={f} serverError={se[f.name]} label="Interests" placeholder="Open Source, Reading, …  (comma-separated)" disabled={skillsLocked || computedIsLocked} />}
                                                     </form.Field>
                                                     <form.Field name="professionalSummary">
                                                         {(f) => (
@@ -637,6 +660,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                                                 placeholder="A concise overview of your experience, skills, and career goals…"
                                                                 hint="A strong summary significantly boosts your ATS score."
                                                                 serverErrors={se}
+                                                                disabled={skillsLocked || computedIsLocked}
                                                             />
                                                         )}
                                                     </form.Field>
@@ -654,30 +678,36 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                                         count={field.state.value.length}
                                                         onAdd={() => field.pushValue({ jobTitle: "", companyName: "", startDate: "", endDate: "", responsibilities: "" })}
                                                         defaultOpen={true}
-                                                        isLocked={computedIsLocked}
+                                                        isLocked={workExpLocked || computedIsLocked}
                                                     >
+                                                        {workExpLocked && (
+                                                            <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-3 py-2 text-xs text-amber-700 dark:text-amber-300 mb-3">
+                                                                <Lock className="w-3.5 h-3.5 shrink-0" />
+                                                                <span>This section is locked. <Link href="/dashboard/subscriptions" className="underline font-medium">Upgrade</Link> to edit again.</span>
+                                                            </div>
+                                                        )}
                                                         {field.state.value.length === 0 ? (
                                                             <EmptyState label="Work Experience" />
                                                         ) : (
                                                             field.state.value.map((_: any, i: number) => (
-                                                                <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)} isLocked={computedIsLocked}>
+                                                                <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)} isLocked={workExpLocked || computedIsLocked}>
                                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                                         <form.Field name={`workExperience[${i}].jobTitle`}>
-                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Job Title" placeholder="Software Engineer" />}
+                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Job Title" placeholder="Software Engineer" disabled={workExpLocked || computedIsLocked} />}
                                                                         </form.Field>
                                                                         <form.Field name={`workExperience[${i}].companyName`}>
-                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Company" placeholder="Google" />}
+                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Company" placeholder="Google" disabled={workExpLocked || computedIsLocked} />}
                                                                         </form.Field>
                                                                         <form.Field name={`workExperience[${i}].startDate`}>
-                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Start Date" type="date" />}
+                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Start Date" type="date" disabled={workExpLocked || computedIsLocked} />}
                                                                         </form.Field>
                                                                         <form.Field name={`workExperience[${i}].endDate`}>
-                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="End Date (leave blank if current)" type="date" />}
+                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="End Date (leave blank if current)" type="date" disabled={workExpLocked || computedIsLocked} />}
                                                                         </form.Field>
                                                                         <div className="sm:col-span-2">
                                                                             <form.Field name={`workExperience[${i}].responsibilities`}>
                                                                                 {(sf) => (
-                                                                                    <TextareaField field={sf as any} label="Responsibilities (comma-separated)" placeholder="Built RESTful APIs, Improved performance by 40%, …" serverErrors={se} />
+                                                                                    <TextareaField field={sf as any} label="Responsibilities (comma-separated)" placeholder="Built RESTful APIs, Improved performance by 40%, …" serverErrors={se} disabled={workExpLocked || computedIsLocked} />
                                                                                 )}
                                                                             </form.Field>
                                                                         </div>
@@ -700,28 +730,34 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                                         count={field.state.value.length}
                                                         onAdd={() => field.pushValue({ degree: "", institutionName: "", fieldOfStudy: "", startDate: "", endDate: "" })}
                                                         defaultOpen={true}
-                                                        isLocked={computedIsLocked}
+                                                        isLocked={educationLocked || computedIsLocked}
                                                     >
+                                                        {educationLocked && (
+                                                            <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-3 py-2 text-xs text-amber-700 dark:text-amber-300 mb-3">
+                                                                <Lock className="w-3.5 h-3.5 shrink-0" />
+                                                                <span>This section is locked. <Link href="/dashboard/subscriptions" className="underline font-medium">Upgrade</Link> to edit again.</span>
+                                                            </div>
+                                                        )}
                                                         {field.state.value.length === 0 ? (
                                                             <EmptyState label="Education" />
                                                         ) : (
                                                             field.state.value.map((_: any, i: number) => (
-                                                                <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)} isLocked={computedIsLocked}>
+                                                                <ItemCard key={i} index={i} onRemove={() => field.removeValue(i)} isLocked={educationLocked || computedIsLocked}>
                                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                                         <form.Field name={`education[${i}].degree`}>
-                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Degree" placeholder="BSc in Computer Science" />}
+                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Degree" placeholder="BSc in Computer Science" disabled={educationLocked || computedIsLocked} />}
                                                                         </form.Field>
                                                                         <form.Field name={`education[${i}].institutionName`}>
-                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Institution" placeholder="University Name" />}
+                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Institution" placeholder="University Name" disabled={educationLocked || computedIsLocked} />}
                                                                         </form.Field>
                                                                         <form.Field name={`education[${i}].fieldOfStudy`}>
-                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Field of Study" placeholder="Computer Science" />}
+                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Field of Study" placeholder="Computer Science" disabled={educationLocked || computedIsLocked} />}
                                                                         </form.Field>
                                                                         <form.Field name={`education[${i}].startDate`}>
-                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Start Date" type="date" />}
+                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="Start Date" type="date" disabled={educationLocked || computedIsLocked} />}
                                                                         </form.Field>
                                                                         <form.Field name={`education[${i}].endDate`}>
-                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="End Date" type="date" />}
+                                                                            {(sf) => <AppField field={sf as any} serverError={se[sf.name]} label="End Date" type="date" disabled={educationLocked || computedIsLocked} />}
                                                                         </form.Field>
                                                                     </div>
                                                                 </ItemCard>
@@ -990,16 +1026,11 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
 
                                             {/* ── Submit ── */}
                                             <div className="pt-2 sticky bottom-0 bg-card pb-2">
-                                                <AppSubmitButton isPending={isPending} disabled={computedIsLocked || missingRequired} pendingLabel="Saving…">
+                                                <AppSubmitButton isPending={isPending} disabled={computedIsLocked} pendingLabel="Saving…">
                                                     {computedIsLocked ? (
                                                         <><Lock className="w-4 h-4 mr-2" /> Profile Locked</>
                                                     ) : "Save Resume"}
                                                 </AppSubmitButton>
-                                                {missingRequired && (
-                                                    <p className="text-xs text-center text-destructive mt-2">
-                                                        Full Name and Email are required to save your resume.
-                                                    </p>
-                                                )}
                                                 {computedIsLocked && (
                                                     <p className="text-xs text-center text-muted-foreground mt-2">
                                                         <Link href="/dashboard/subscriptions" className="underline font-medium">Upgrade to Career Boost</Link> to continue editing.
