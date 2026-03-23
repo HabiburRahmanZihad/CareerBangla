@@ -4,7 +4,7 @@ import "server-only";
 import { ApiResponse } from "@/types/api.types";
 import envConfig from "@/lib/envConfig";
 import axios from "axios";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { ApiRequestOptions } from "./httpClient";
 
@@ -14,13 +14,23 @@ const axiosInstance = async () => {
     const headersList = await headers();
     const rawCookieHeader = headersList.get("cookie") || "";
 
+    // Extract session token and send as Bearer so backend's bearer() plugin
+    // can properly sign it (plain cookies fail better-auth signature check)
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get("better-auth.session_token")?.value;
+
+    const reqHeaders: Record<string, string> = {
+        "Content-Type": "application/json",
+        Cookie: rawCookieHeader,
+    };
+    if (sessionToken) {
+        reqHeaders["Authorization"] = `Bearer ${sessionToken}`;
+    }
+
     return axios.create({
         baseURL: envConfig.apiBaseUrl,
         timeout: 30000,
-        headers: {
-            "Content-Type": "application/json",
-            Cookie: rawCookieHeader,
-        },
+        headers: reqHeaders,
     });
 };
 

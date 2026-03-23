@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { loginAction } from "@/app/(commonLayout)/(authRouteGroup)/login/_action";
+import { verifyEmailAction } from "@/app/(commonLayout)/(authRouteGroup)/verify-email/_action";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,6 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { Label } from "@/components/ui/label";
 import { httpClient } from "@/lib/axios/httpClient";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -18,7 +18,6 @@ interface VerifyEmailFormProps {
 }
 
 const VerifyEmailForm = ({ email }: VerifyEmailFormProps) => {
-    const router = useRouter();
     const [otp, setOtp] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [timeLeft, setTimeLeft] = useState(60);
@@ -42,11 +41,17 @@ const VerifyEmailForm = ({ email }: VerifyEmailFormProps) => {
     });
 
     const { mutateAsync, isPending } = useMutation({
-        mutationFn: () => httpClient.post("/auth/verify-email", { email, otp }),
-        onSuccess: async () => {
+        mutationFn: () => verifyEmailAction(email, otp),
+        onSuccess: async (result) => {
+            if (!result.success) {
+                setError(result.message);
+                return;
+            }
+
             toast.success("Email verified successfully!");
 
-            // Auto-login using stored credentials from registration
+            // Auto-login to get a full session (including session token)
+            // The verify-email endpoint may not return a session token
             const stored = sessionStorage.getItem("pendingVerification");
             if (stored) {
                 try {
@@ -64,13 +69,14 @@ const VerifyEmailForm = ({ email }: VerifyEmailFormProps) => {
                 }
             }
 
-            // Fallback: redirect to login if auto-login fails
-            router.push("/login");
+            // Fallback: redirect to login page if auto-login fails
+            window.location.href = "/login";
         },
         onError: (err: any) => {
             setError(err?.response?.data?.message || "Verification failed");
         },
     });
+
 
     return (
         <Card className="w-full max-w-md mx-auto shadow-md">
