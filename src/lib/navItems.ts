@@ -134,7 +134,7 @@ export const adminNavItems: NavSection[] = [
 
 export const userNavItems: NavSection[] = [
     {
-        title: "Jobs",
+        title: "Job Search",
         items: [
             {
                 title: "Browse Jobs",
@@ -149,7 +149,7 @@ export const userNavItems: NavSection[] = [
         ],
     },
     {
-        title: "Profile",
+        title: "Professional Profile",
         items: [
             {
                 title: "My Resume",
@@ -164,27 +164,27 @@ export const userNavItems: NavSection[] = [
         ],
     },
     {
-        title: "Account",
+        title: "Account & Preferences",
         items: [
-            {
-                title: "Referrals",
-                href: "/dashboard/referrals",
-                icon: "Users",
-            },
             {
                 title: "Subscriptions",
                 href: "/dashboard/subscriptions",
                 icon: "CreditCard",
             },
             {
-                title: "Devices",
-                href: "/dashboard/devices",
-                icon: "Monitor",
+                title: "Referrals",
+                href: "/dashboard/referrals",
+                icon: "Users",
             },
             {
                 title: "Notifications",
                 href: "/dashboard/notifications",
                 icon: "Bell",
+            },
+            {
+                title: "Devices",
+                href: "/dashboard/devices",
+                icon: "Monitor",
             },
         ],
     },
