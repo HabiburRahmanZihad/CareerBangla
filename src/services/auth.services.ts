@@ -79,8 +79,8 @@ export const getUserInfo = cache(async (): Promise<UserInfo | null> => {
             accessToken: accessToken ? "present" : "MISSING",
         });
 
-        // Allow access if user has either session token or access token
-        if (!sessionToken && !accessToken) {
+        // Session token is the primary auth indicator (matches middleware check)
+        if (!sessionToken) {
             return null;
         }
 
