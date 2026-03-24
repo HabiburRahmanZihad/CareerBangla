@@ -416,9 +416,11 @@ const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
                             className="w-full h-12 text-md"
                             size="lg"
                             onClick={() => purchase()}
-                            disabled={purchasePending}
+                            disabled={purchasePending || isLifetime}
                         >
-                            {purchasePending ? (
+                            {isLifetime ? (
+                                "You already have Lifetime Career Boost"
+                            ) : purchasePending ? (
                                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
                             ) : (
                                 `Pay ৳${finalAmount} with ${gateway === "STRIPE" ? "Stripe" : "SSLCommerz"}`
