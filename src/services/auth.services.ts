@@ -185,3 +185,26 @@ export async function logoutUser() {
     cookieStore.delete("accessToken");
     cookieStore.delete("refreshToken");
 }
+
+export async function logoutAllDevices() {
+    logger.auth("Logging out from all devices");
+    const result = await serverHttpClient.post("/auth/logout-all-devices", {});
+    const cookieStore = await cookies();
+    cookieStore.delete("better-auth.session_token");
+    cookieStore.delete("accessToken");
+    cookieStore.delete("refreshToken");
+    return result;
+}
+
+export async function getActiveSessions() {
+    logger.auth("Fetching active sessions");
+    return serverHttpClient.get<{
+        id: string;
+        createdAt: string;
+        expiresAt: string;
+        ipAddress: string | null;
+        userAgent: string | null;
+        accessTokenExpiresAt: string | null;
+        refreshTokenExpiresAt: string | null;
+    }[]>("/auth/active-sessions");
+}

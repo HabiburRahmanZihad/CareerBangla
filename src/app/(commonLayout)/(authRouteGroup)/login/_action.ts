@@ -13,9 +13,10 @@ interface LoginActionResponse {
     success: boolean;
     message: string;
     redirectPath?: string;
+    code?: string;
 }
 
-export const loginAction = async (payload: ILoginPayload, redirectPath?: string): Promise<LoginActionResponse | ApiErrorResponse> => {
+export const loginAction = async (payload: ILoginPayload, redirectPath?: string, logoutAllDevices?: boolean): Promise<LoginActionResponse | ApiErrorResponse> => {
     const parsedPayload = loginZodSchema.safeParse(payload);
 
     if (!parsedPayload.success) {
@@ -29,7 +30,10 @@ export const loginAction = async (payload: ILoginPayload, redirectPath?: string)
         console.log("[LoginAction] Calling backend /auth/login");
         console.log("[LoginAction] Redirect path param:", redirectPath);
 
-        const response = await serverHttpClient.post<ILoginResponse>("/auth/login", parsedPayload.data);
+        const response = await serverHttpClient.post<ILoginResponse>("/auth/login", {
+            ...parsedPayload.data,
+            ...(logoutAllDevices ? { logoutAllDevices: true } : {}),
+        });
 
         const { accessToken, refreshToken, token, user } = response.data;
         const { role, needPasswordChange, email } = user;
@@ -67,6 +71,15 @@ export const loginAction = async (payload: ILoginPayload, redirectPath?: string)
 
     } catch (error: any) {
         console.log(error, "error");
+
+        // Handle device limit exceeded
+        if (error?.response?.status === 409 && error?.response?.data?.data?.code === "DEVICE_LIMIT_EXCEEDED") {
+            return {
+                success: false,
+                message: error?.response?.data?.message || "Device limit exceeded",
+                code: "DEVICE_LIMIT_EXCEEDED",
+            };
+        }
 
         // Handle email verification redirect
         if (error?.response?.status === 401 && error?.response?.data?.message === "Email not verified") {

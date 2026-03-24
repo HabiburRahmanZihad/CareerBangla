@@ -31,9 +31,12 @@ const LoginForm = ({ redirectPath, oauthError }: LoginFormProps) => {
     oauthError ? oauthErrorMessages[oauthError] || "Authentication failed. Please try again." : null
   );
   const [showPassword, setShowPassword] = useState(false);
+  const [deviceLimitExceeded, setDeviceLimitExceeded] = useState(false);
+  const [isLoggingOutAll, setIsLoggingOutAll] = useState(false);
 
   const { mutateAsync, isPending } = useMutation({
-    mutationFn: (payload: ILoginPayload) => loginAction(payload, redirectPath),
+    mutationFn: ({ payload, forceLogout }: { payload: ILoginPayload; forceLogout?: boolean }) =>
+      loginAction(payload, redirectPath, forceLogout),
   })
 
   const form = useForm({
@@ -44,15 +47,21 @@ const LoginForm = ({ redirectPath, oauthError }: LoginFormProps) => {
 
     onSubmit: async ({ value }) => {
       setServerError(null);
+      setDeviceLimitExceeded(false);
       try {
         console.log("[Login] Submitting login for:", value.identifier);
         console.log("[Login] Redirect path from URL:", redirectPath);
 
-        const result = await mutateAsync(value) as any;
+        const result = await mutateAsync({ payload: value }) as any;
 
         console.log("[Login] Server response:", { success: result.success, redirectPath: result.redirectPath, message: result.message });
 
         if (!result.success) {
+          if (result.code === "DEVICE_LIMIT_EXCEEDED") {
+            setDeviceLimitExceeded(true);
+            setServerError(result.message);
+            return;
+          }
           setServerError(result.message || "Login failed");
           return;
         }
@@ -148,6 +157,35 @@ const LoginForm = ({ redirectPath, oauthError }: LoginFormProps) => {
             <Alert variant={"destructive"}>
               <AlertDescription>{serverError}</AlertDescription>
             </Alert>
+          )}
+
+          {deviceLimitExceeded && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-destructive text-destructive hover:bg-destructive hover:text-white"
+              disabled={isLoggingOutAll || isPending}
+              onClick={async () => {
+                setIsLoggingOutAll(true);
+                setServerError(null);
+                try {
+                  const values = form.state.values;
+                  const result = await mutateAsync({ payload: values, forceLogout: true }) as any;
+                  if (!result.success) {
+                    setServerError(result.message || "Login failed");
+                    return;
+                  }
+                  window.location.href = result.redirectPath || "/dashboard";
+                } catch (error: any) {
+                  setServerError(`Failed: ${error.message}`);
+                } finally {
+                  setIsLoggingOutAll(false);
+                  setDeviceLimitExceeded(false);
+                }
+              }}
+            >
+              {isLoggingOutAll ? "Logging out from all devices..." : "Logout from all devices & Login"}
+            </Button>
           )}
 
           <form.Subscribe
