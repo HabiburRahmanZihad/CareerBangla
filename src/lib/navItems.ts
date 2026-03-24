@@ -177,6 +177,11 @@ export const userNavItems: NavSection[] = [
                 icon: "CreditCard",
             },
             {
+                title: "Devices",
+                href: "/dashboard/devices",
+                icon: "Monitor",
+            },
+            {
                 title: "Notifications",
                 href: "/dashboard/notifications",
                 icon: "Bell",

@@ -107,7 +107,7 @@ export interface IResume {
     certifications_legacy?: ICertification[];
 
     // User info
-    user?: { id: string; name: string; email: string; image?: string };
+    user?: { id: string; name: string; email: string; image?: string; isPremium?: boolean };
 
     // Metadata
     profileCompletedAt?: string;

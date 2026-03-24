@@ -60,6 +60,7 @@ export async function getNewTokensWithRefreshToken(refreshToken: string): Promis
             sessionToken: newSessionToken,
         };
     } catch (error) {
+        console.error(error);
         logger.auth("Token refresh failed");
         return null;
     }
@@ -207,4 +208,9 @@ export async function getActiveSessions() {
         accessTokenExpiresAt: string | null;
         refreshTokenExpiresAt: string | null;
     }[]>("/auth/active-sessions");
+}
+
+export async function revokeSession(sessionId: string) {
+    logger.auth("Revoking session", { sessionId });
+    return serverHttpClient.delete(`/auth/sessions/${sessionId}`);
 }
