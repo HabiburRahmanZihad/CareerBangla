@@ -461,7 +461,7 @@ const MyResumeContent = () => {
     return (
         <MyResumeForm
             resume={data?.data}
-            isPremium={data?.data?.isPremium || false}
+            isPremium={data?.data?.user?.isPremium || false}
         />
     );
 };
