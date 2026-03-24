@@ -364,8 +364,6 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                             <form.Subscribe selector={(s) => s.values}>
                                 {(values) => {
                                     const computedIsLocked = !isPremium && calculateProfileCompletion(values) === 100;
-                                    const basicInfoLocked = !isPremium && !!(resume?.fullName || resume?.email || resume?.professionalTitle || resume?.contactNumber || resume?.address || resume?.nationality || resume?.dateOfBirth || resume?.gender);
-                                    const skillsLocked = !isPremium && !!(resume?.technicalSkills?.length || resume?.softSkills?.length || resume?.toolsAndTechnologies?.length || resume?.professionalSummary);
                                     const workExpLocked = !isPremium && !!(resume?.workExperience?.length);
                                     const educationLocked = !isPremium && !!(resume?.education?.length);
 
@@ -386,11 +384,11 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                             }}
                                             className="space-y-6"
                                         >
-                                            <BasicInfoSection form={form} se={se} computedIsLocked={computedIsLocked} basicInfoLocked={basicInfoLocked} />
+                                            <BasicInfoSection form={form} se={se} computedIsLocked={computedIsLocked} isPremium={isPremium} resume={resume} />
                                             <hr className="border-border/60" />
                                             <SocialProfilesSection form={form} se={se} />
                                             <hr className="border-border/60" />
-                                            <SkillsSummarySection form={form} se={se} computedIsLocked={computedIsLocked} skillsLocked={skillsLocked} />
+                                            <SkillsSummarySection form={form} se={se} computedIsLocked={computedIsLocked} isPremium={isPremium} resume={resume} />
                                             <hr className="border-border/60" />
                                             <WorkExperienceSection form={form} se={se} computedIsLocked={computedIsLocked} workExpLocked={workExpLocked} />
                                             <hr className="border-border/60" />

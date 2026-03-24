@@ -30,37 +30,39 @@ import {
 // ─── Basic Information ───────────────────────────────────────────────────────
 
 export const BasicInfoSection = ({
-    form, se, computedIsLocked, basicInfoLocked,
-}: ResumeSectionProps & { basicInfoLocked: boolean }) => {
-    const isLocked = basicInfoLocked || computedIsLocked;
+    form, se, computedIsLocked, isPremium, resume,
+}: ResumeSectionProps & { isPremium: boolean; resume: any }) => {
+    // Per-field locking: a field locks once it has saved data (free tier only)
+    const fl = (field: string) => computedIsLocked || (!isPremium && !!resume?.[field]);
+    const anyFieldLocked = !isPremium && (!!resume?.fullName || !!resume?.email || !!resume?.professionalTitle || !!resume?.contactNumber || !!resume?.address || !!resume?.nationality || !!resume?.dateOfBirth || !!resume?.gender);
     return (
-        <FormSection icon={User} title="Basic Information" defaultOpen={true} isLocked={isLocked}>
-            {basicInfoLocked && <LockedBanner />}
+        <FormSection icon={User} title="Basic Information" defaultOpen={true} isLocked={computedIsLocked}>
+            {anyFieldLocked && <LockedBanner />}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <form.Field name="fullName" validators={{ onChange: rv.fullName }}>
-                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Full Name" placeholder="John Doe" disabled={isLocked} />}
+                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Full Name" placeholder="John Doe" disabled={fl("fullName")} />}
                 </form.Field>
                 <form.Field name="email" validators={{ onChange: rv.email }}>
-                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Email" type="email" placeholder="john@example.com" disabled={isLocked} />}
+                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Email" type="email" placeholder="john@example.com" disabled={fl("email")} />}
                 </form.Field>
                 <form.Field name="professionalTitle" validators={{ onChange: rv.professionalTitle }}>
-                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Professional Title" placeholder="e.g. Full Stack Developer" disabled={isLocked} />}
+                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Professional Title" placeholder="e.g. Full Stack Developer" disabled={fl("professionalTitle")} />}
                 </form.Field>
                 <form.Field name="contactNumber" validators={{ onChange: rv.contactNumber }}>
-                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Contact Number" placeholder="01XXXXXXXXX" disabled={isLocked} />}
+                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Contact Number" placeholder="01XXXXXXXXX" disabled={fl("contactNumber")} />}
                 </form.Field>
                 <form.Field name="address" validators={{ onChange: rv.address }}>
-                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Address" placeholder="Dhaka, Bangladesh" disabled={isLocked} />}
+                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Address" placeholder="Dhaka, Bangladesh" disabled={fl("address")} />}
                 </form.Field>
                 <form.Field name="nationality" validators={{ onChange: rv.nationality }}>
-                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Nationality" placeholder="e.g. Bangladeshi" disabled={isLocked} />}
+                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Nationality" placeholder="e.g. Bangladeshi" disabled={fl("nationality")} />}
                 </form.Field>
                 <form.Field name="dateOfBirth" validators={{ onChange: rv.dateOfBirth }}>
-                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Date of Birth" type="date" disabled={isLocked} />}
+                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Date of Birth" type="date" disabled={fl("dateOfBirth")} />}
                 </form.Field>
                 <form.Field name="gender">
                     {(f: any) => (
-                        <SelectField field={f} label="Gender" placeholder="Select gender" serverErrors={se} disabled={isLocked} options={[
+                        <SelectField field={f} label="Gender" placeholder="Select gender" serverErrors={se} disabled={fl("gender")} options={[
                             { value: "MALE", label: "Male" },
                             { value: "FEMALE", label: "Female" },
                             { value: "OTHER", label: "Other" },
@@ -93,24 +95,26 @@ export const SocialProfilesSection = ({ form, se }: Pick<ResumeSectionProps, "fo
 // ─── Skills & Summary ────────────────────────────────────────────────────────
 
 export const SkillsSummarySection = ({
-    form, se, computedIsLocked, skillsLocked,
-}: ResumeSectionProps & { skillsLocked: boolean }) => {
-    const isLocked = skillsLocked || computedIsLocked;
+    form, se, computedIsLocked, isPremium, resume,
+}: ResumeSectionProps & { isPremium: boolean; resume: any }) => {
+    // Per-field locking: a field locks once it has saved data (free tier only)
+    const fl = (field: string) => computedIsLocked || (!isPremium && !!(Array.isArray(resume?.[field]) ? resume[field].length : resume?.[field]));
+    const anyFieldLocked = !isPremium && (!!resume?.technicalSkills?.length || !!resume?.softSkills?.length || !!resume?.toolsAndTechnologies?.length || !!resume?.professionalSummary);
     return (
-        <FormSection icon={Code2} title="Skills & Summary" defaultOpen={true} isLocked={isLocked}>
-            {skillsLocked && <LockedBanner />}
+        <FormSection icon={Code2} title="Skills & Summary" defaultOpen={true} isLocked={computedIsLocked}>
+            {anyFieldLocked && <LockedBanner />}
             <div className="space-y-4">
                 <form.Field name="technicalSkills" validators={{ onChange: rv.technicalSkills }}>
-                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Technical Skills" placeholder="React, TypeScript, Node.js, …  (comma-separated)" disabled={isLocked} />}
+                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Technical Skills" placeholder="React, TypeScript, Node.js, …  (comma-separated)" disabled={fl("technicalSkills")} />}
                 </form.Field>
                 <form.Field name="softSkills" validators={{ onChange: rv.softSkills }}>
-                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Soft Skills" placeholder="Communication, Leadership, …  (comma-separated)" disabled={isLocked} />}
+                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Soft Skills" placeholder="Communication, Leadership, …  (comma-separated)" disabled={fl("softSkills")} />}
                 </form.Field>
                 <form.Field name="toolsAndTechnologies" validators={{ onChange: rv.toolsAndTechnologies }}>
-                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Tools & Technologies" placeholder="Git, Docker, Figma, …  (comma-separated)" disabled={isLocked} />}
+                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Tools & Technologies" placeholder="Git, Docker, Figma, …  (comma-separated)" disabled={fl("toolsAndTechnologies")} />}
                 </form.Field>
                 <form.Field name="interests" validators={{ onChange: rv.interests }}>
-                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Interests" placeholder="Open Source, Reading, …  (comma-separated)" disabled={isLocked} />}
+                    {(f: any) => <AppField field={f} serverError={se[f.name]} label="Interests" placeholder="Open Source, Reading, …  (comma-separated)" disabled={fl("interests")} />}
                 </form.Field>
                 <form.Field name="professionalSummary" validators={{ onChange: rv.professionalSummary }}>
                     {(f: any) => (
@@ -120,7 +124,7 @@ export const SkillsSummarySection = ({
                             placeholder="A concise overview of your experience, skills, and career goals…"
                             hint="A strong summary significantly boosts your ATS score."
                             serverErrors={se}
-                            disabled={isLocked}
+                            disabled={fl("professionalSummary")}
                         />
                     )}
                 </form.Field>
