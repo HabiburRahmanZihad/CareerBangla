@@ -5,6 +5,7 @@ import { logger } from "@/lib/logger";
 
 export interface IReferralStats {
     referralCode: string | null;
+    totalReferrals: number;
     totalPaidReferrals: number;
     rewardsEarned: number;
     progressToNext: number;

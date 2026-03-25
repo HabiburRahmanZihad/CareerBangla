@@ -22,6 +22,7 @@ const ReferralContent = ({ userInfo, referralStats }: ReferralContentProps) => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     const referralLink = `${origin}/register?ref=${referralCode}`;
 
+    const totalReferrals = referralStats?.totalReferrals ?? 0;
     const totalPaidReferrals = referralStats?.totalPaidReferrals ?? 0;
     const progressToNext = referralStats?.progressToNext ?? 0;
     const rewardsEarned = referralStats?.rewardsEarned ?? 0;
@@ -72,10 +73,14 @@ const ReferralContent = ({ userInfo, referralStats }: ReferralContentProps) => {
                             </div>
                             <Progress value={progressPercentage} className="h-4 w-full" />
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-3 gap-3">
+                            <div className="bg-card p-4 rounded-xl shadow-sm border text-center">
+                                <h4 className="font-bold text-2xl text-card-foreground">{totalReferrals}</h4>
+                                <p className="text-xs text-muted-foreground">Total Referrals</p>
+                            </div>
                             <div className="bg-card p-4 rounded-xl shadow-sm border text-center">
                                 <h4 className="font-bold text-2xl text-card-foreground">{totalPaidReferrals}</h4>
-                                <p className="text-xs text-muted-foreground">Successful Referrals</p>
+                                <p className="text-xs text-muted-foreground">Paid Referrals</p>
                             </div>
                             <div className="bg-card p-4 rounded-xl shadow-sm border text-center">
                                 <div className="flex items-center justify-center gap-1">
