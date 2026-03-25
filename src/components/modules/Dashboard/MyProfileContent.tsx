@@ -3,16 +3,17 @@
 
 import ProfileCompletionBar from "@/components/shared/ProfileCompletionBar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import envConfig from "@/lib/envConfig";
-import { updateMyProfile } from "@/services/auth.services";
+import { deleteMyAccount, updateMyProfile } from "@/services/auth.services";
 import { getMyResume } from "@/services/resume.services";
 import { UserInfo } from "@/types/user.types";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
     Award,
@@ -37,6 +38,7 @@ import {
     Rocket,
     Shield,
     Sparkles,
+    Trash2,
     User,
     Users,
     XCircle,
@@ -123,6 +125,17 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
     const [isEditingPhone, setIsEditingPhone] = useState(false);
     const [phoneValue, setPhoneValue] = useState(userInfo.phone || "");
     const [isSavingPhone, setIsSavingPhone] = useState(false);
+
+    const { mutate: deleteAccount, isPending: isDeleting } = useMutation({
+        mutationFn: () => deleteMyAccount(),
+        onSuccess: () => {
+            toast.success("Account deleted successfully");
+            router.push("/login");
+        },
+        onError: () => {
+            toast.error("Failed to delete account");
+        },
+    });
 
     const { data: resumeData, isLoading: resumeLoading } = useQuery({
         queryKey: ["my-resume"],
@@ -714,6 +727,47 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                             </Link>
                         )}
                     </div>
+                </CardContent>
+            </Card>
+
+            {/* ── Delete Account ── */}
+            <Card className="border-destructive/30">
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-base text-destructive">Danger Zone</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                    <p className="text-sm text-muted-foreground mb-4">
+                        Once you delete your account, all your data will be permanently inaccessible. This action cannot be undone.
+                    </p>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm" disabled={isDeleting}>
+                                {isDeleting ? (
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                )}
+                                {isDeleting ? "Deleting..." : "Delete Account"}
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will permanently delete your account. You will lose access to your profile, resume, applications, and all associated data. This action cannot be undone.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={() => deleteAccount()}
+                                    className="bg-destructive text-white hover:bg-destructive/90"
+                                >
+                                    Yes, delete my account
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </CardContent>
             </Card>
         </div>

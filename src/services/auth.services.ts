@@ -214,3 +214,13 @@ export async function revokeSession(sessionId: string) {
     logger.auth("Revoking session", { sessionId });
     return serverHttpClient.delete(`/auth/sessions/${sessionId}`);
 }
+
+export async function deleteMyAccount() {
+    logger.auth("Deleting account");
+    const result = await serverHttpClient.delete("/auth/delete-account");
+    const cookieStore = await cookies();
+    cookieStore.delete("better-auth.session_token");
+    cookieStore.delete("accessToken");
+    cookieStore.delete("refreshToken");
+    return result;
+}
