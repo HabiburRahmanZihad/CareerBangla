@@ -4,8 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getMyWallet } from "@/services/wallet.services";
-import { getTransactionHistory } from "@/services/wallet.services";
+import { getMyWallet, getTransactionHistory } from "@/services/wallet.services";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { ArrowDownLeft, ArrowUpRight, Coins } from "lucide-react";
@@ -40,7 +39,7 @@ const WalletContent = () => {
             <h1 className="text-2xl font-bold">My Wallet</h1>
 
             {/* Balance Card */}
-            <Card className="bg-gradient-to-br from-primary/10 to-primary/5">
+            <Card className="bg-linear-to-br from-primary/10 to-primary/5">
                 <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
                         <div>
