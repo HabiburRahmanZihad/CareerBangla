@@ -1,5 +1,5 @@
-import DashboardNavbar from "@/components/modules/Dashboard/DashboardNavbar"
-import DashboardSidebar from "@/components/modules/Dashboard/DashboardSidebar"
+import DashboardNavbar from "@/components/modules/Dashboard/Layout/DashboardNavbar"
+import DashboardSidebar from "@/components/modules/Dashboard/Layout/DashboardSidebar"
 import { LogoutAndRedirect } from "@/components/shared/LogoutAndRedirect"
 import { getUserInfo } from "@/services/auth.services"
 import React from "react"

@@ -1,6 +1,6 @@
 "use client";
 
-import AtsScoreContent from "@/components/modules/Dashboard/AtsScoreContent";
+import AtsScoreContent from "@/components/modules/Dashboard/Resume/AtsScoreContent";
 import ProfileCompletionBar from "@/components/shared/ProfileCompletionBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -123,9 +123,9 @@ const UserDashboardContent = ({ userInfo }: UserDashboardContentProps) => {
                                         <p className="text-sm text-muted-foreground">{app.job?.company}</p>
                                     </div>
                                     <span className={`text-xs font-medium px-2 py-1 rounded-full ${app.status === "ACCEPTED" ? "bg-green-100 text-green-800" :
-                                            app.status === "REJECTED" ? "bg-red-100 text-red-800" :
-                                                app.status === "SHORTLISTED" ? "bg-blue-100 text-blue-800" :
-                                                    "bg-yellow-100 text-yellow-800"
+                                        app.status === "REJECTED" ? "bg-red-100 text-red-800" :
+                                            app.status === "SHORTLISTED" ? "bg-blue-100 text-blue-800" :
+                                                "bg-yellow-100 text-yellow-800"
                                         }`}>
                                         {app.status}
                                     </span>
