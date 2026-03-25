@@ -3,6 +3,7 @@
 import AppField from "@/components/shared/form/AppField";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
@@ -15,7 +16,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 
 interface ResetPasswordFormProps {
     email: string;
@@ -140,7 +140,7 @@ const ResetPasswordForm = ({ email }: ResetPasswordFormProps) => {
 
                     <div className="text-center text-sm pt-2">
                         {timeLeft > 0 ? (
-                            <span className="text-muted-foreground">Didn't receive code? Resend in {timeLeft}s</span>
+                            <span className="text-muted-foreground">Didn&apos;t receive code? Resend in {timeLeft}s</span>
                         ) : (
                             <Button
                                 type="button"
