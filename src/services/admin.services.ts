@@ -2,7 +2,7 @@
 
 import { serverHttpClient } from "@/lib/axios/serverHttpClient";
 import { logger } from "@/lib/logger";
-import { IAdminProfile, IJob } from "@/types/user.types";
+import { IAdminProfile, IJob, IRecruiterProfile, IUserWithDetails } from "@/types/user.types";
 
 export async function getAllAdmins(params?: Record<string, unknown>) {
     logger.read("Fetching all admins");
@@ -51,12 +51,12 @@ export async function createRecruiter(data: Record<string, unknown>) {
 
 export async function getAllUsersWithDetails(params?: Record<string, unknown>) {
     logger.read("Fetching all users with details");
-    return serverHttpClient.get("/admins/users-with-details", { params });
+    return serverHttpClient.get<IUserWithDetails[]>("/admins/users-with-details", { params });
 }
 
 export async function getAllRecruitersWithDetails(params?: Record<string, unknown>) {
     logger.read("Fetching all recruiters with details");
-    return serverHttpClient.get("/admins/recruiters-with-details", { params });
+    return serverHttpClient.get<IRecruiterProfile[]>("/admins/recruiters-with-details", { params });
 }
 
 export async function updateUser(userId: string, data: Record<string, unknown>) {

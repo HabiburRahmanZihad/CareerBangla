@@ -18,7 +18,7 @@ import RecruiterEditModal from "./RecruiterEditModal";
 const RecruitersManagementContent = () => {
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState("");
-    const [statusFilter, setStatusFilter] = useState<string>("");
+    const [statusFilter, setStatusFilter] = useState<string>("all-status");
     const [editingRecruiter, setEditingRecruiter] = useState<any>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -87,14 +87,14 @@ const RecruitersManagementContent = () => {
         );
     }
 
-    let recruiters = data?.data || [];
+    let recruiters: IRecruiterProfile[] = data?.data || [];
 
     // Filter recruiters
     recruiters = recruiters.filter((recruiter: any) => {
         const matchesSearch = recruiter.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             recruiter.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
             recruiter.companyName?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = !statusFilter || recruiter.status === statusFilter;
+        const matchesStatus = statusFilter === "all-status" || recruiter.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
 
@@ -132,19 +132,19 @@ const RecruitersManagementContent = () => {
                         <SelectValue placeholder="Filter by status" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="">All Status</SelectItem>
+                        <SelectItem value="all-status">All Status</SelectItem>
                         <SelectItem value="PENDING">Pending</SelectItem>
                         <SelectItem value="APPROVED">Approved</SelectItem>
                         <SelectItem value="REJECTED">Rejected</SelectItem>
                     </SelectContent>
                 </Select>
-                {(searchTerm || statusFilter) && (
+                {(searchTerm || statusFilter !== "all-status") && (
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
                             setSearchTerm("");
-                            setStatusFilter("");
+                            setStatusFilter("all-status");
                         }}
                     >
                         Clear Filters

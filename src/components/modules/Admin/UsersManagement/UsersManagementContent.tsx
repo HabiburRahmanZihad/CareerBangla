@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { changeUserStatus, getAllUsersWithDetails, updateUser } from "@/services/admin.services";
+import { IUserWithDetails } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Edit2, RefreshCw } from "lucide-react";
 import { useState } from "react";
@@ -60,7 +61,7 @@ const UsersManagementContent = () => {
         );
     }
 
-    let users = data?.data || [];
+    let users: IUserWithDetails[] = data?.data || [];
 
     // Filter users
     users = users.filter((user: any) => {
@@ -106,21 +107,21 @@ const UsersManagementContent = () => {
                         <SelectValue placeholder="Filter by role" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="">All Roles</SelectItem>
+                        <SelectItem value="all-roles">All Roles</SelectItem>
                         <SelectItem value="USER">User</SelectItem>
                         <SelectItem value="RECRUITER">Recruiter</SelectItem>
                         <SelectItem value="ADMIN">Admin</SelectItem>
                         <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
                     </SelectContent>
                 </Select>
-                {(searchTerm || statusFilter || roleFilter) && (
+                {(searchTerm || statusFilter !== "all-status" || roleFilter !== "all-roles") && (
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
                             setSearchTerm("");
-                            setStatusFilter("");
-                            setRoleFilter("");
+                            setStatusFilter("all-status");
+                            setRoleFilter("all-roles");
                         }}
                     >
                         Clear Filters
