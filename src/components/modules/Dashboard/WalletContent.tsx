@@ -46,7 +46,7 @@ const WalletContent = () => {
                             <p className="text-sm text-muted-foreground">Available Balance</p>
                             <div className="flex items-center gap-2 mt-1">
                                 <Coins className="h-8 w-8 text-yellow-500" />
-                                <span className="text-4xl font-bold">{wallet?.balance ?? 0}</span>
+                                <span className="text-4xl font-bold">{wallet?.coins ?? 0}</span>
                                 <span className="text-lg text-muted-foreground">coins</span>
                             </div>
                         </div>

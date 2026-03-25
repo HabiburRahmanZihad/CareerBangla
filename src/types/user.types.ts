@@ -208,7 +208,7 @@ export interface IExperience {
 export interface IWallet {
     id: string;
     userId: string;
-    balance: number;
+    coins: number;
     transactions?: ICoinTransaction[];
     createdAt?: string;
     updatedAt?: string;
