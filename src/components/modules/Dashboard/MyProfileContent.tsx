@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import ProfileCompletionBar from "@/components/shared/ProfileCompletionBar";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -291,57 +291,59 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                 </CardContent>
             </Card>
 
-            {/* ── Career Boost / Premium Status ── */}
-            <Card>
-                <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                        <Rocket className="w-4.5 h-4.5 text-amber-500" />
-                        Career Boost Status
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                    {premiumActive ? (
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-4 py-4">
-                            <div className="flex items-center gap-3">
-                                <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
-                                    <Crown className="h-6 w-6 text-amber-600" />
+            {/* ── Career Boost Status (Only for regular users) ── */}
+            {userInfo.role !== "ADMIN" && userInfo.role !== "SUPER_ADMIN" && (
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <Rocket className="w-4.5 h-4.5 text-amber-500" />
+                            Career Boost Status
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                        {premiumActive ? (
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-4 py-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+                                        <Crown className="h-6 w-6 text-amber-600" />
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold text-amber-900 dark:text-amber-200">Career Boost Active</p>
+                                        <p className="text-sm text-amber-700 dark:text-amber-400">
+                                            {isLifetime
+                                                ? "Lifetime access — never expires"
+                                                : `Expires on ${format(new Date(premiumUntil!), "MMMM d, yyyy")}`
+                                            }
+                                        </p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="font-semibold text-amber-900 dark:text-amber-200">Career Boost Active</p>
-                                    <p className="text-sm text-amber-700 dark:text-amber-400">
-                                        {isLifetime
-                                            ? "Lifetime access — never expires"
-                                            : `Expires on ${format(new Date(premiumUntil!), "MMMM d, yyyy")}`
-                                        }
-                                    </p>
-                                </div>
+                                <Badge className="bg-amber-200 text-amber-800 dark:bg-amber-800 dark:text-amber-200 w-fit">
+                                    {isLifetime ? "Lifetime" : "Active"}
+                                </Badge>
                             </div>
-                            <Badge className="bg-amber-200 text-amber-800 dark:bg-amber-800 dark:text-amber-200 w-fit">
-                                {isLifetime ? "Lifetime" : "Active"}
-                            </Badge>
-                        </div>
-                    ) : (
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-4">
-                            <div className="flex items-center gap-3">
-                                <div className="h-12 w-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                                    <Crown className="h-6 w-6 text-gray-400" />
+                        ) : (
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-12 w-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                        <Crown className="h-6 w-6 text-gray-400" />
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold">Free Account</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Upgrade to Career Boost for unlimited edits, PDF downloads, and more.
+                                        </p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="font-semibold">Free Account</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        Upgrade to Career Boost for unlimited edits, PDF downloads, and more.
-                                    </p>
-                                </div>
+                                <Link href="/dashboard/subscriptions">
+                                    <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white gap-1">
+                                        <Sparkles className="w-4 h-4" /> Upgrade
+                                    </Button>
+                                </Link>
                             </div>
-                            <Link href="/dashboard/subscriptions">
-                                <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white gap-1">
-                                    <Sparkles className="w-4 h-4" /> Upgrade
-                                </Button>
-                            </Link>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
 
             {/* ── Profile Completion ── */}
             {resumeLoading ? (
@@ -702,74 +704,78 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                 </Card>
             )}
 
-            {/* ── Quick Actions ── */}
-            <Card>
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                    <div className="flex flex-wrap gap-2">
-                        <Link href="/dashboard/my-resume">
-                            <Button variant="outline" size="sm">
-                                <FileText className="w-4 h-4 mr-2" /> Edit Resume
-                            </Button>
-                        </Link>
-                        <Link href="/dashboard/subscriptions">
-                            <Button variant="outline" size="sm">
-                                <Shield className="w-4 h-4 mr-2" /> Subscription
-                            </Button>
-                        </Link>
-                        {!premiumActive && (
-                            <Link href="/dashboard/subscriptions">
-                                <Button variant="outline" size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950">
-                                    <Crown className="w-4 h-4 mr-2" /> Upgrade to Career Boost
+            {/* ── Quick Actions (Only for regular users) ── */}
+            {userInfo.role !== "ADMIN" && userInfo.role !== "SUPER_ADMIN" && (
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base">Quick Actions</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                        <div className="flex flex-wrap gap-2">
+                            <Link href="/dashboard/my-resume">
+                                <Button variant="outline" size="sm">
+                                    <FileText className="w-4 h-4 mr-2" /> Edit Resume
                                 </Button>
                             </Link>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
+                            <Link href="/dashboard/subscriptions">
+                                <Button variant="outline" size="sm">
+                                    <Shield className="w-4 h-4 mr-2" /> Subscription
+                                </Button>
+                            </Link>
+                            {!premiumActive && (
+                                <Link href="/dashboard/subscriptions">
+                                    <Button variant="outline" size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950">
+                                        <Crown className="w-4 h-4 mr-2" /> Upgrade to Career Boost
+                                    </Button>
+                                </Link>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
-            {/* ── Delete Account ── */}
-            <Card className="border-destructive/30">
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-base text-destructive">Danger Zone</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                    <p className="text-sm text-muted-foreground mb-4">
-                        Once you delete your account, all your data will be permanently inaccessible. This action cannot be undone.
-                    </p>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm" disabled={isDeleting}>
-                                {isDeleting ? (
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                ) : (
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                )}
-                                {isDeleting ? "Deleting..." : "Delete Account"}
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This will permanently delete your account. You will lose access to your profile, resume, applications, and all associated data. This action cannot be undone.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                    onClick={() => deleteAccount()}
-                                    className="bg-destructive text-white hover:bg-destructive/90"
-                                >
-                                    Yes, delete my account
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </CardContent>
-            </Card>
+            {/* ── Delete Account (Only for regular users) ── */}
+            {userInfo.role !== "ADMIN" && userInfo.role !== "SUPER_ADMIN" && (
+                <Card className="border-destructive/30">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base text-destructive">Danger Zone</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                        <p className="text-sm text-muted-foreground mb-4">
+                            Once you delete your account, all your data will be permanently inaccessible. This action cannot be undone.
+                        </p>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" size="sm" disabled={isDeleting}>
+                                    {isDeleting ? (
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    ) : (
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                    )}
+                                    {isDeleting ? "Deleting..." : "Delete Account"}
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This will permanently delete your account. You will lose access to your profile, resume, applications, and all associated data. This action cannot be undone.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={() => deleteAccount()}
+                                        className="bg-destructive text-white hover:bg-destructive/90"
+                                    >
+                                        Yes, delete my account
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 };
