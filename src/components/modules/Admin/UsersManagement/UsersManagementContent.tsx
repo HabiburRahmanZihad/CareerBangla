@@ -208,35 +208,40 @@ const UsersManagementContent = () => {
                                                 <SelectItem value="BLOCKED">Blocked</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        {user.resume?.id && (
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => setExpandedResumeId(expandedResumeId === user.id ? null : user.id)}
-                                            >
-                                                {expandedResumeId === user.id ? (
-                                                    <>
-                                                        <ChevronUp className="mr-1 h-3.5 w-3.5" />
-                                                        Hide Resume
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <ChevronDown className="mr-1 h-3.5 w-3.5" />
-                                                        View Resume Details
-                                                    </>
-                                                )}
-                                            </Button>
-                                        )}
+                                        <Button
+                                            size="sm"
+                                            variant={expandedResumeId === user.id ? "default" : "outline"}
+                                            onClick={() => setExpandedResumeId(expandedResumeId === user.id ? null : user.id)}
+                                            disabled={!user.resume}
+                                        >
+                                            {expandedResumeId === user.id ? (
+                                                <>
+                                                    <ChevronUp className="mr-1 h-3.5 w-3.5" />
+                                                    Hide Resume
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <ChevronDown className="mr-1 h-3.5 w-3.5" />
+                                                    {user.resume ? "View Resume" : "No Resume"}
+                                                </>
+                                            )}
+                                        </Button>
                                     </div>
                                 </CardContent>
                             </Card>
-                            {expandedResumeId === user.id && user.resume && (
+                            {expandedResumeId === user.id && (
                                 <Card className="mt-2 border-l-4 border-l-blue-600">
                                     <CardHeader>
                                         <CardTitle className="text-base">Resume Details</CardTitle>
                                     </CardHeader>
                                     <CardContent className="pt-0">
-                                        <ResumeDetailsView resume={user.resume} />
+                                        {user.resume ? (
+                                            <ResumeDetailsView resume={user.resume} />
+                                        ) : (
+                                            <div className="py-8 text-center text-muted-foreground">
+                                                <p>No resume data available for this user</p>
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                             )}

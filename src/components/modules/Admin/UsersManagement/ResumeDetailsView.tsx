@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IAward, ICertification, IEducation, ILanguage, IProject, IReference, IResume, IWorkExperience } from "@/types/user.types";
 import { ExternalLink } from "lucide-react";
+import Image from "next/image";
 
 interface ResumeDetailsViewProps {
     resume?: IResume | null;
@@ -20,8 +21,50 @@ const ResumeDetailsView = ({ resume }: ResumeDetailsViewProps) => {
         );
     }
 
+    // Check if resume has any meaningful data
+    const hasPersonalInfo = resume.fullName || resume.professionalTitle || resume.contactNumber || resume.dateOfBirth || resume.nationality || resume.address;
+    const hasContacts = resume.linkedinUrl || resume.githubUrl || resume.portfolioUrl || resume.websiteUrl;
+    const hasSkills = (resume.technicalSkills && resume.technicalSkills.length > 0) ||
+        (resume.softSkills && resume.softSkills.length > 0) ||
+        (resume.toolsAndTechnologies && resume.toolsAndTechnologies.length > 0) ||
+        (resume.skills && resume.skills.length > 0);
+    const hasWorkExperience = resume.workExperience && resume.workExperience.length > 0;
+    const hasEducation = resume.education && resume.education.length > 0;
+    const hasCertifications = resume.certifications && resume.certifications.length > 0;
+    const hasProjects = resume.projects && resume.projects.length > 0;
+    const hasLanguages = resume.languages && resume.languages.length > 0;
+    const hasAwards = resume.awards && resume.awards.length > 0;
+    const hasInterests = resume.interests && resume.interests.length > 0;
+    const hasReferences = resume.references && resume.references.length > 0;
+
+    const hasAnyData = hasPersonalInfo || hasContacts || hasSkills || hasWorkExperience ||
+        hasEducation || hasCertifications || hasProjects || hasLanguages ||
+        hasAwards || hasInterests || hasReferences || resume.professionalSummary;
+
+    if (!hasAnyData && !resume.profilePhoto) {
+        return (
+            <Card className="border-dashed">
+                <CardContent className="py-8 text-center text-muted-foreground">
+                    No detailed resume data available
+                </CardContent>
+            </Card>
+        );
+    }
+
     return (
         <div className="space-y-6">
+            {/* Profile Photo */}
+            {resume.profilePhoto && (
+                <div className="flex justify-center">
+                    <Image
+                        src={resume.profilePhoto}
+                        alt="Profile"
+                        width={96}
+                        height={96}
+                        className="rounded-lg border object-cover"
+                    />
+                </div>
+            )}
             {/* Personal Information */}
             {(resume.fullName || resume.professionalTitle || resume.contactNumber || resume.dateOfBirth || resume.nationality || resume.address) && (
                 <Card>
