@@ -1,6 +1,5 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -67,11 +66,7 @@ const NotificationDropdown = () => {
                 <Button variant={"outline"} size={"icon"} className="relative">
                     <Bell className="h-5 w-5" />
                     {unreadCount > 0 && (
-                        <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center" variant={"destructive"}>
-                            <span className="text-[10px]">
-                                {unreadCount > 9 ? "9+" : unreadCount}
-                            </span>
-                        </Badge>
+                        <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-blue-600 ring-2 ring-white" />
                     )}
                 </Button>
             </DropdownMenuTrigger>
