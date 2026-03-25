@@ -70,6 +70,11 @@ export const recruiterNavItems: NavSection[] = [
                 href: "/recruiter/dashboard/subscriptions",
                 icon: "CreditCard",
             },
+            {
+                title: "Notifications",
+                href: "/recruiter/dashboard/notifications",
+                icon: "Bell",
+            },
         ],
     },
 ];
@@ -127,6 +132,11 @@ export const adminNavItems: NavSection[] = [
                 title: "Tracking & Analytics",
                 href: "/admin/dashboard/tracking",
                 icon: "Activity",
+            },
+            {
+                title: "Notifications",
+                href: "/admin/dashboard/notifications",
+                icon: "Bell",
             },
         ],
     },

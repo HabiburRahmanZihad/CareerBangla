@@ -40,8 +40,10 @@ export interface IRecruiterProfile {
     companyLogo?: string;
     designation?: string;
     isVerified: boolean;
+    status?: "PENDING" | "APPROVED" | "REJECTED";
     profileCompletion?: number;
     jobs?: IJob[];
+    user?: UserInfo;
     createdAt?: string;
     updatedAt?: string;
 }
@@ -54,6 +56,7 @@ export interface IAdminProfile {
     contactNumber?: string;
     role?: UserRole;
     status?: UserStatus;
+    user?: UserInfo;
     createdAt?: string;
     updatedAt?: string;
 }

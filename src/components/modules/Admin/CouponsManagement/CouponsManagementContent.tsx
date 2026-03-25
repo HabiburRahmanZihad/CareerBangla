@@ -11,7 +11,7 @@ import { createCoupon, deleteCoupon, getAllCoupons } from "@/services/coupon.ser
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { Plus, Trash2, Ticket } from "lucide-react";
+import { Plus, RefreshCw, Trash2, Ticket } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -19,7 +19,7 @@ const CouponsManagementContent = () => {
     const [showForm, setShowForm] = useState(false);
     const queryClient = useQueryClient();
 
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["admin-coupons"],
         queryFn: () => getAllCoupons(),
     });
@@ -82,10 +82,15 @@ const CouponsManagementContent = () => {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">Coupons Management</h1>
-                <Button onClick={() => setShowForm(!showForm)} size="sm">
-                    <Plus className="h-4 w-4 mr-1" />
-                    {showForm ? "Cancel" : "New Coupon"}
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button onClick={() => setShowForm(!showForm)} size="sm">
+                        <Plus className="h-4 w-4 mr-1" />
+                        {showForm ? "Cancel" : "New Coupon"}
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isFetching}>
+                        <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+                    </Button>
+                </div>
             </div>
 
             {showForm && (

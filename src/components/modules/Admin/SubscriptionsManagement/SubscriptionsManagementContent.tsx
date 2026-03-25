@@ -7,10 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getSubscriptionPlans } from "@/services/subscription.services";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle, Rocket } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, RefreshCw, Rocket } from "lucide-react";
 
 const SubscriptionsManagementContent = () => {
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["admin-subscription-plans"],
         queryFn: () => getSubscriptionPlans(),
     });
@@ -28,7 +29,12 @@ const SubscriptionsManagementContent = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Subscriptions Management</h1>
+            <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold">Subscriptions Management</h1>
+                <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isFetching}>
+                    <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+                </Button>
+            </div>
 
             {plans.length === 0 ? (
                 <Card>

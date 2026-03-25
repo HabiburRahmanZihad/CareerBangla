@@ -31,7 +31,12 @@ export async function getAllJobsAdmin(params?: Record<string, unknown>) {
 
 export async function changeUserStatus(data: { userId: string; status: string }) {
     logger.update(`Changing user status → userId: ${data.userId}, status: ${data.status}`);
-    return serverHttpClient.patch<void>("/admins/change-user-status", data);
+    return serverHttpClient.patch<void>("/admins/change-user-status", { userId: data.userId, userStatus: data.status });
+}
+
+export async function getAllUsers(params?: Record<string, unknown>) {
+    logger.read("Fetching all users (admin)");
+    return serverHttpClient.get<IAdminProfile[]>("/admins/users", { params });
 }
 
 export async function changeUserRole(data: { userId: string; role: string }) {

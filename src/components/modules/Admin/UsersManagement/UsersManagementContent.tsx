@@ -5,17 +5,18 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { changeUserStatus, getAllAdmins } from "@/services/admin.services";
-import { UserInfo } from "@/types/user.types";
+import { Button } from "@/components/ui/button";
+import { changeUserStatus, getAllUsers } from "@/services/admin.services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 const UsersManagementContent = () => {
     const queryClient = useQueryClient();
 
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["all-users"],
-        queryFn: () => getAllAdmins({ limit: "50" }),
+        queryFn: () => getAllUsers({ limit: "50" }),
     });
 
     const { mutateAsync: updateStatus } = useMutation({
@@ -43,7 +44,15 @@ const UsersManagementContent = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Users Management</h1>
+            <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold">Users Management</h1>
+                <div className="flex items-center gap-2">
+                    <Badge variant="secondary">{users.length} users</Badge>
+                    <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isFetching}>
+                        <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+                    </Button>
+                </div>
+            </div>
 
             {users.length === 0 ? (
                 <Card>

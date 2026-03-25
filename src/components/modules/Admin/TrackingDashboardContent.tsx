@@ -8,31 +8,40 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getCouponUsageTracking, getReferralTracking } from "@/services/tracking.services";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Activity, Ticket } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Activity, RefreshCw, Ticket } from "lucide-react";
 
 export default function TrackingDashboardContent() {
-    const { data: referralData, isLoading: refsLoading } = useQuery({
+    const { data: referralData, isLoading: refsLoading, isFetching: refsFetching, refetch: refetchRefs } = useQuery({
         queryKey: ["tracking-referrals"],
         queryFn: () => getReferralTracking(1, 100),
     });
 
-    const { data: couponData, isLoading: couponsLoading } = useQuery({
+    const { data: couponData, isLoading: couponsLoading, isFetching: couponsFetching, refetch: refetchCoupons } = useQuery({
         queryKey: ["tracking-coupons"],
         queryFn: () => getCouponUsageTracking(1, 100),
     });
+
+    const isRefreshing = refsFetching || couponsFetching;
+    const handleRefresh = () => { refetchRefs(); refetchCoupons(); };
 
     const referrals = referralData?.data?.data || [];
     const coupons = couponData?.data?.data || [];
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">System Tracking</h1>
-                <p className="text-muted-foreground mt-2">Monitor Referral conversions and Coupon usage analytics.</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">System Tracking</h1>
+                    <p className="text-muted-foreground mt-2">Monitor Referral conversions and Coupon usage analytics.</p>
+                </div>
+                <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isRefreshing}>
+                    <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                </Button>
             </div>
 
             <Tabs defaultValue="referrals" className="w-full">
-                <TabsList className="grid w-full md:w-[400px] grid-cols-2">
+                <TabsList className="grid w-full md:w-100 grid-cols-2">
                     <TabsTrigger value="referrals" className="flex items-center gap-2">
                         <Activity className="w-4 h-4" /> Referrals
                     </TabsTrigger>

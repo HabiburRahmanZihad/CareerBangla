@@ -1,12 +1,16 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getAllApplications } from "@/services/application.services";
-import { useQuery } from "@tanstack/react-query";
+import { getAllApplications, updateApplicationStatus } from "@/services/application.services";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { FileText } from "lucide-react";
+import { FileText, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 
 const statusColors: Record<string, string> = {
     PENDING: "bg-yellow-100 text-yellow-800",
@@ -14,13 +18,27 @@ const statusColors: Record<string, string> = {
     SHORTLISTED: "bg-green-100 text-green-800",
     REJECTED: "bg-red-100 text-red-800",
     ACCEPTED: "bg-emerald-100 text-emerald-800",
+    HIRED: "bg-emerald-100 text-emerald-800",
+    INTERVIEW: "bg-purple-100 text-purple-800",
     WITHDRAWN: "bg-gray-100 text-gray-800",
 };
 
 const ApplicationsManagementContent = () => {
-    const { data, isLoading } = useQuery({
+    const queryClient = useQueryClient();
+
+    const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["admin-all-applications"],
         queryFn: () => getAllApplications({ limit: "50" }),
+    });
+
+    const { mutateAsync: updateStatus } = useMutation({
+        mutationFn: ({ id, status }: { id: string; status: string }) =>
+            updateApplicationStatus(id, { status }),
+        onSuccess: () => {
+            toast.success("Application status updated");
+            queryClient.invalidateQueries({ queryKey: ["admin-all-applications"] });
+        },
+        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update status"),
     });
 
     if (isLoading) {
@@ -40,7 +58,12 @@ const ApplicationsManagementContent = () => {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">Applications Management</h1>
-                <Badge variant="secondary">{applications.length} applications</Badge>
+                <div className="flex items-center gap-2">
+                    <Badge variant="secondary">{applications.length} applications</Badge>
+                    <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isFetching}>
+                        <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+                    </Button>
+                </div>
             </div>
 
             {applications.length === 0 ? (
@@ -76,6 +99,23 @@ const ApplicationsManagementContent = () => {
                                     </Badge>
                                 </div>
                             </CardHeader>
+                            <CardContent className="pt-0">
+                                <Select
+                                    defaultValue={app.status}
+                                    onValueChange={(status) => updateStatus({ id: app.id, status })}
+                                >
+                                    <SelectTrigger className="w-36 h-8 text-xs">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="PENDING">Pending</SelectItem>
+                                        <SelectItem value="SHORTLISTED">Shortlisted</SelectItem>
+                                        <SelectItem value="INTERVIEW">Interview</SelectItem>
+                                        <SelectItem value="HIRED">Hired</SelectItem>
+                                        <SelectItem value="REJECTED">Rejected</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </CardContent>
                         </Card>
                     ))}
                 </div>

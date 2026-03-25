@@ -2,13 +2,14 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { getDashboardStats } from "@/services/stats.services";
 import { useQuery } from "@tanstack/react-query";
-import { Briefcase, Building2, Shield, Users } from "lucide-react";
+import { Briefcase, Building2, RefreshCw, Shield, Users } from "lucide-react";
 import Link from "next/link";
 
 const AdminDashboardContent = () => {
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["dashboard-stats"],
         queryFn: () => getDashboardStats(),
     });
@@ -24,7 +25,12 @@ const AdminDashboardContent = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+            <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+                <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isFetching}>
+                    <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+                </Button>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {cards.map((card) => (

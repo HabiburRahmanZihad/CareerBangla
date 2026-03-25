@@ -7,6 +7,7 @@ import { getMyNotifications, markAllAsRead, markAsRead } from "@/services/notifi
 import { INotification } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
+import { UserRole } from "@/lib/authUtils";
 import { Bell, Briefcase, CheckCircle, CreditCard, Info, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -27,9 +28,15 @@ const getNotificationIcon = (type: string) => {
     }
 }
 
-const NotificationDropdown = () => {
+const NotificationDropdown = ({ userRole }: { userRole?: UserRole }) => {
     const router = useRouter();
     const queryClient = useQueryClient();
+
+    const notificationsPagePath = userRole === "ADMIN" || userRole === "SUPER_ADMIN"
+        ? "/admin/dashboard/notifications"
+        : userRole === "RECRUITER"
+            ? "/recruiter/dashboard/notifications"
+            : "/dashboard/notifications";
 
     const { data: notificationsData } = useQuery({
         queryKey: ["notifications-dropdown"],
@@ -127,7 +134,7 @@ const NotificationDropdown = () => {
 
                 <DropdownMenuItem
                     className="text-center justify-center cursor-pointer"
-                    onClick={() => router.push("/dashboard/notifications")}
+                    onClick={() => router.push(notificationsPagePath)}
                 >
                     View All Notifications
                 </DropdownMenuItem>
