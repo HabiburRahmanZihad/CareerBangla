@@ -9,10 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { changeUserStatus } from "@/services/admin.services";
 import { approveRecruiter, deleteRecruiter, getAllRecruiters, rejectRecruiter, updateRecruiterData } from "@/services/recruiter.services";
+import { IRecruiterProfile } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle, Edit2, RefreshCw, Trash2, XCircle } from "lucide-react";
+import { CheckCircle, ChevronDown, ChevronUp, Edit2, RefreshCw, Trash2, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import RecruiterDetailsView from "./RecruiterDetailsView";
 import RecruiterEditModal from "./RecruiterEditModal";
 
 const RecruitersManagementContent = () => {
@@ -21,6 +23,7 @@ const RecruitersManagementContent = () => {
     const [statusFilter, setStatusFilter] = useState<string>("all-status");
     const [editingRecruiter, setEditingRecruiter] = useState<any>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [expandedDetailsId, setExpandedDetailsId] = useState<string | null>(null);
 
     const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["all-recruiters"],
@@ -163,104 +166,133 @@ const RecruitersManagementContent = () => {
                     {recruiters.map((recruiter: any) => {
                         const userStatus = recruiter.user?.status || "ACTIVE";
                         return (
-                            <Card key={recruiter.id}>
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <CardTitle className="text-base">{recruiter.name}</CardTitle>
-                                            <p className="text-sm text-muted-foreground">{recruiter.email}</p>
-                                            {recruiter.companyName && (
-                                                <p className="text-sm text-muted-foreground font-medium">{recruiter.companyName}</p>
+                            <div key={recruiter.id}>
+                                <Card>
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                                <CardTitle className="text-base">{recruiter.name}</CardTitle>
+                                                <p className="text-sm text-muted-foreground">{recruiter.email}</p>
+                                                {recruiter.companyName && (
+                                                    <p className="text-sm text-muted-foreground font-medium">{recruiter.companyName}</p>
+                                                )}
+                                                {recruiter.designation && (
+                                                    <p className="text-sm text-muted-foreground">{recruiter.designation}</p>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-2 flex-wrap justify-end">
+                                                <Badge variant={getStatusBadgeVariant(recruiter.status)}>
+                                                    {recruiter.status || "PENDING"}
+                                                </Badge>
+                                                <Badge variant={recruiter.isVerified ? "default" : "destructive"}>
+                                                    {recruiter.isVerified ? "Verified" : "Unverified"}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="pt-0">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                            {recruiter.industry && (
+                                                <div className="text-sm">
+                                                    <p className="text-muted-foreground">Industry</p>
+                                                    <p>{recruiter.industry}</p>
+                                                </div>
                                             )}
-                                            {recruiter.designation && (
-                                                <p className="text-sm text-muted-foreground">{recruiter.designation}</p>
+                                            {recruiter.companySize && (
+                                                <div className="text-sm">
+                                                    <p className="text-muted-foreground">Company Size</p>
+                                                    <p>{recruiter.companySize}</p>
+                                                </div>
                                             )}
-                                        </div>
-                                        <div className="flex items-center gap-2 flex-wrap justify-end">
-                                            <Badge variant={getStatusBadgeVariant(recruiter.status)}>
-                                                {recruiter.status || "PENDING"}
-                                            </Badge>
-                                            <Badge variant={recruiter.isVerified ? "default" : "destructive"}>
-                                                {recruiter.isVerified ? "Verified" : "Unverified"}
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="pt-0">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                        {recruiter.industry && (
+                                            {recruiter.contactNumber && (
+                                                <div className="text-sm">
+                                                    <p className="text-muted-foreground">Contact Number</p>
+                                                    <p>{recruiter.contactNumber}</p>
+                                                </div>
+                                            )}
                                             <div className="text-sm">
-                                                <p className="text-muted-foreground">Industry</p>
-                                                <p>{recruiter.industry}</p>
+                                                <p className="text-muted-foreground">Created At</p>
+                                                <p>{new Date(recruiter.createdAt).toLocaleDateString()}</p>
                                             </div>
-                                        )}
-                                        {recruiter.companySize && (
-                                            <div className="text-sm">
-                                                <p className="text-muted-foreground">Company Size</p>
-                                                <p>{recruiter.companySize}</p>
-                                            </div>
-                                        )}
-                                        {recruiter.contactNumber && (
-                                            <div className="text-sm">
-                                                <p className="text-muted-foreground">Contact Number</p>
-                                                <p>{recruiter.contactNumber}</p>
-                                            </div>
-                                        )}
-                                        <div className="text-sm">
-                                            <p className="text-muted-foreground">Created At</p>
-                                            <p>{new Date(recruiter.createdAt).toLocaleDateString()}</p>
                                         </div>
-                                    </div>
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => {
-                                                setEditingRecruiter(recruiter);
-                                                setIsEditModalOpen(true);
-                                            }}
-                                        >
-                                            <Edit2 className="mr-1 h-3.5 w-3.5" />
-                                            Edit
-                                        </Button>
-                                        {recruiter.status === "PENDING" && (
-                                            <>
-                                                <Button size="sm" variant="default" onClick={() => approve(recruiter.id)}>
-                                                    <CheckCircle className="mr-1 h-3.5 w-3.5" />
-                                                    Approve
-                                                </Button>
-                                                <Button size="sm" variant="destructive" onClick={() => reject(recruiter.id)}>
-                                                    <XCircle className="mr-1 h-3.5 w-3.5" />
-                                                    Reject
-                                                </Button>
-                                            </>
-                                        )}
-                                        <Select
-                                            defaultValue={userStatus}
-                                            onValueChange={(status) => updateStatus({ userId: recruiter.userId, status })}
-                                        >
-                                            <SelectTrigger className="w-32 h-8 text-xs">
-                                                <SelectValue placeholder="Status" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="ACTIVE">Active</SelectItem>
-                                                <SelectItem value="BLOCKED">Blocked</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-destructive h-8 w-8"
-                                            onClick={() => {
-                                                if (confirm("Delete this recruiter? This action cannot be undone."))
-                                                    deleteMutate(recruiter.id);
-                                            }}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => {
+                                                    setEditingRecruiter(recruiter);
+                                                    setIsEditModalOpen(true);
+                                                }}
+                                            >
+                                                <Edit2 className="mr-1 h-3.5 w-3.5" />
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant={expandedDetailsId === recruiter.id ? "default" : "outline"}
+                                                onClick={() => setExpandedDetailsId(expandedDetailsId === recruiter.id ? null : recruiter.id)}
+                                            >
+                                                {expandedDetailsId === recruiter.id ? (
+                                                    <>
+                                                        <ChevronUp className="mr-1 h-3.5 w-3.5" />
+                                                        Hide Details
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <ChevronDown className="mr-1 h-3.5 w-3.5" />
+                                                        View Details
+                                                    </>
+                                                )}
+                                            </Button>
+                                            {recruiter.status === "PENDING" && (
+                                                <>
+                                                    <Button size="sm" variant="default" onClick={() => approve(recruiter.id)}>
+                                                        <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                                                        Approve
+                                                    </Button>
+                                                    <Button size="sm" variant="destructive" onClick={() => reject(recruiter.id)}>
+                                                        <XCircle className="mr-1 h-3.5 w-3.5" />
+                                                        Reject
+                                                    </Button>
+                                                </>
+                                            )}
+                                            <Select
+                                                defaultValue={userStatus}
+                                                onValueChange={(status) => updateStatus({ userId: recruiter.userId, status })}
+                                            >
+                                                <SelectTrigger className="w-32 h-8 text-xs">
+                                                    <SelectValue placeholder="Status" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="ACTIVE">Active</SelectItem>
+                                                    <SelectItem value="BLOCKED">Blocked</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-destructive h-8 w-8"
+                                                onClick={() => {
+                                                    if (confirm("Delete this recruiter? This action cannot be undone."))
+                                                        deleteMutate(recruiter.id);
+                                                }}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                                {expandedDetailsId === recruiter.id && (
+                                    <Card className="mt-2 border-l-4 border-l-green-600">
+                                        <CardHeader>
+                                            <CardTitle className="text-base">Recruiter Details</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="pt-0">
+                                            <RecruiterDetailsView recruiter={recruiter} />
+                                        </CardContent>
+                                    </Card>
+                                )}
+                            </div>
                         );
                     })}
                 </div>
@@ -274,7 +306,7 @@ const RecruitersManagementContent = () => {
                         setIsEditModalOpen(false);
                         setEditingRecruiter(null);
                     }}
-                    onSave={(updatedData) => doUpdateRecruiterData({ recruiterId: editingRecruiter.id, data: updatedData })}
+                    onSave={(updatedData: any) => doUpdateRecruiterData({ recruiterId: editingRecruiter.id, data: updatedData })}
                 />
             )}
         </div>

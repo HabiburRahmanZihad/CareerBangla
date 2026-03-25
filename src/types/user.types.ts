@@ -38,7 +38,11 @@ export interface IRecruiterProfile {
     companyWebsite?: string;
     companyAddress?: string;
     companyLogo?: string;
+    profilePhoto?: string;
     designation?: string;
+    industry?: string;
+    companySize?: string;
+    description?: string;
     isVerified: boolean;
     status?: "PENDING" | "APPROVED" | "REJECTED";
     profileCompletion?: number;
