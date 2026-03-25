@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Badge } from "@/components/ui/badge";
-import { Globe, Github, Linkedin, Mail, MapPin, Phone } from "lucide-react";
+import { Github, Globe, Linkedin, Mail, MapPin, Phone } from "lucide-react";
 
 interface ResumePreviewProps {
     values: any;
