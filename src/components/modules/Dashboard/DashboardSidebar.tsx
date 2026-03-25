@@ -12,11 +12,11 @@ const DashboardSidebar = async () => {
     redirect("/login")
   }
 
-  const navItems : NavSection[] = getNavItemsByRole(userInfo.role)
+  const navItems: NavSection[] = getNavItemsByRole(userInfo.role)
 
   const dashboardHome = getDefaultDashboardRoute(userInfo.role)
   return (
-    <DashboardSidebarContent userInfo={userInfo} navItems={navItems} dashboardHome={dashboardHome}/>
+    <DashboardSidebarContent userInfo={userInfo} navItems={navItems} dashboardHome={dashboardHome} />
   )
 }
 
