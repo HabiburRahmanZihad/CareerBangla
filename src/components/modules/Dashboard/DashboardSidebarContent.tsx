@@ -11,16 +11,16 @@ import { usePathname } from "next/navigation"
 
 
 interface DashboardSidebarContentProps {
-    userInfo : UserInfo,
-    navItems : NavSection[],
-    dashboardHome : string,
+  userInfo: UserInfo,
+  navItems: NavSection[],
+  dashboardHome: string,
 
 }
 
 
 
-const DashboardSidebarContent = ({dashboardHome, navItems, userInfo} : DashboardSidebarContentProps) => {
-    const pathname = usePathname()
+const DashboardSidebarContent = ({ dashboardHome, navItems, userInfo }: DashboardSidebarContentProps) => {
+  const pathname = usePathname()
   return (
     <div className="hidden md:flex h-full w-64 flex-col border-r bg-card overflow-y-auto">
       {/* Logo / Brand */}
