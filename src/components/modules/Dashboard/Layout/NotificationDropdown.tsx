@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getMyNotifications, getUnreadCount, markAllAsRead, markAsRead } from "@/services/notification.services";
+import { getMyNotifications, markAllAsRead, markAsRead } from "@/services/notification.services";
 import { INotification } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
@@ -36,16 +36,10 @@ const NotificationDropdown = () => {
         queryFn: () => getMyNotifications({ limit: 10 }),
     });
 
-    const { data: unreadData } = useQuery({
-        queryKey: ["notifications-unread-count"],
-        queryFn: () => getUnreadCount(),
-    });
-
     const { mutate: markRead } = useMutation({
         mutationFn: (id: string) => markAsRead(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["notifications-dropdown"] });
-            queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
         },
     });
 
@@ -53,20 +47,21 @@ const NotificationDropdown = () => {
         mutationFn: () => markAllAsRead(),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["notifications-dropdown"] });
-            queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
         },
     });
 
     const notifications: INotification[] = notificationsData?.data || [];
-    const unreadCount = unreadData?.data?.count ?? 0;
+    const unreadCount = notifications.filter((n) => !n.isRead).length;
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant={"outline"} size={"icon"} className="relative">
+                <Button variant={"outline"} size={"icon"} className="relative overflow-visible">
                     <Bell className="h-5 w-5" />
                     {unreadCount > 0 && (
-                        <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-blue-600 ring-2 ring-white" />
+                        <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white ring-2 ring-white">
+                            {unreadCount > 99 ? "99+" : unreadCount}
+                        </span>
                     )}
                 </Button>
             </DropdownMenuTrigger>
