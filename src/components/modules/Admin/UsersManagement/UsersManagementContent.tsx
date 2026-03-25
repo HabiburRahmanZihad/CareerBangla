@@ -10,9 +10,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { changeUserStatus, getAllUsersWithDetails, updateUser } from "@/services/admin.services";
 import { IUserWithDetails } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Edit2, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronUp, Edit2, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import ResumeDetailsView from "./ResumeDetailsView";
 import UserEditModal from "./UserEditModal";
 
 const UsersManagementContent = () => {
@@ -22,6 +23,7 @@ const UsersManagementContent = () => {
     const [roleFilter, setRoleFilter] = useState<string>("all-roles");
     const [editingUser, setEditingUser] = useState<any>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [expandedResumeId, setExpandedResumeId] = useState<string | null>(null);
 
     const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["users-with-details"],
@@ -138,76 +140,107 @@ const UsersManagementContent = () => {
             ) : (
                 <div className="space-y-4">
                     {users.map((user: any) => (
-                        <Card key={user.id}>
-                            <CardHeader className="pb-3">
-                                <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                        <CardTitle className="text-base">{user.name}</CardTitle>
-                                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                                        {user.phone && (
-                                            <p className="text-sm text-muted-foreground">{user.phone}</p>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center gap-2 flex-wrap justify-end">
-                                        <Badge variant="outline">{user.role}</Badge>
-                                        <Badge variant={user.status === "ACTIVE" ? "default" : "destructive"}>
-                                            {user.status}
-                                        </Badge>
-                                        {user.emailVerified && (
-                                            <Badge variant="secondary">Verified</Badge>
-                                        )}
-                                        {user.isPremium && (
-                                            <Badge className="bg-yellow-600">Premium</Badge>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="pt-0">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                    <div className="text-sm">
-                                        <p className="text-muted-foreground">Created At</p>
-                                        <p>{new Date(user.createdAt).toLocaleDateString()}</p>
-                                    </div>
-                                    {user.resume?.id && (
-                                        <div className="text-sm">
-                                            <p className="text-muted-foreground">Resume</p>
-                                            <Badge variant="secondary">Available</Badge>
+                        <div key={user.id}>
+                            <Card>
+                                <CardHeader className="pb-3">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <CardTitle className="text-base">{user.name}</CardTitle>
+                                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                                            {user.phone && (
+                                                <p className="text-sm text-muted-foreground">{user.phone}</p>
+                                            )}
                                         </div>
-                                    )}
-                                    {user.recruiter && (
-                                        <div className="text-sm">
-                                            <p className="text-muted-foreground">Company</p>
-                                            <p>{user.recruiter.companyName}</p>
+                                        <div className="flex items-center gap-2 flex-wrap justify-end">
+                                            <Badge variant="outline">{user.role}</Badge>
+                                            <Badge variant={user.status === "ACTIVE" ? "default" : "destructive"}>
+                                                {user.status}
+                                            </Badge>
+                                            {user.emailVerified && (
+                                                <Badge variant="secondary">Verified</Badge>
+                                            )}
+                                            {user.isPremium && (
+                                                <Badge className="bg-yellow-600">Premium</Badge>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => {
-                                            setEditingUser(user);
-                                            setIsEditModalOpen(true);
-                                        }}
-                                    >
-                                        <Edit2 className="mr-1 h-3.5 w-3.5" />
-                                        Edit
-                                    </Button>
-                                    <Select
-                                        defaultValue={user.status || "ACTIVE"}
-                                        onValueChange={(status) => updateStatus({ userId: user.id, status })}
-                                    >
-                                        <SelectTrigger className="w-32 h-8 text-xs">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="ACTIVE">Active</SelectItem>
-                                            <SelectItem value="BLOCKED">Blocked</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                        <div className="text-sm">
+                                            <p className="text-muted-foreground">Created At</p>
+                                            <p>{new Date(user.createdAt).toLocaleDateString()}</p>
+                                        </div>
+                                        {user.resume?.id && (
+                                            <div className="text-sm">
+                                                <p className="text-muted-foreground">Resume</p>
+                                                <Badge variant="secondary">Available</Badge>
+                                            </div>
+                                        )}
+                                        {user.recruiter && (
+                                            <div className="text-sm">
+                                                <p className="text-muted-foreground">Company</p>
+                                                <p>{user.recruiter.companyName}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => {
+                                                setEditingUser(user);
+                                                setIsEditModalOpen(true);
+                                            }}
+                                        >
+                                            <Edit2 className="mr-1 h-3.5 w-3.5" />
+                                            Edit
+                                        </Button>
+                                        <Select
+                                            defaultValue={user.status || "ACTIVE"}
+                                            onValueChange={(status) => updateStatus({ userId: user.id, status })}
+                                        >
+                                            <SelectTrigger className="w-32 h-8 text-xs">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="ACTIVE">Active</SelectItem>
+                                                <SelectItem value="BLOCKED">Blocked</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        {user.resume?.id && (
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => setExpandedResumeId(expandedResumeId === user.id ? null : user.id)}
+                                            >
+                                                {expandedResumeId === user.id ? (
+                                                    <>
+                                                        <ChevronUp className="mr-1 h-3.5 w-3.5" />
+                                                        Hide Resume
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <ChevronDown className="mr-1 h-3.5 w-3.5" />
+                                                        View Resume Details
+                                                    </>
+                                                )}
+                                            </Button>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            {expandedResumeId === user.id && user.resume && (
+                                <Card className="mt-2 border-l-4 border-l-blue-600">
+                                    <CardHeader>
+                                        <CardTitle className="text-base">Resume Details</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="pt-0">
+                                        <ResumeDetailsView resume={user.resume} />
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
                     ))}
                 </div>
             )}
