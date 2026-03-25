@@ -208,11 +208,17 @@ const RegisterForm = ({ referralCode }: RegisterFormProps) => {
                 </Button>
             </CardContent>
 
-            <CardFooter className="justify-center border-t pt-4">
+            <CardFooter className="flex-col gap-2 border-t pt-4">
                 <p className="text-sm text-muted-foreground">
                     Already have an account?{" "}
                     <Link href="/login" className="text-primary font-medium hover:underline underline-offset-4">
                         Log In
+                    </Link>
+                </p>
+                <p className="text-sm text-muted-foreground">
+                    Want to hire talent?{" "}
+                    <Link href="/register/recruiter" className="text-primary font-medium hover:underline underline-offset-4">
+                        Register as Recruiter
                     </Link>
                 </p>
             </CardFooter>

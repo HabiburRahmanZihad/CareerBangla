@@ -67,3 +67,14 @@ export const changePasswordZodSchema = z.object({
 });
 
 export type IChangePasswordPayload = z.infer<typeof changePasswordZodSchema>;
+
+export const recruiterRegisterZodSchema = z.object({
+    name: z.string().min(2, "Name must be at least 2 characters").max(50),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    companyName: z.string().min(2, "Company name must be at least 2 characters").max(100),
+    contactNumber: z.string().regex(BD_PHONE_REGEX, "Enter a valid 11-digit BD phone number").optional().or(z.literal("")),
+    designation: z.string().optional().or(z.literal("")),
+});
+
+export type IRecruiterRegisterPayload = z.infer<typeof recruiterRegisterZodSchema>;
