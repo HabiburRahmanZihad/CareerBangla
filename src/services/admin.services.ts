@@ -49,6 +49,26 @@ export async function createRecruiter(data: Record<string, unknown>) {
     return serverHttpClient.post<void>("/users/create-recruiter", data);
 }
 
+export async function getAllUsersWithDetails(params?: Record<string, unknown>) {
+    logger.read("Fetching all users with details");
+    return serverHttpClient.get("/admins/users-with-details", { params });
+}
+
+export async function getAllRecruitersWithDetails(params?: Record<string, unknown>) {
+    logger.read("Fetching all recruiters with details");
+    return serverHttpClient.get("/admins/recruiters-with-details", { params });
+}
+
+export async function updateUser(userId: string, data: Record<string, unknown>) {
+    logger.update(`Updating user → userId: ${userId}`);
+    return serverHttpClient.patch(`/admins/users/${userId}`, data);
+}
+
+export async function updateRecruiterData(recruiterId: string, data: Record<string, unknown>) {
+    logger.update(`Updating recruiter → recruiterId: ${recruiterId}`);
+    return serverHttpClient.patch(`/admins/recruiters/${recruiterId}`, data);
+}
+
 export async function createAdmin(data: Record<string, unknown>) {
     logger.create("Creating admin");
     return serverHttpClient.post<void>("/users/create-admin", data);

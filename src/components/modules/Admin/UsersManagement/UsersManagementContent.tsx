@@ -2,21 +2,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { changeUserStatus, getAllUsers } from "@/services/admin.services";
+import { changeUserStatus, getAllUsersWithDetails, updateUser } from "@/services/admin.services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { RefreshCw } from "lucide-react";
+import { Edit2, RefreshCw } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
+import UserEditModal from "./UserEditModal";
 
 const UsersManagementContent = () => {
     const queryClient = useQueryClient();
+    const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState<string>("all-status");
+    const [roleFilter, setRoleFilter] = useState<string>("all-roles");
+    const [editingUser, setEditingUser] = useState<any>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const { data, isLoading, isFetching, refetch } = useQuery({
-        queryKey: ["all-users"],
-        queryFn: () => getAllUsers({ limit: "50" }),
+        queryKey: ["users-with-details"],
+        queryFn: () => getAllUsersWithDetails({ limit: "100" }),
     });
 
     const { mutateAsync: updateStatus } = useMutation({
@@ -24,9 +32,21 @@ const UsersManagementContent = () => {
             changeUserStatus({ userId, status }),
         onSuccess: () => {
             toast.success("User status updated");
-            queryClient.invalidateQueries({ queryKey: ["all-users"] });
+            queryClient.invalidateQueries({ queryKey: ["users-with-details"] });
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update status"),
+    });
+
+    const { mutateAsync: doUpdateUser } = useMutation({
+        mutationFn: ({ userId, data }: { userId: string; data: any }) =>
+            updateUser(userId, data),
+        onSuccess: () => {
+            toast.success("User updated successfully");
+            queryClient.invalidateQueries({ queryKey: ["users-with-details"] });
+            setIsEditModalOpen(false);
+            setEditingUser(null);
+        },
+        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update user"),
     });
 
     if (isLoading) {
@@ -34,13 +54,22 @@ const UsersManagementContent = () => {
             <div className="space-y-4">
                 <Skeleton className="h-8 w-48" />
                 {Array.from({ length: 5 }).map((_, i) => (
-                    <Skeleton key={i} className="h-20 rounded-lg" />
+                    <Skeleton key={i} className="h-32 rounded-lg" />
                 ))}
             </div>
         );
     }
 
-    const users = data?.data || [];
+    let users = data?.data || [];
+
+    // Filter users
+    users = users.filter((user: any) => {
+        const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === "all-status" || user.status === statusFilter;
+        const matchesRole = roleFilter === "all-roles" || user.role === roleFilter;
+        return matchesSearch && matchesStatus && matchesRole;
+    });
 
     return (
         <div className="space-y-6">
@@ -54,6 +83,51 @@ const UsersManagementContent = () => {
                 </div>
             </div>
 
+            {/* Filters */}
+            <div className="flex gap-2 flex-wrap">
+                <Input
+                    placeholder="Search by name or email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full sm:w-64"
+                />
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all-status">All Status</SelectItem>
+                        <SelectItem value="ACTIVE">Active</SelectItem>
+                        <SelectItem value="BLOCKED">Blocked</SelectItem>
+                    </SelectContent>
+                </Select>
+                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                    <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Filter by role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="">All Roles</SelectItem>
+                        <SelectItem value="USER">User</SelectItem>
+                        <SelectItem value="RECRUITER">Recruiter</SelectItem>
+                        <SelectItem value="ADMIN">Admin</SelectItem>
+                        <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                    </SelectContent>
+                </Select>
+                {(searchTerm || statusFilter || roleFilter) && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                            setSearchTerm("");
+                            setStatusFilter("");
+                            setRoleFilter("");
+                        }}
+                    >
+                        Clear Filters
+                    </Button>
+                )}
+            </div>
+
             {users.length === 0 ? (
                 <Card>
                     <CardContent className="py-12 text-center text-muted-foreground">
@@ -62,39 +136,91 @@ const UsersManagementContent = () => {
                 </Card>
             ) : (
                 <div className="space-y-4">
-                    {users.map((user) => (
+                    {users.map((user: any) => (
                         <Card key={user.id}>
                             <CardHeader className="pb-3">
                                 <div className="flex items-start justify-between">
-                                    <div>
+                                    <div className="flex-1">
                                         <CardTitle className="text-base">{user.name}</CardTitle>
                                         <p className="text-sm text-muted-foreground">{user.email}</p>
+                                        {user.phone && (
+                                            <p className="text-sm text-muted-foreground">{user.phone}</p>
+                                        )}
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 flex-wrap justify-end">
                                         <Badge variant="outline">{user.role}</Badge>
                                         <Badge variant={user.status === "ACTIVE" ? "default" : "destructive"}>
                                             {user.status}
                                         </Badge>
+                                        {user.emailVerified && (
+                                            <Badge variant="secondary">Verified</Badge>
+                                        )}
+                                        {user.isPremium && (
+                                            <Badge className="bg-yellow-600">Premium</Badge>
+                                        )}
                                     </div>
                                 </div>
                             </CardHeader>
                             <CardContent className="pt-0">
-                                <Select
-                                    defaultValue={user.status || "ACTIVE"}
-                                    onValueChange={(status) => updateStatus({ userId: user.id, status })}
-                                >
-                                    <SelectTrigger className="w-32 h-8 text-xs">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ACTIVE">Active</SelectItem>
-                                        <SelectItem value="BLOCKED">Blocked</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div className="text-sm">
+                                        <p className="text-muted-foreground">Created At</p>
+                                        <p>{new Date(user.createdAt).toLocaleDateString()}</p>
+                                    </div>
+                                    {user.resume?.id && (
+                                        <div className="text-sm">
+                                            <p className="text-muted-foreground">Resume</p>
+                                            <Badge variant="secondary">Available</Badge>
+                                        </div>
+                                    )}
+                                    {user.recruiter && (
+                                        <div className="text-sm">
+                                            <p className="text-muted-foreground">Company</p>
+                                            <p>{user.recruiter.companyName}</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                            setEditingUser(user);
+                                            setIsEditModalOpen(true);
+                                        }}
+                                    >
+                                        <Edit2 className="mr-1 h-3.5 w-3.5" />
+                                        Edit
+                                    </Button>
+                                    <Select
+                                        defaultValue={user.status || "ACTIVE"}
+                                        onValueChange={(status) => updateStatus({ userId: user.id, status })}
+                                    >
+                                        <SelectTrigger className="w-32 h-8 text-xs">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="ACTIVE">Active</SelectItem>
+                                            <SelectItem value="BLOCKED">Blocked</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </CardContent>
                         </Card>
                     ))}
                 </div>
+            )}
+
+            {editingUser && (
+                <UserEditModal
+                    user={editingUser}
+                    isOpen={isEditModalOpen}
+                    onClose={() => {
+                        setIsEditModalOpen(false);
+                        setEditingUser(null);
+                    }}
+                    onSave={(updatedData) => doUpdateUser({ userId: editingUser.id, data: updatedData })}
+                />
             )}
         </div>
     );

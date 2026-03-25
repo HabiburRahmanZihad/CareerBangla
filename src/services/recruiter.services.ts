@@ -48,3 +48,8 @@ export async function viewRecruiterEmail(recruiterId: string) {
     logger.read(`Viewing recruiter email → id: ${recruiterId}`);
     return serverHttpClient.get<{ email: string }>(`/recruiters/view-email/${recruiterId}`);
 }
+
+export async function updateRecruiterData(id: string, data: Record<string, unknown>) {
+    logger.update(`Updating recruiter data → id: ${id}`);
+    return serverHttpClient.patch<IRecruiterProfile>(`/admins/recruiters/${id}`, data);
+}
