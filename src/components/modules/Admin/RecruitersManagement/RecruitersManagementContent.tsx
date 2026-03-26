@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { changeUserStatus } from "@/services/admin.services";
-import { approveRecruiter, deleteRecruiter, getAllRecruiters, rejectRecruiter, updateRecruiterData } from "@/services/recruiter.services";
+import { approveRecruiter, getAllRecruiters, rejectRecruiter, updateRecruiterData } from "@/services/recruiter.services";
 import { IRecruiterProfile } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle, ChevronDown, ChevronUp, Edit2, RefreshCw, Trash2, XCircle } from "lucide-react";
+import { CheckCircle, ChevronDown, ChevronUp, Edit2, RefreshCw, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import RecruiterDetailsView from "./RecruiterDetailsView";
@@ -58,14 +58,7 @@ const RecruitersManagementContent = () => {
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed"),
     });
 
-    const { mutateAsync: deleteMutate } = useMutation({
-        mutationFn: (id: string) => deleteRecruiter(id),
-        onSuccess: () => {
-            toast.success("Recruiter deleted");
-            queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
-        },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed"),
-    });
+
 
     const { mutateAsync: doUpdateRecruiterData } = useMutation({
         mutationFn: ({ recruiterId, data }: { recruiterId: string; data: any }) =>
@@ -268,17 +261,7 @@ const RecruitersManagementContent = () => {
                                                     <SelectItem value="BLOCKED">Blocked</SelectItem>
                                                 </SelectContent>
                                             </Select>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-destructive h-8 w-8"
-                                                onClick={() => {
-                                                    if (confirm("Delete this recruiter? This action cannot be undone."))
-                                                        deleteMutate(recruiter.id);
-                                                }}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+
                                         </div>
                                     </CardContent>
                                 </Card>
