@@ -1,32 +1,16 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { downloadPdfFromElement } from "@/lib/pdfUtils";
 import { IAward, ICertification, IEducation, ILanguage, IProject, IReference, IResume, IWorkExperience } from "@/types/user.types";
-import { Download, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
 
 interface ResumeDetailsViewProps {
     resume?: IResume | null;
 }
 
 const ResumeDetailsView = ({ resume }: ResumeDetailsViewProps) => {
-    const [isDownloading, setIsDownloading] = useState(false);
-
-    const handleDownloadPdf = async () => {
-        try {
-            setIsDownloading(true);
-            const fullName = resume?.fullName || "Resume";
-            await downloadPdfFromElement("resume-pdf-content", `${fullName}-Resume`);
-        } catch (error) {
-            console.error("Failed to download PDF:", error);
-        } finally {
-            setIsDownloading(false);
-        }
-    };
     if (!resume) {
         return (
             <Card className="border-dashed">
@@ -69,19 +53,6 @@ const ResumeDetailsView = ({ resume }: ResumeDetailsViewProps) => {
 
     return (
         <div className="space-y-4">
-            {/* Download Button */}
-            <div className="flex justify-end">
-                <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleDownloadPdf}
-                    disabled={isDownloading}
-                >
-                    <Download className="mr-2 h-4 w-4" />
-                    {isDownloading ? "Downloading..." : "Download CV"}
-                </Button>
-            </div>
-
             {/* PDF Content Wrapper */}
             <div id="resume-pdf-content" className="space-y-6">
                 {/* Profile Photo */}

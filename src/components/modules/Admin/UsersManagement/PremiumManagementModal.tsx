@@ -147,7 +147,7 @@ const PremiumManagementModal = ({ isOpen, onClose, user }: PremiumManagementModa
                     </div>
                 </div>
 
-                <DialogFooter className="flex gap-2">
+                <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-between gap-2">
                     <Button variant="outline" onClick={onClose}>
                         Cancel
                     </Button>

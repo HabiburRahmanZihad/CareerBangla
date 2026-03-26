@@ -18,13 +18,15 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { downloadPdfFromElement } from "@/lib/pdfUtils";
 import { changeUserStatus, updateUser } from "@/services/admin.services";
-import { IUserWithDetails } from "@/types/user.types";
+import { IResume, IUserWithDetails } from "@/types/user.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Download, Edit2, Lock, Save, Unlock, X } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import PremiumManagementModal from "./PremiumManagementModal";
 import ResumeDetailsView from "./ResumeDetailsView";
+import { ResumeEditModal } from "./ResumeEditModal";
 
 interface UserDetailsPageProps {
     user: IUserWithDetails;
@@ -35,6 +37,7 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
     const queryClient = useQueryClient();
     const [isEditMode, setIsEditMode] = useState(false);
     const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
+    const [isResumeEditModalOpen, setIsResumeEditModalOpen] = useState(false);
     const [banConfirmOpen, setBanConfirmOpen] = useState(false);
     const [editData, setEditData] = useState({
         name: user.name,
@@ -52,6 +55,15 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
             setIsEditMode(false);
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update user"),
+    });
+
+    const { mutateAsync: doUpdateResume, isPending: isUpdatingResume } = useMutation({
+        mutationFn: (resumeData: Partial<IResume>) => updateUser(user.id, { resume: resumeData }),
+        onSuccess: () => {
+            toast.success("Resume updated successfully");
+            queryClient.invalidateQueries({ queryKey: ["users-with-details"] });
+        },
+        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update resume"),
     });
 
     const { mutateAsync: doChangeStatus } = useMutation({
@@ -72,14 +84,24 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
         if (!user.resume) return;
         try {
             setIsDownloadingCV(true);
+            const element = document.getElementById("resume-pdf-content");
+            if (!element) {
+                toast.error("Resume content not found");
+                return;
+            }
             const fullName = user.resume?.fullName || user.name || "Resume";
             await downloadPdfFromElement("resume-pdf-content", `${fullName}-Resume`);
+            toast.success("Resume downloaded successfully");
         } catch (error) {
             console.error("Failed to download PDF:", error);
             toast.error("Failed to download CV");
         } finally {
             setIsDownloadingCV(false);
         }
+    };
+
+    const handleUpdateResume = async (resumeData: Partial<IResume>) => {
+        await doUpdateResume(resumeData);
     };
 
     // Calculate jobs applied and shortlisted count
@@ -108,11 +130,22 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
                 <CardHeader>
                     <div className="flex items-start justify-between">
                         <div className="flex items-start gap-4">
-                            <img
-                                src={user.image || "https://via.placeholder.com/80"}
-                                alt={user.name}
-                                className="h-20 w-20 rounded-lg"
-                            />
+                            <div className="h-20 w-20 rounded-lg bg-muted overflow-hidden flex items-center justify-center">
+                                {user.image ? (
+                                    <Image
+                                        src={user.image}
+                                        alt={user.name}
+                                        className="h-20 w-20 object-cover rounded-lg"
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                        }}
+                                    />
+                                ) : (
+                                    <div className="h-20 w-20 rounded-lg bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-lg">
+                                        {user.name?.charAt(0)?.toUpperCase() || "U"}
+                                    </div>
+                                )}
+                            </div>
                             <div>
                                 <CardTitle className="text-2xl">{user.name}</CardTitle>
                                 <p className="text-muted-foreground">{user.email}</p>
@@ -288,14 +321,24 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>Resume</CardTitle>
                             {user.resume && (
-                                <Button
-                                    size="sm"
-                                    onClick={handleDownloadCV}
-                                    disabled={isDownloadingCV}
-                                >
-                                    <Download className="h-4 w-4 mr-2" />
-                                    Download CV
-                                </Button>
+                                <div className="flex gap-2">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => setIsResumeEditModalOpen(true)}
+                                    >
+                                        <Edit2 className="h-4 w-4 mr-2" />
+                                        Edit Resume
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        onClick={handleDownloadCV}
+                                        disabled={isDownloadingCV}
+                                    >
+                                        <Download className="h-4 w-4 mr-2" />
+                                        Download CV
+                                    </Button>
+                                </div>
                             )}
                         </CardHeader>
                         <CardContent>
@@ -371,9 +414,7 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
                             {user.resume && (
                                 <div className="space-y-3">
                                     <h3 className="font-semibold">Resume Management</h3>
-                                    <Button variant="outline" className="w-full">
-                                        ✓ Download Resume
-                                    </Button>
+                                    <p className="text-sm text-muted-foreground">Resume information is displayed and can be edited in the Resume tab above.</p>
                                 </div>
                             )}
                         </CardContent>
@@ -410,6 +451,15 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
                     </AlertDialogAction>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Resume Edit Modal */}
+            <ResumeEditModal
+                open={isResumeEditModalOpen}
+                onOpenChange={setIsResumeEditModalOpen}
+                resume={user.resume}
+                onSave={handleUpdateResume}
+                isLoading={isUpdatingResume}
+            />
         </div>
     );
 };
