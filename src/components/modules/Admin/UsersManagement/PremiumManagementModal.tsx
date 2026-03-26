@@ -78,16 +78,16 @@ const PremiumManagementModal = ({ isOpen, onClose, user }: PremiumManagementModa
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-md">
-                <DialogHeader>
+            <DialogContent className="max-w-md p-6">
+                <DialogHeader className="mb-6">
                     <DialogTitle>Premium Membership Management</DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                     {/* Current Status */}
-                    <div className="bg-muted p-3 rounded-lg">
-                        <p className="text-sm font-medium">Current Status</p>
-                        <p className="text-sm">
+                    <div className="bg-muted p-4 rounded-lg space-y-2">
+                        <p className="text-sm font-semibold">Current Status</p>
+                        <p className="text-sm text-muted-foreground">
                             {user.isPremium
                                 ? `Premium until ${new Date(user.premiumUntil || "").toLocaleDateString()}`
                                 : "Not a premium member"}
@@ -95,33 +95,33 @@ const PremiumManagementModal = ({ isOpen, onClose, user }: PremiumManagementModa
                     </div>
 
                     {/* Duration Options */}
-                    <div className="space-y-2">
-                        <Label>Duration</Label>
+                    <div className="space-y-3">
+                        <Label className="text-base font-semibold">Duration</Label>
                         <RadioGroup value={durationOption} onValueChange={setDurationOption}>
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-3 py-2">
                                 <RadioGroupItem value="30" id="30days" />
                                 <Label htmlFor="30days" className="font-normal cursor-pointer">30 days</Label>
                             </div>
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-3 py-2">
                                 <RadioGroupItem value="90" id="90days" />
                                 <Label htmlFor="90days" className="font-normal cursor-pointer">90 days</Label>
                             </div>
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-3 py-2">
                                 <RadioGroupItem value="180" id="180days" />
                                 <Label htmlFor="180days" className="font-normal cursor-pointer">6 months (180 days)</Label>
                             </div>
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-3 py-2">
                                 <RadioGroupItem value="365" id="365days" />
                                 <Label htmlFor="365days" className="font-normal cursor-pointer">1 year (365 days)</Label>
                             </div>
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-3 py-2">
                                 <RadioGroupItem value="custom" id="custom" />
                                 <Label htmlFor="custom" className="font-normal cursor-pointer">Custom duration</Label>
                             </div>
                         </RadioGroup>
 
                         {durationOption === "custom" && (
-                            <div className="flex items-center gap-2 mt-2">
+                            <div className="flex items-center gap-3 mt-3 pt-2">
                                 <Input
                                     type="number"
                                     min="1"
@@ -130,24 +130,24 @@ const PremiumManagementModal = ({ isOpen, onClose, user }: PremiumManagementModa
                                     placeholder="Number of days"
                                     className="flex-1"
                                 />
-                                <span className="text-sm text-muted-foreground">days</span>
+                                <span className="text-sm text-muted-foreground whitespace-nowrap">days</span>
                             </div>
                         )}
                     </div>
 
                     {/* Info Box */}
-                    <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm">
-                        <p className="font-medium mb-1">Premium Benefits:</p>
-                        <ul className="text-xs space-y-1 text-muted-foreground">
-                            <li>✓ Priority job listings</li>
-                            <li>✓ Advanced resume features</li>
-                            <li>✓ Premium support</li>
-                            <li>✓ Unlimited applications</li>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
+                        <p className="font-semibold text-sm text-blue-900">Premium Benefits:</p>
+                        <ul className="text-sm space-y-2 text-blue-700">
+                            <li className="flex items-center gap-2">✓ Priority job listings</li>
+                            <li className="flex items-center gap-2">✓ Advanced resume features</li>
+                            <li className="flex items-center gap-2">✓ Premium support</li>
+                            <li className="flex items-center gap-2">✓ Unlimited applications</li>
                         </ul>
                     </div>
                 </div>
 
-                <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-between gap-2">
+                <DialogFooter className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-between gap-3">
                     <Button variant="outline" onClick={onClose}>
                         Cancel
                     </Button>
