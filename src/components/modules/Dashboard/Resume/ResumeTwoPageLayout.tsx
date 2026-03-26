@@ -231,48 +231,6 @@ const ResumeTwoPageLayout = ({ values }: ResumeTwoPageLayoutProps) => {
                         </section>
                     )}
 
-                    {/* EDUCATION */}
-                    {validEducation.length > 0 && (
-                        <section className="mb-3">
-                            <h2 className="text-xs font-bold text-[#1a3a52] uppercase tracking-widest border-b border-gray-400 pb-1 mb-2">
-                                Education
-                            </h2>
-                            <div className="space-y-1.5">
-                                {validEducation.map((edu: any, i: number) => (
-                                    <div key={i}>
-                                        <div className="flex justify-between items-baseline gap-2">
-                                            <h3 className="font-semibold text-xs text-gray-800">
-                                                {edu.degree}{edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}
-                                            </h3>
-                                            <span className="text-[10px] text-gray-600 whitespace-nowrap">
-                                                {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
-                                            </span>
-                                        </div>
-                                        {edu.institutionName && (
-                                            <p className="text-xs text-gray-700">{edu.institutionName}</p>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-                    )}
-
-                    {/* LANGUAGES */}
-                    {validLanguages.length > 0 && (
-                        <section className="mb-3">
-                            <h2 className="text-xs font-bold text-[#1a3a52] uppercase tracking-widest border-b border-gray-400 pb-1 mb-2">
-                                Languages
-                            </h2>
-                            <ul className="text-xs text-gray-800 space-y-0.5">
-                                {validLanguages.map((l: any, i: number) => (
-                                    <li key={i} className="pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-[#1a3a52]">
-                                        {l.language} ({l.proficiencyLevel || "N/A"})
-                                    </li>
-                                ))}
-                            </ul>
-                        </section>
-                    )}
-
                     {/* WORK EXPERIENCE */}
                     {validWorkExp.length > 0 && (
                         <section className="mb-3">
@@ -309,6 +267,32 @@ const ResumeTwoPageLayout = ({ values }: ResumeTwoPageLayoutProps) => {
                         </section>
                     )}
 
+                    {/* EDUCATION */}
+                    {validEducation.length > 0 && (
+                        <section className="mb-3">
+                            <h2 className="text-xs font-bold text-[#1a3a52] uppercase tracking-widest border-b border-gray-400 pb-1 mb-2">
+                                Education
+                            </h2>
+                            <div className="space-y-1.5">
+                                {validEducation.map((edu: any, i: number) => (
+                                    <div key={i}>
+                                        <div className="flex justify-between items-baseline gap-2">
+                                            <h3 className="font-semibold text-xs text-gray-800">
+                                                {edu.degree}{edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}
+                                            </h3>
+                                            <span className="text-[10px] text-gray-600 whitespace-nowrap">
+                                                {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
+                                            </span>
+                                        </div>
+                                        {edu.institutionName && (
+                                            <p className="text-xs text-gray-700">{edu.institutionName}</p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
                     {/* CERTIFICATIONS */}
                     {validCertifications.length > 0 && (
                         <section className="mb-3">
@@ -331,47 +315,19 @@ const ResumeTwoPageLayout = ({ values }: ResumeTwoPageLayoutProps) => {
                         </section>
                     )}
 
-                    {/* AWARDS */}
-                    {validAwards.length > 0 && (
+                    {/* LANGUAGES */}
+                    {validLanguages.length > 0 && (
                         <section className="mb-3">
                             <h2 className="text-xs font-bold text-[#1a3a52] uppercase tracking-widest border-b border-gray-400 pb-1 mb-2">
-                                Awards & Achievements
+                                Languages
                             </h2>
-                            <div className="space-y-1">
-                                {validAwards.slice(0, 3).map((award: any, i: number) => (
-                                    <div key={i} className="flex justify-between items-baseline gap-2">
-                                        <div>
-                                            <span className="font-semibold text-xs">{award.title}</span>
-                                            {award.issuer && (
-                                                <span className="text-gray-700 text-xs"> - {award.issuer}</span>
-                                            )}
-                                        </div>
-                                        <span className="text-[10px] text-gray-600 whitespace-nowrap">{formatDate(award.date)}</span>
-                                    </div>
+                            <ul className="text-xs text-gray-800 space-y-0.5">
+                                {validLanguages.map((l: any, i: number) => (
+                                    <li key={i} className="pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-[#1a3a52]">
+                                        {l.language} ({l.proficiencyLevel || "N/A"})
+                                    </li>
                                 ))}
-                            </div>
-                        </section>
-                    )}
-
-                    {/* REFERENCES */}
-                    {validReferences.length > 0 && (
-                        <section className="mb-3">
-                            <h2 className="text-xs font-bold text-[#1a3a52] uppercase tracking-widest border-b border-gray-400 pb-1 mb-2">
-                                References
-                            </h2>
-                            <div className="grid grid-cols-2 gap-2">
-                                {validReferences.slice(0, 2).map((ref: any, i: number) => (
-                                    <div key={i} className="text-[10px]">
-                                        <p className="font-semibold">{ref.name}</p>
-                                        {ref.designation && (
-                                            <p className="text-gray-600">
-                                                {ref.designation}{ref.company ? ` at ${ref.company}` : ""}
-                                            </p>
-                                        )}
-                                        {ref.email && <p className="text-gray-600">{ref.email}</p>}
-                                    </div>
-                                ))}
-                            </div>
+                            </ul>
                         </section>
                     )}
 

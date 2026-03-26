@@ -112,6 +112,37 @@ const ResumePreview = ({ values }: ResumePreviewProps) => {
                 </section>
             )}
 
+            {/* Projects */}
+            {values.projects?.length > 0 && values.projects.some((p: any) => p.projectName) && (
+                <section className="mb-4">
+                    <h2 className="text-xs font-bold text-[#1e3a5f] uppercase tracking-wider border-b border-gray-200 pb-1 mb-2">
+                        Projects
+                    </h2>
+                    <div className="space-y-2">
+                        {values.projects.filter((p: any) => p.projectName).map((proj: any, i: number) => (
+                            <div key={i}>
+                                <h3 className="font-semibold text-[11px]">{proj.projectName}</h3>
+                                {proj.description && (
+                                    <p className="text-gray-700 text-[10px] mt-0.5">{proj.description}</p>
+                                )}
+                                {proj.technologiesUsed && (
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                        {(typeof proj.technologiesUsed === "string"
+                                            ? proj.technologiesUsed.split(",").map((s: string) => s.trim()).filter(Boolean)
+                                            : proj.technologiesUsed
+                                        ).map((tech: string, j: number) => (
+                                            <Badge key={j} variant="secondary" className="text-[9px] px-1.5 py-0 h-4">
+                                                {tech}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
             {/* Work Experience */}
             {values.workExperience?.length > 0 && values.workExperience.some((e: any) => e.jobTitle) && (
                 <section className="mb-4">
@@ -174,37 +205,6 @@ const ResumePreview = ({ values }: ResumePreviewProps) => {
                 </section>
             )}
 
-            {/* Projects */}
-            {values.projects?.length > 0 && values.projects.some((p: any) => p.projectName) && (
-                <section className="mb-4">
-                    <h2 className="text-xs font-bold text-[#1e3a5f] uppercase tracking-wider border-b border-gray-200 pb-1 mb-2">
-                        Projects
-                    </h2>
-                    <div className="space-y-2">
-                        {values.projects.filter((p: any) => p.projectName).map((proj: any, i: number) => (
-                            <div key={i}>
-                                <h3 className="font-semibold text-[11px]">{proj.projectName}</h3>
-                                {proj.description && (
-                                    <p className="text-gray-700 text-[10px] mt-0.5">{proj.description}</p>
-                                )}
-                                {proj.technologiesUsed && (
-                                    <div className="flex flex-wrap gap-1 mt-1">
-                                        {(typeof proj.technologiesUsed === "string"
-                                            ? proj.technologiesUsed.split(",").map((s: string) => s.trim()).filter(Boolean)
-                                            : proj.technologiesUsed
-                                        ).map((tech: string, j: number) => (
-                                            <Badge key={j} variant="secondary" className="text-[9px] px-1.5 py-0 h-4">
-                                                {tech}
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
-
             {/* Certifications */}
             {values.certifications?.length > 0 && values.certifications.some((c: any) => c.certificationName) && (
                 <section className="mb-4">
@@ -234,6 +234,16 @@ const ResumePreview = ({ values }: ResumePreviewProps) => {
                     <p className="text-gray-700">
                         {values.languages.filter((l: any) => l.language).map((l: any) => `${l.language} (${l.proficiencyLevel || "N/A"})`).join("  |  ")}
                     </p>
+                </section>
+            )}
+
+            {/* Interests */}
+            {interests.length > 0 && (
+                <section className="mb-4">
+                    <h2 className="text-xs font-bold text-[#1e3a5f] uppercase tracking-wider border-b border-gray-200 pb-1 mb-2">
+                        Interests
+                    </h2>
+                    <p className="text-gray-700">{interests.join(", ")}</p>
                 </section>
             )}
 
@@ -267,16 +277,6 @@ const ResumePreview = ({ values }: ResumePreviewProps) => {
                             </div>
                         ))}
                     </div>
-                </section>
-            )}
-
-            {/* Interests */}
-            {interests.length > 0 && (
-                <section className="mb-4">
-                    <h2 className="text-xs font-bold text-[#1e3a5f] uppercase tracking-wider border-b border-gray-200 pb-1 mb-2">
-                        Interests
-                    </h2>
-                    <p className="text-gray-700">{interests.join(", ")}</p>
                 </section>
             )}
         </div>
