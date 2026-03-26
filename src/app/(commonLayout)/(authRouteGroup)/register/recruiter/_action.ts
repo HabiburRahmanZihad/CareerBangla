@@ -35,9 +35,13 @@ export const recruiterRegisterAction = async (
 
             const parsed = recruiterRegisterZodSchema.safeParse(textData);
             if (!parsed.success) {
+                // Get first validation error with field name
+                const firstIssue = parsed.error.issues[0];
+                const fieldName = firstIssue.path.length > 0 ? String(firstIssue.path[0]) : "field";
+                const errorMessage = firstIssue.message;
                 return {
                     success: false,
-                    message: parsed.error.issues[0].message || "Invalid input",
+                    message: `${fieldName}: ${errorMessage}`,
                 };
             }
 
@@ -52,9 +56,13 @@ export const recruiterRegisterAction = async (
         // Handle JSON input (backward compatibility)
         const parsed = recruiterRegisterZodSchema.safeParse(payload);
         if (!parsed.success) {
+            // Get first validation error with field name
+            const firstIssue = parsed.error.issues[0];
+            const fieldName = firstIssue.path.length > 0 ? String(firstIssue.path[0]) : "field";
+            const errorMessage = firstIssue.message;
             return {
                 success: false,
-                message: parsed.error.issues[0].message || "Invalid input",
+                message: `${fieldName}: ${errorMessage}`,
             };
         }
 
