@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,6 +18,7 @@ import {
     Trash2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface SessionItem {
@@ -62,6 +64,10 @@ const getDeviceIcon = (device: string) => {
 const DevicesContent = () => {
     const router = useRouter();
     const queryClient = useQueryClient();
+    const [showLogoutAllConfirm, setShowLogoutAllConfirm] = useState(false);
+    const [showRemoveDeviceConfirm, setShowRemoveDeviceConfirm] = useState(false);
+    const [pendingSessionId, setPendingSessionId] = useState<string | null>(null);
+    const [isCurrentDevicePending, setIsCurrentDevicePending] = useState(false);
 
     const { data, isLoading, refetch } = useQuery({
         queryKey: ["active-sessions"],
@@ -72,11 +78,20 @@ const DevicesContent = () => {
         mutationFn: (sessionId: string) => revokeSession(sessionId),
         onSuccess: () => {
             toast.success("Device removed successfully");
-            queryClient.invalidateQueries({ queryKey: ["active-sessions"] });
-            refetch();
+            if (isCurrentDevicePending) {
+                router.push("/login");
+            } else {
+                queryClient.invalidateQueries({ queryKey: ["active-sessions"] });
+                refetch();
+            }
+            setPendingSessionId(null);
+            setShowRemoveDeviceConfirm(false);
+            setIsCurrentDevicePending(false);
         },
         onError: () => {
             toast.error("Failed to remove device");
+            setPendingSessionId(null);
+            setShowRemoveDeviceConfirm(false);
         },
     });
 
@@ -84,15 +99,33 @@ const DevicesContent = () => {
         mutationFn: () => logoutAllDevices(),
         onSuccess: () => {
             toast.success("Logged out from all devices");
+            setShowLogoutAllConfirm(false);
             router.push("/login");
         },
         onError: () => {
             toast.error("Failed to logout from all devices");
+            setShowLogoutAllConfirm(false);
         },
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sessions: SessionItem[] = (data as any)?.data || [];
+
+    const handleLogoutAllClick = () => {
+        setShowLogoutAllConfirm(true);
+    };
+
+    const handleRemoveDeviceClick = (sessionId: string, isCurrentDevice: boolean) => {
+        setPendingSessionId(sessionId);
+        setIsCurrentDevicePending(isCurrentDevice);
+        setShowRemoveDeviceConfirm(true);
+    };
+
+    const handleConfirmRemoveDevice = () => {
+        if (pendingSessionId) {
+            revokeOne(pendingSessionId);
+        }
+    };
 
     return (
         <div className="space-y-8">
@@ -106,7 +139,7 @@ const DevicesContent = () => {
                 {sessions.length > 0 && (
                     <Button
                         variant="destructive"
-                        onClick={() => logoutAll()}
+                        onClick={handleLogoutAllClick}
                         disabled={isLoggingOutAll}
                     >
                         {isLoggingOutAll ? (
@@ -177,14 +210,7 @@ const DevicesContent = () => {
                                         <Button
                                             variant={isCurrentDevice ? "outline" : "destructive"}
                                             size="sm"
-                                            onClick={() => {
-                                                if (isCurrentDevice) {
-                                                    revokeOne(session.id);
-                                                    router.push("/login");
-                                                } else {
-                                                    revokeOne(session.id);
-                                                }
-                                            }}
+                                            onClick={() => handleRemoveDeviceClick(session.id, isCurrentDevice)}
                                             disabled={isRevoking}
                                         >
                                             {isRevoking ? (
@@ -210,6 +236,50 @@ const DevicesContent = () => {
                     </p>
                 </CardContent>
             </Card>
+
+            <AlertDialog open={showLogoutAllConfirm} onOpenChange={setShowLogoutAllConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Logout from All Devices?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will log you out from all devices. You will need to login again to access your account.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="flex gap-3 justify-end">
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => logoutAll()}
+                            disabled={isLoggingOutAll}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            {isLoggingOutAll ? "Logging out..." : "Logout All"}
+                        </AlertDialogAction>
+                    </div>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={showRemoveDeviceConfirm} onOpenChange={setShowRemoveDeviceConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Remove Device?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {isCurrentDevicePending
+                                ? "This will logout from the current device. You will need to login again."
+                                : "This will remove the device from your account."}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="flex gap-3 justify-end">
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleConfirmRemoveDevice}
+                            disabled={isRevoking}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            {isRevoking ? "Removing..." : isCurrentDevicePending ? "Logout" : "Remove"}
+                        </AlertDialogAction>
+                    </div>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };
