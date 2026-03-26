@@ -533,12 +533,12 @@ const ComprehensiveRecruiterRegisterForm = () => {
                                         setActiveTab(tabs[currentIndex - 1]);
                                     }
                                 }}
-                                className="min-w-24"
+                                className="px-6"
                             >
                                 Previous
                             </Button>
                         ) : (
-                            <div className="min-w-24" />
+                            <div className="w-20" />
                         )}
 
                         <div className="flex-1" />
@@ -553,7 +553,7 @@ const ComprehensiveRecruiterRegisterForm = () => {
                                         setActiveTab(tabs[currentIndex + 1]);
                                     }
                                 }}
-                                className="min-w-24"
+                                className="px-6"
                             >
                                 Next
                             </Button>
@@ -564,7 +564,7 @@ const ComprehensiveRecruiterRegisterForm = () => {
                                         isPending={isSubmitting || isPending}
                                         pendingLabel="Creating Account..."
                                         disabled={!canSubmit}
-                                        className="min-w-32"
+                                        className="px-8 py-2"
                                     >
                                         Register as Recruiter
                                     </AppSubmitButton>

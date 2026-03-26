@@ -248,7 +248,7 @@ const ConfirmedRecruitersMain = () => {
                                                 className="h-10 w-10 rounded-full object-cover"
                                             />
                                         ) : (
-                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-semibold">
+                                            <div className="h-10 w-10 rounded-full bg-linear-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-semibold">
                                                 {recruiter.name?.charAt(0).toUpperCase()}
                                             </div>
                                         )}
@@ -345,7 +345,7 @@ const ConfirmedRecruitersMain = () => {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Change Recruiter Status</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Do you want to change this recruiter's account status to <strong>{statusConfirmId?.newStatus}</strong>?
+                            Do you want to change this recruiter&apos;s account status to <strong>{statusConfirmId?.newStatus}</strong>?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

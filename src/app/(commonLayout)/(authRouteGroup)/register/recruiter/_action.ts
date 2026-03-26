@@ -46,11 +46,23 @@ export const recruiterRegisterAction = async (
             }
 
             // Send FormData to backend
-            return await serverHttpClient.post("/users/create-recruiter", payload, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
+            try {
+                const response = await serverHttpClient.post("/users/create-recruiter", payload, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                });
+                
+                return {
+                    success: true,
+                    message: "Registration successful! Your account is pending admin approval.",
+                };
+            } catch (apiError: any) {
+                return {
+                    success: false,
+                    message: getRequestErrorMessage(apiError, "Registration failed"),
+                };
+            }
         }
 
         // Handle JSON input (backward compatibility)
@@ -68,26 +80,33 @@ export const recruiterRegisterAction = async (
 
         const { name, email, password, companyName, contactNumber, designation, industry, companyWebsite, companyAddress, companySize, description } = parsed.data;
 
-        await serverHttpClient.post("/users/create-recruiter", {
-            password,
-            recruiter: {
-                name,
-                email,
-                companyName,
-                ...(industry ? { industry } : {}),
-                ...(contactNumber ? { contactNumber } : {}),
-                ...(designation ? { designation } : {}),
-                ...(companyWebsite ? { companyWebsite } : {}),
-                ...(companyAddress ? { companyAddress } : {}),
-                ...(companySize ? { companySize } : {}),
-                ...(description ? { description } : {}),
-            },
-        });
+        try {
+            await serverHttpClient.post("/users/create-recruiter", {
+                password,
+                recruiter: {
+                    name,
+                    email,
+                    companyName,
+                    ...(industry ? { industry } : {}),
+                    ...(contactNumber ? { contactNumber } : {}),
+                    ...(designation ? { designation } : {}),
+                    ...(companyWebsite ? { companyWebsite } : {}),
+                    ...(companyAddress ? { companyAddress } : {}),
+                    ...(companySize ? { companySize } : {}),
+                    ...(description ? { description } : {}),
+                },
+            });
 
-        return {
-            success: true,
-            message: "Registration successful! Your account is pending admin approval.",
-        };
+            return {
+                success: true,
+                message: "Registration successful! Your account is pending admin approval.",
+            };
+        } catch (apiError: any) {
+            return {
+                success: false,
+                message: getRequestErrorMessage(apiError, "Registration failed"),
+            };
+        }
     } catch (error: any) {
         return {
             success: false,
