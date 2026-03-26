@@ -516,13 +516,13 @@ const ComprehensiveRecruiterRegisterForm = () => {
                     </Tabs>
 
                     {serverError && (
-                        <Alert variant="destructive">
-                            <AlertDescription>{serverError}</AlertDescription>
+                        <Alert variant="destructive" className="mt-4 mb-4">
+                            <AlertDescription className="text-sm">{serverError}</AlertDescription>
                         </Alert>
                     )}
 
-                    <div className="flex gap-2 justify-between pt-4">
-                        {activeTab !== "personal" && (
+                    <div className="flex items-center gap-4 pt-6 border-t">
+                        {activeTab !== "personal" ? (
                             <Button
                                 type="button"
                                 variant="outline"
@@ -533,14 +533,19 @@ const ComprehensiveRecruiterRegisterForm = () => {
                                         setActiveTab(tabs[currentIndex - 1]);
                                     }
                                 }}
+                                className="min-w-24"
                             >
                                 Previous
                             </Button>
+                        ) : (
+                            <div className="min-w-24" />
                         )}
+
+                        <div className="flex-1" />
+
                         {activeTab !== "additional" ? (
                             <Button
                                 type="button"
-                                className="ml-auto"
                                 onClick={() => {
                                     const tabs = ["personal", "company", "additional"];
                                     const currentIndex = tabs.indexOf(activeTab);
@@ -548,6 +553,7 @@ const ComprehensiveRecruiterRegisterForm = () => {
                                         setActiveTab(tabs[currentIndex + 1]);
                                     }
                                 }}
+                                className="min-w-24"
                             >
                                 Next
                             </Button>
@@ -558,7 +564,7 @@ const ComprehensiveRecruiterRegisterForm = () => {
                                         isPending={isSubmitting || isPending}
                                         pendingLabel="Creating Account..."
                                         disabled={!canSubmit}
-                                        className="ml-auto"
+                                        className="min-w-32"
                                     >
                                         Register as Recruiter
                                     </AppSubmitButton>

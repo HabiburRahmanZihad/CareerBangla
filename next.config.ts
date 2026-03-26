@@ -30,6 +30,12 @@ const nextConfig: NextConfig = {
     // Disable optimization to avoid private IP check issues
     unoptimized: true,
   },
+  // Experimental features for Server Actions configuration
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
+  },
 };
 
 export default nextConfig;
