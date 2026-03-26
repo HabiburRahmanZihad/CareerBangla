@@ -1,9 +1,9 @@
-import RecruitersManagementContent from "@/components/modules/Admin/RecruitersManagement/RecruitersManagementContent";
+import RecruitersManagementDashboard from "@/components/modules/Admin/RecruitersManagement/RecruitersManagementDashboard";
 import { protectPageByRole } from "@/lib/protectedPageHelpers";
 
 const RecruitersManagementPage = async () => {
     await protectPageByRole("ADMIN");
-    return <RecruitersManagementContent />;
+    return <RecruitersManagementDashboard />;
 };
 
 export default RecruitersManagementPage;
