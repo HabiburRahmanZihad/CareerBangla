@@ -69,12 +69,49 @@ export const changePasswordZodSchema = z.object({
 export type IChangePasswordPayload = z.infer<typeof changePasswordZodSchema>;
 
 export const recruiterRegisterZodSchema = z.object({
-    name: z.string().min(2, "Name must be at least 2 characters").max(50),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    companyName: z.string().min(2, "Company name must be at least 2 characters").max(100),
-    contactNumber: z.string().regex(BD_PHONE_REGEX, "Enter a valid 11-digit BD phone number").optional().or(z.literal("")),
-    designation: z.string().optional().or(z.literal("")),
+    // Personal Information
+    name: z.string()
+        .min(2, "Name must be at least 2 characters")
+        .max(50, "Name must not exceed 50 characters"),
+    email: z.string()
+        .email("Invalid email address"),
+    password: z.string()
+        .min(8, "Password must be at least 8 characters"),
+    designation: z.string()
+        .min(2, "Designation must be at least 2 characters")
+        .max(50, "Designation must not exceed 50 characters")
+        .optional()
+        .or(z.literal("")),
+    profilePhoto: z.string().optional().or(z.literal("")),
+
+    // Company Information
+    companyName: z.string()
+        .min(2, "Company name must be at least 2 characters")
+        .max(100, "Company name must not exceed 100 characters"),
+    industry: z.string()
+        .min(1, "Industry is required"),
+    companyWebsite: z.string()
+        .url("Invalid URL").optional()
+        .or(z.literal("")),
+    companyAddress: z.string()
+        .min(5, "Company address must be at least 5 characters")
+        .max(200, "Company address must not exceed 200 characters")
+        .optional()
+        .or(z.literal("")),
+    companySize: z.string()
+        .optional()
+        .or(z.literal("")),
+    description: z.string()
+        .max(500, "Description must not exceed 500 characters")
+        .optional()
+        .or(z.literal("")),
+    companyLogo: z.string().optional().or(z.literal("")),
+
+    // Contact Information
+    contactNumber: z.string()
+        .regex(BD_PHONE_REGEX, "Enter a valid 11-digit BD phone number")
+        .optional()
+        .or(z.literal("")),
 });
 
 export type IRecruiterRegisterPayload = z.infer<typeof recruiterRegisterZodSchema>;

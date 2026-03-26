@@ -1,4 +1,4 @@
-import RecruiterRegisterForm from "@/components/modules/Auth/RecruiterRegisterForm";
+import ComprehensiveRecruiterRegisterForm from "@/components/modules/Auth/ComprehensiveRecruiterRegisterForm";
 import { getDefaultDashboardRoute } from "@/lib/authUtils";
 import { getUserInfo } from "@/services/auth.services";
 import { Metadata } from "next";
@@ -16,7 +16,7 @@ const RecruiterRegisterPage = async () => {
         redirect(getDefaultDashboardRoute(userInfo.role));
     }
 
-    return <RecruiterRegisterForm />;
+    return <ComprehensiveRecruiterRegisterForm />;
 };
 
 export default RecruiterRegisterPage;

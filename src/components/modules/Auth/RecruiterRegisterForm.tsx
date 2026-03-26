@@ -29,6 +29,7 @@ const RecruiterRegisterForm = () => {
             email: "",
             password: "",
             companyName: "",
+            industry: "",
             contactNumber: "",
             designation: "",
         },
@@ -137,6 +138,15 @@ const RecruiterRegisterForm = () => {
                     >
                         {(field) => (
                             <AppField field={field} label="Company Name" type="text" placeholder="Enter your company name" />
+                        )}
+                    </form.Field>
+
+                    <form.Field
+                        name="industry"
+                        validators={{ onChange: recruiterRegisterZodSchema.shape.industry }}
+                    >
+                        {(field) => (
+                            <AppField field={field} label="Industry" type="text" placeholder="e.g., Technology, Finance" />
                         )}
                     </form.Field>
 
