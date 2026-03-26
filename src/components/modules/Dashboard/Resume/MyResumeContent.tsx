@@ -169,7 +169,15 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                 }
             } else {
                 setServerErrors({});
-                toast.success("Resume updated successfully!");
+                const newCompletion = response?.data?.profileCompletion ?? 0;
+                if (!isPremium && newCompletion === 100) {
+                    toast.success(
+                        "Your profile is 100% complete! Upgrade to Career Boost to make future updates and download your ATS-optimised PDF.",
+                        { duration: 6000 },
+                    );
+                } else {
+                    toast.success("Resume updated successfully!");
+                }
                 queryClient.invalidateQueries({ queryKey: ["my-resume"] });
             }
         },
