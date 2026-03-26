@@ -2,23 +2,39 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import AppField from "@/components/shared/form/AppField";
-import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { createAdmin, deleteAdmin, getAllAdmins, changeUserRole } from "@/services/admin.services";
+import { createAdmin, deleteAdmin, getAllAdmins } from "@/services/admin.services";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Mail, Plus, RefreshCw, Shield, Trash2, User } from "lucide-react";
+import { Loader2, Mail, Plus, RefreshCw, Shield, ShieldAlert, Trash2, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 const AdminsManagementContent = () => {
     const queryClient = useQueryClient();
-    const [showForm, setShowForm] = useState(false);
-    const [selectedRole, setSelectedRole] = useState("ADMIN");
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
 
     const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["admin-all-admins"],
@@ -30,7 +46,7 @@ const AdminsManagementContent = () => {
         onSuccess: () => {
             toast.success("Admin created successfully!");
             queryClient.invalidateQueries({ queryKey: ["admin-all-admins"] });
-            setShowForm(false);
+            setDialogOpen(false);
             form.reset();
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to create admin"),
@@ -43,15 +59,6 @@ const AdminsManagementContent = () => {
             queryClient.invalidateQueries({ queryKey: ["admin-all-admins"] });
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to delete admin"),
-    });
-
-    const { mutateAsync: changeRole } = useMutation({
-        mutationFn: ({ userId, role }: { userId: string; role: string }) => changeUserRole({ userId, role }),
-        onSuccess: () => {
-            toast.success("Role updated successfully!");
-            queryClient.invalidateQueries({ queryKey: ["admin-all-admins"] });
-        },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to change role"),
     });
 
     const form = useForm({
@@ -69,10 +76,20 @@ const AdminsManagementContent = () => {
                     ...(value.contactNumber && { contactNumber: value.contactNumber }),
                 },
                 password: value.password,
-                role: selectedRole,
+                role: "ADMIN",
             });
         },
     });
+
+    const handleFormSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const { name, email, password } = form.state.values;
+        if (!name.trim() || !email.trim() || !password.trim()) {
+            toast.error("Please fill in all required fields.");
+            return;
+        }
+        setShowConfirm(true);
+    };
 
     if (isLoading) {
         return (
@@ -93,63 +110,81 @@ const AdminsManagementContent = () => {
                 <h1 className="text-2xl font-bold">Admins Management</h1>
                 <div className="flex items-center gap-2">
                     <Badge variant="secondary">{admins.length} admins</Badge>
-                    <Button variant="outline" size="sm" onClick={() => setShowForm(!showForm)}>
-                        <Plus className="h-4 w-4 mr-1" />
-                        {showForm ? "Cancel" : "New Admin"}
-                    </Button>
+
+                    {/* ── Create Admin Modal ── */}
+                    <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) form.reset(); }}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                                <Plus className="h-4 w-4 mr-1" /> New Admin
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-lg">
+                            <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                    <ShieldAlert className="h-5 w-5 text-primary" />
+                                    Create New Admin
+                                </DialogTitle>
+                                <DialogDescription>
+                                    This will create a new admin account with full dashboard access.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <form onSubmit={handleFormSubmit} noValidate className="space-y-4 mt-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <form.Field name="name">
+                                        {(field) => <AppField field={field} label="Full Name" placeholder="e.g. John Doe" />}
+                                    </form.Field>
+                                    <form.Field name="email">
+                                        {(field) => <AppField field={field} label="Email" type="email" placeholder="e.g. admin@example.com" />}
+                                    </form.Field>
+                                    <form.Field name="password">
+                                        {(field) => <AppField field={field} label="Password" type="password" placeholder="Min 6 characters" />}
+                                    </form.Field>
+                                    <form.Field name="contactNumber">
+                                        {(field) => <AppField field={field} label="Contact Number (optional)" type="tel" placeholder="e.g. 01712345678" />}
+                                    </form.Field>
+                                </div>
+                                <div className="flex justify-end gap-2 pt-2">
+                                    <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                                        Cancel
+                                    </Button>
+                                    <Button type="submit" disabled={createPending}>
+                                        {createPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                                        Create Admin
+                                    </Button>
+                                </div>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+
                     <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isFetching}>
                         <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
                     </Button>
                 </div>
             </div>
 
-            {showForm && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base">Create New Admin</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form
-                            noValidate
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                form.handleSubmit();
-                            }}
-                            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            {/* ── Confirmation Alert ── */}
+            <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Admin Creation</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            You are about to grant <strong>admin privileges</strong> to{" "}
+                            <strong>{form.state.values.email || "this user"}</strong>.
+                            They will have full access to the admin dashboard. This action is sensitive and should only be done for trusted individuals.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => form.handleSubmit()}
+                            disabled={createPending}
                         >
-                            <form.Field name="name">
-                                {(field) => <AppField field={field} label="Full Name" placeholder="e.g. John Doe" />}
-                            </form.Field>
-                            <form.Field name="email">
-                                {(field) => <AppField field={field} label="Email" type="email" placeholder="e.g. admin@example.com" />}
-                            </form.Field>
-                            <form.Field name="password">
-                                {(field) => <AppField field={field} label="Password" type="password" placeholder="Min 6 characters" />}
-                            </form.Field>
-                            <form.Field name="contactNumber">
-                                {(field) => <AppField field={field} label="Contact Number (optional)" type="tel" placeholder="e.g. 01712345678" />}
-                            </form.Field>
-                            <div>
-                                <label className="text-sm font-medium mb-1.5 block">Role</label>
-                                <Select defaultValue="ADMIN" onValueChange={setSelectedRole}>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ADMIN">Admin</SelectItem>
-                                        <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="md:col-span-2">
-                                <AppSubmitButton isPending={createPending} pendingLabel="Creating...">
-                                    Create Admin
-                                </AppSubmitButton>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
-            )}
+                            {createPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            Yes, Create Admin
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {admins.length === 0 ? (
                 <Card>
@@ -182,20 +217,6 @@ const AdminsManagementContent = () => {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Badge>{adminRole}</Badge>
-                                        <Select
-                                            defaultValue={adminRole}
-                                            onValueChange={(role) => {
-                                                if (admin.userId) changeRole({ userId: admin.userId, role });
-                                            }}
-                                        >
-                                            <SelectTrigger className="w-36 h-8 text-xs">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="ADMIN">Admin</SelectItem>
-                                                <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                                            </SelectContent>
-                                        </Select>
                                         <Button
                                             variant="ghost"
                                             size="icon"
