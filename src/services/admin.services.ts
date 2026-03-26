@@ -64,6 +64,11 @@ export async function updateUser(userId: string, data: Record<string, unknown>) 
     return serverHttpClient.patch(`/admins/users/${userId}`, data);
 }
 
+export async function deleteUser(userId: string) {
+    logger.delete(`Deleting user → userId: ${userId}`);
+    return serverHttpClient.delete(`/admins/users/${userId}`);
+}
+
 export async function updateRecruiterData(recruiterId: string, data: Record<string, unknown>) {
     logger.update(`Updating recruiter → recruiterId: ${recruiterId}`);
     return serverHttpClient.patch(`/admins/recruiters/${recruiterId}`, data);

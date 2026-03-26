@@ -7,6 +7,7 @@ export interface UserInfo {
     name: string;
     email: string;
     phone?: string;
+    country?: string;
     role: UserRole;
     image?: string;
     status?: UserStatus;
@@ -15,6 +16,7 @@ export interface UserInfo {
     needPasswordChange?: boolean;
     isPremium?: boolean;
     premiumUntil?: string;
+    isHired?: boolean;
     referralCode?: string;
 }
 

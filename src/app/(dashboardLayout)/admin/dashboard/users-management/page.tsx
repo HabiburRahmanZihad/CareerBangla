@@ -1,9 +1,9 @@
-import UsersManagementContent from "@/components/modules/Admin/UsersManagement/UsersManagementContent";
+import UsersManagementMain from "@/components/modules/Admin/UsersManagement/UsersManagementMain";
 import { protectPageByRole } from "@/lib/protectedPageHelpers";
 
 const UsersManagementPage = async () => {
     await protectPageByRole("ADMIN");
-    return <UsersManagementContent />;
+    return <UsersManagementMain />;
 };
 
 export default UsersManagementPage;
