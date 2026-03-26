@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -115,8 +115,8 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader className="flex flex-row items-start justify-between">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-6">
+                <div className="flex items-start justify-between gap-4 mb-6">
                     <div>
                         <DialogTitle>Resume {isEditing ? "Editor" : "View"}</DialogTitle>
                         <DialogDescription>
@@ -129,7 +129,6 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                             variant="outline"
                             onClick={handleDownloadPDF}
                             disabled={isDownloading || !localResume.fullName}
-                            className="ml-auto"
                         >
                             <Download className="h-4 w-4 mr-2" />
                             {isDownloading ? "Downloading..." : "Download"}
@@ -144,10 +143,10 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                             </Button>
                         )}
                     </div>
-                </DialogHeader>
+                </div>
 
-                <div id="resume-pdf-content" className="space-y-4">
-                    <div className="flex gap-2 border-b pb-2 overflow-x-auto">
+                <div id="resume-pdf-content" className="space-y-6 px-1">
+                    <div className="flex gap-2 border-b pb-4 overflow-x-auto">
                         {[
                             { id: "basic", label: "Basic Info" },
                             { id: "skills", label: "Skills" },
@@ -173,12 +172,12 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                         ))}
                     </div>
 
-                    <div className="space-y-4 py-4">
+                    <div className="space-y-6 py-2">
                         {/* Basic Info Tab */}
                         {activeTab === "basic" && (
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
+                            <div className="space-y-5">
+                                <div className="grid grid-cols-2 gap-5">
+                                    <div className="space-y-2">
                                         <Label>Full Name</Label>
                                         <Input
                                             disabled={!isEditing}
@@ -187,7 +186,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                             placeholder="John Doe"
                                         />
                                     </div>
-                                    <div>
+                                    <div className="space-y-2">
                                         <Label>Professional Title</Label>
                                         <Input
                                             disabled={!isEditing}
@@ -197,7 +196,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                         />
                                     </div>
                                 </div>
-                                <div>
+                                <div className="space-y-2">
                                     <Label>Professional Summary</Label>
                                     <Textarea
                                         disabled={!isEditing}
@@ -207,8 +206,8 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                         rows={4}
                                     />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
+                                <div className="grid grid-cols-2 gap-5">
+                                    <div className="space-y-2">
                                         <Label>Email</Label>
                                         <Input
                                             disabled={!isEditing}
@@ -217,7 +216,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                             placeholder="john@example.com"
                                         />
                                     </div>
-                                    <div>
+                                    <div className="space-y-2">
                                         <Label>Phone</Label>
                                         <Input
                                             disabled={!isEditing}
@@ -227,8 +226,8 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                         />
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
+                                <div className="grid grid-cols-2 gap-5">
+                                    <div className="space-y-2">
                                         <Label>Address</Label>
                                         <Input
                                             disabled={!isEditing}
@@ -237,7 +236,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                             placeholder="City, Country"
                                         />
                                     </div>
-                                    <div>
+                                    <div className="space-y-2">
                                         <Label>Portfolio URL</Label>
                                         <Input
                                             disabled={!isEditing}
@@ -247,8 +246,8 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                         />
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
+                                <div className="grid grid-cols-2 gap-5">
+                                    <div className="space-y-2">
                                         <Label>LinkedIn Profile</Label>
                                         <Input
                                             disabled={!isEditing}
@@ -257,7 +256,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                             placeholder="https://linkedin.com/in/john"
                                         />
                                     </div>
-                                    <div>
+                                    <div className="space-y-2">
                                         <Label>GitHub Profile</Label>
                                         <Input
                                             disabled={!isEditing}
@@ -272,8 +271,8 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
 
                         {/* Skills Tab */}
                         {activeTab === "skills" && (
-                            <div className="space-y-4">
-                                <div>
+                            <div className="space-y-5">
+                                <div className="space-y-2">
                                     <Label>Technical Skills (comma-separated)</Label>
                                     <Textarea
                                         disabled={!isEditing}
@@ -283,7 +282,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                         rows={3}
                                     />
                                 </div>
-                                <div>
+                                <div className="space-y-2">
                                     <Label>Soft Skills (comma-separated)</Label>
                                     <Textarea
                                         disabled={!isEditing}
@@ -293,7 +292,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                         rows={3}
                                     />
                                 </div>
-                                <div>
+                                <div className="space-y-2">
                                     <Label>Tools & Technologies (comma-separated)</Label>
                                     <Textarea
                                         disabled={!isEditing}
@@ -308,7 +307,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
 
                         {/* Work Experience Tab */}
                         {activeTab === "experience" && (
-                            <div className="space-y-4">
+                            <div className="space-y-5">
                                 {(localResume.workExperience || []).map((exp, idx) => (
                                     <Card key={idx}>
                                         <CardHeader className="flex flex-row items-start justify-between pb-3">
@@ -322,8 +321,8 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </CardHeader>
-                                        <CardContent className="space-y-3">
-                                            <div className="grid grid-cols-2 gap-2">
+                                        <CardContent className="space-y-4">
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <Input
                                                     disabled={!isEditing}
                                                     placeholder="Company Name"
@@ -337,7 +336,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                     onChange={e => updateArrayField<IWorkExperience>("workExperience", idx, { jobTitle: e.target.value })}
                                                 />
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2">
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <Input
                                                     disabled={!isEditing}
                                                     placeholder="Start Date (YYYY-MM)"
@@ -353,13 +352,15 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                     onChange={e => updateArrayField<IWorkExperience>("workExperience", idx, { endDate: e.target.value })}
                                                 />
                                             </div>
-                                            <Textarea
-                                                disabled={!isEditing}
-                                                placeholder="Responsibilities"
-                                                value={((exp.responsibilities || []) as string[]).join("\n") || ""}
-                                                onChange={e => updateArrayField<IWorkExperience>("workExperience", idx, { responsibilities: e.target.value.split("\n") })}
-                                                rows={3}
-                                            />
+                                            <div className="space-y-2">
+                                                <Textarea
+                                                    disabled={!isEditing}
+                                                    placeholder="Responsibilities"
+                                                    value={((exp.responsibilities || []) as string[]).join("\n") || ""}
+                                                    onChange={e => updateArrayField<IWorkExperience>("workExperience", idx, { responsibilities: e.target.value.split("\n") })}
+                                                    rows={3}
+                                                />
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 ))}
@@ -382,7 +383,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
 
                         {/* Education Tab */}
                         {activeTab === "education" && (
-                            <div className="space-y-4">
+                            <div className="space-y-5">
                                 {(localResume.education || []).map((edu, idx) => (
                                     <Card key={idx}>
                                         <CardHeader className="flex flex-row items-start justify-between pb-3">
@@ -396,8 +397,8 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </CardHeader>
-                                        <CardContent className="space-y-3">
-                                            <div className="grid grid-cols-2 gap-2">
+                                        <CardContent className="space-y-4">
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <Input
                                                     disabled={!isEditing}
                                                     placeholder="School/University Name"
@@ -411,7 +412,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                     onChange={e => updateArrayField<IEducation>("education", idx, { degree: e.target.value })}
                                                 />
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2">
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <Input
                                                     disabled={!isEditing}
                                                     placeholder="Field of Study"
@@ -425,7 +426,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                     onChange={e => updateArrayField<IEducation>("education", idx, { cgpaOrResult: e.target.value })}
                                                 />
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2">
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <Input
                                                     disabled={!isEditing}
                                                     placeholder="Start Date"
@@ -441,13 +442,15 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                     onChange={e => updateArrayField<IEducation>("education", idx, { endDate: e.target.value })}
                                                 />
                                             </div>
-                                            <Textarea
-                                                disabled={!isEditing}
-                                                placeholder="Description"
-                                                value={edu.description || ""}
-                                                onChange={e => updateArrayField<IEducation>("education", idx, { description: e.target.value })}
-                                                rows={2}
-                                            />
+                                            <div className="space-y-2">
+                                                <Textarea
+                                                    disabled={!isEditing}
+                                                    placeholder="Description"
+                                                    value={edu.description || ""}
+                                                    onChange={e => updateArrayField<IEducation>("education", idx, { description: e.target.value })}
+                                                    rows={2}
+                                                />
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 ))}
@@ -473,7 +476,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
 
                         {/* Certifications Tab */}
                         {activeTab === "certifications" && (
-                            <div className="space-y-4">
+                            <div className="space-y-5">
                                 {(localResume.certifications || []).map((cert, idx) => (
                                     <Card key={idx}>
                                         <CardHeader className="flex flex-row items-start justify-between pb-3">
@@ -487,8 +490,8 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </CardHeader>
-                                        <CardContent className="space-y-3">
-                                            <div className="grid grid-cols-2 gap-2">
+                                        <CardContent className="space-y-4">
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <Input
                                                     disabled={!isEditing}
                                                     placeholder="Certification Name"
@@ -502,7 +505,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                     onChange={e => updateArrayField<ICertification>("certifications", idx, { issuingOrganization: e.target.value })}
                                                 />
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2">
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <Input
                                                     disabled={!isEditing}
                                                     placeholder="Issue Date"
@@ -518,18 +521,22 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                     onChange={e => updateArrayField<ICertification>("certifications", idx, { expiryDate: e.target.value })}
                                                 />
                                             </div>
-                                            <Input
-                                                disabled={!isEditing}
-                                                placeholder="Credential ID"
-                                                value={cert.credentialId || ""}
-                                                onChange={e => updateArrayField<ICertification>("certifications", idx, { credentialId: e.target.value })}
-                                            />
-                                            <Input
-                                                disabled={!isEditing}
-                                                placeholder="Credential URL"
-                                                value={cert.credentialUrl || ""}
-                                                onChange={e => updateArrayField<ICertification>("certifications", idx, { credentialUrl: e.target.value })}
-                                            />
+                                            <div className="space-y-2">
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    placeholder="Credential ID"
+                                                    value={cert.credentialId || ""}
+                                                    onChange={e => updateArrayField<ICertification>("certifications", idx, { credentialId: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    placeholder="Credential URL"
+                                                    value={cert.credentialUrl || ""}
+                                                    onChange={e => updateArrayField<ICertification>("certifications", idx, { credentialUrl: e.target.value })}
+                                                />
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 ))}
@@ -552,7 +559,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
 
                         {/* Projects Tab */}
                         {activeTab === "projects" && (
-                            <div className="space-y-4">
+                            <div className="space-y-5">
                                 {(localResume.projects || []).map((proj, idx) => (
                                     <Card key={idx}>
                                         <CardHeader className="flex flex-row items-start justify-between pb-3">
@@ -566,27 +573,33 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </CardHeader>
-                                        <CardContent className="space-y-3">
-                                            <Input
-                                                disabled={!isEditing}
-                                                placeholder="Project Name"
-                                                value={proj.projectName || ""}
-                                                onChange={e => updateArrayField<IProject>("projects", idx, { projectName: e.target.value })}
-                                            />
-                                            <Input
-                                                disabled={!isEditing}
-                                                placeholder="Your Role"
-                                                value={proj.role || ""}
-                                                onChange={e => updateArrayField<IProject>("projects", idx, { role: e.target.value })}
-                                            />
-                                            <Textarea
-                                                disabled={!isEditing}
-                                                placeholder="Description"
-                                                value={proj.description || ""}
-                                                onChange={e => updateArrayField<IProject>("projects", idx, { description: e.target.value })}
-                                                rows={3}
-                                            />
-                                            <div className="grid grid-cols-2 gap-2">
+                                        <CardContent className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    placeholder="Project Name"
+                                                    value={proj.projectName || ""}
+                                                    onChange={e => updateArrayField<IProject>("projects", idx, { projectName: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    placeholder="Your Role"
+                                                    value={proj.role || ""}
+                                                    onChange={e => updateArrayField<IProject>("projects", idx, { role: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Textarea
+                                                    disabled={!isEditing}
+                                                    placeholder="Description"
+                                                    value={proj.description || ""}
+                                                    onChange={e => updateArrayField<IProject>("projects", idx, { description: e.target.value })}
+                                                    rows={3}
+                                                />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <Input
                                                     disabled={!isEditing}
                                                     placeholder="Live URL"
@@ -600,7 +613,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                     onChange={e => updateArrayField<IProject>("projects", idx, { githubUrl: e.target.value })}
                                                 />
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2">
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <Input
                                                     disabled={!isEditing}
                                                     placeholder="Start Date"
@@ -641,7 +654,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
 
                         {/* Languages Tab */}
                         {activeTab === "languages" && (
-                            <div className="space-y-4">
+                            <div className="space-y-5">
                                 {(localResume.languages || []).map((lang, idx) => (
                                     <Card key={idx}>
                                         <CardHeader className="flex flex-row items-start justify-between pb-3">
@@ -655,25 +668,29 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </CardHeader>
-                                        <CardContent className="space-y-3">
-                                            <Input
-                                                disabled={!isEditing}
-                                                placeholder="Language Name"
-                                                value={lang.language || ""}
-                                                onChange={e => updateArrayField<ILanguage>("languages", idx, { language: e.target.value })}
-                                            />
-                                            <Select disabled={!isEditing} value={lang.proficiencyLevel || ""} onValueChange={value => updateArrayField<ILanguage>("languages", idx, { proficiencyLevel: value as any })}>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select proficiency" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="Beginner">Beginner</SelectItem>
-                                                    <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                                    <SelectItem value="Advanced">Advanced</SelectItem>
-                                                    <SelectItem value="Fluent">Fluent</SelectItem>
-                                                    <SelectItem value="Native">Native</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                        <CardContent className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    placeholder="Language Name"
+                                                    value={lang.language || ""}
+                                                    onChange={e => updateArrayField<ILanguage>("languages", idx, { language: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Select disabled={!isEditing} value={lang.proficiencyLevel || ""} onValueChange={value => updateArrayField<ILanguage>("languages", idx, { proficiencyLevel: value as any })}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select proficiency" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="Beginner">Beginner</SelectItem>
+                                                        <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                                        <SelectItem value="Advanced">Advanced</SelectItem>
+                                                        <SelectItem value="Fluent">Fluent</SelectItem>
+                                                        <SelectItem value="Native">Native</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 ))}
@@ -694,7 +711,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
 
                         {/* Awards Tab */}
                         {activeTab === "awards" && (
-                            <div className="space-y-4">
+                            <div className="space-y-5">
                                 {(localResume.awards || []).map((award, idx) => (
                                     <Card key={idx}>
                                         <CardHeader className="flex flex-row items-start justify-between pb-3">
@@ -708,33 +725,41 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </CardHeader>
-                                        <CardContent className="space-y-3">
-                                            <Input
-                                                disabled={!isEditing}
-                                                placeholder="Award Name"
-                                                value={award.title || ""}
-                                                onChange={e => updateArrayField<IAward>("awards", idx, { title: e.target.value })}
-                                            />
-                                            <Input
-                                                disabled={!isEditing}
-                                                placeholder="Presented By"
-                                                value={award.issuer || ""}
-                                                onChange={e => updateArrayField<IAward>("awards", idx, { issuer: e.target.value })}
-                                            />
-                                            <Input
-                                                disabled={!isEditing}
-                                                placeholder="Date"
-                                                type="date"
-                                                value={award.date ? new Date(award.date).toISOString().split('T')[0] : ""}
-                                                onChange={e => updateArrayField<IAward>("awards", idx, { date: e.target.value })}
-                                            />
-                                            <Textarea
-                                                disabled={!isEditing}
-                                                placeholder="Description"
-                                                value={award.description || ""}
-                                                onChange={e => updateArrayField<IAward>("awards", idx, { description: e.target.value })}
-                                                rows={2}
-                                            />
+                                        <CardContent className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    placeholder="Award Name"
+                                                    value={award.title || ""}
+                                                    onChange={e => updateArrayField<IAward>("awards", idx, { title: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    placeholder="Presented By"
+                                                    value={award.issuer || ""}
+                                                    onChange={e => updateArrayField<IAward>("awards", idx, { issuer: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    placeholder="Date"
+                                                    type="date"
+                                                    value={award.date ? new Date(award.date).toISOString().split('T')[0] : ""}
+                                                    onChange={e => updateArrayField<IAward>("awards", idx, { date: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Textarea
+                                                    disabled={!isEditing}
+                                                    placeholder="Description"
+                                                    value={award.description || ""}
+                                                    onChange={e => updateArrayField<IAward>("awards", idx, { description: e.target.value })}
+                                                    rows={2}
+                                                />
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 ))}
@@ -757,7 +782,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
 
                         {/* References Tab */}
                         {activeTab === "references" && (
-                            <div className="space-y-4">
+                            <div className="space-y-5">
                                 {(localResume.references || []).map((ref, idx) => (
                                     <Card key={idx}>
                                         <CardHeader className="flex flex-row items-start justify-between pb-3">
@@ -771,8 +796,8 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </CardHeader>
-                                        <CardContent className="space-y-3">
-                                            <div className="grid grid-cols-2 gap-2">
+                                        <CardContent className="space-y-4">
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <Input
                                                     disabled={!isEditing}
                                                     placeholder="Reference Name"
@@ -786,7 +811,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                     onChange={e => updateArrayField<IReference>("references", idx, { designation: e.target.value })}
                                                 />
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2">
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <Input
                                                     disabled={!isEditing}
                                                     placeholder="Company"
@@ -800,7 +825,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                                     onChange={e => updateArrayField<IReference>("references", idx, { relationship: e.target.value })}
                                                 />
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2">
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <Input
                                                     disabled={!isEditing}
                                                     placeholder="Email"
