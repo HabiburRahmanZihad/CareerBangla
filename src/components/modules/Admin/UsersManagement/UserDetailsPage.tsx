@@ -49,9 +49,17 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
 
     const { mutateAsync: doUpdateUser, isPending: isUpdating } = useMutation({
         mutationFn: (data: any) => updateUser(user.id, data),
-        onSuccess: () => {
+        onSuccess: (updatedUser: any) => {
+            // Update local state immediately
+            setEditData({
+                name: updatedUser.name || editData.name,
+                email: updatedUser.email || editData.email,
+                phone: updatedUser.phone || editData.phone,
+                country: updatedUser.country || editData.country,
+            });
             toast.success("User updated successfully");
             queryClient.invalidateQueries({ queryKey: ["users-with-details"] });
+            queryClient.invalidateQueries({ queryKey: ["user", user.id] });
             setIsEditMode(false);
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update user"),
@@ -62,6 +70,7 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
         onSuccess: () => {
             toast.success("Resume updated successfully");
             queryClient.invalidateQueries({ queryKey: ["users-with-details"] });
+            queryClient.invalidateQueries({ queryKey: ["user", user.id] });
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update resume"),
     });
@@ -71,6 +80,7 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
         onSuccess: () => {
             toast.success("User status updated");
             queryClient.invalidateQueries({ queryKey: ["users-with-details"] });
+            queryClient.invalidateQueries({ queryKey: ["user", user.id] });
             setBanConfirmOpen(false);
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update status"),
