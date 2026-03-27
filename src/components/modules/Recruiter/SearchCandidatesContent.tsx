@@ -40,20 +40,34 @@ const extractDataArray = <T,>(value: unknown): T[] => {
     return [];
 };
 
+const parseStringList = (value: unknown): string[] => {
+    if (Array.isArray(value)) {
+        return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+    }
+
+    if (typeof value === "string") {
+        return value
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean);
+    }
+
+    return [];
+};
+
 const getSkills = (resume?: IResume | null): string[] => {
     if (!resume) {
         return [];
     }
 
-    if (Array.isArray(resume.skills) && resume.skills.length > 0) {
-        return resume.skills;
-    }
+    const allSkills = [
+        ...parseStringList(resume.skills),
+        ...parseStringList(resume.technicalSkills),
+        ...parseStringList(resume.toolsAndTechnologies),
+        ...parseStringList(resume.softSkills),
+    ];
 
-    const technicalSkills = Array.isArray(resume.technicalSkills) ? resume.technicalSkills : [];
-    const tools = Array.isArray(resume.toolsAndTechnologies) ? resume.toolsAndTechnologies : [];
-    const softSkills = Array.isArray(resume.softSkills) ? resume.softSkills : [];
-
-    return [...technicalSkills, ...tools, ...softSkills];
+    return Array.from(new Set(allSkills));
 };
 
 const getEducationSummary = (resume?: IResume | null): string => {
@@ -255,7 +269,7 @@ const SearchCandidatesContent = () => {
 
             {/* Loading State */}
             {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {Array.from({ length: 4 }).map((_, i) => (
                         <Skeleton key={i} className="h-48 rounded-lg" />
                     ))}
@@ -274,7 +288,7 @@ const SearchCandidatesContent = () => {
                 </Card>
             ) : (
                 <>
-                    <div className={layoutMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-4"}>
+                    <div className={layoutMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" : "space-y-4"}>
                         {paginatedCandidates.map((candidate) => {
                             const profileImage = candidate.resume?.profilePhoto || candidate.image;
                             const candidateSkills = getSkills(candidate.resume);
