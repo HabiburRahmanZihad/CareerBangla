@@ -3,22 +3,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
-import { approveJob, getPendingJobs, rejectJob } from "@/services/job.services";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getPendingJobs } from "@/services/job.services";
+import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { AlertCircle, Check, RefreshCw, X } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { AlertCircle, Eye, RefreshCw } from "lucide-react";
+import Link from "next/link";
 
 interface ApiError {
     response?: {
@@ -37,55 +27,10 @@ const getErrorMessage = (error: unknown): string => {
 };
 
 const PendingJobsContent = () => {
-    const queryClient = useQueryClient();
-    const [rejectingJobId, setRejectingJobId] = useState<string | null>(null);
-    const [rejectionReason, setRejectionReason] = useState("");
-
     const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["pending-jobs"],
         queryFn: () => getPendingJobs({ limit: "50" }),
     });
-
-    const { mutateAsync: approveMutate, isPending: isApproving } = useMutation({
-        mutationFn: (jobId: string) => approveJob(jobId),
-        onSuccess: () => {
-            toast.success("Job approved successfully");
-            queryClient.invalidateQueries({ queryKey: ["pending-jobs"] });
-            queryClient.invalidateQueries({ queryKey: ["admin-all-jobs"] });
-        },
-        onError: (err: unknown) => {
-            toast.error(getErrorMessage(err) || "Failed to approve job");
-        },
-    });
-
-    const { mutateAsync: rejectMutate, isPending: isRejecting } = useMutation({
-        mutationFn: ({ jobId, reason }: { jobId: string; reason: string }) =>
-            rejectJob(jobId, reason),
-        onSuccess: () => {
-            toast.success("Job rejected successfully");
-            setRejectingJobId(null);
-            setRejectionReason("");
-            queryClient.invalidateQueries({ queryKey: ["pending-jobs"] });
-            queryClient.invalidateQueries({ queryKey: ["admin-all-jobs"] });
-        },
-        onError: (err: unknown) => {
-            toast.error(getErrorMessage(err) || "Failed to reject job");
-        },
-    });
-
-    const handleApprovе = async (jobId: string) => {
-        await approveMutate(jobId);
-    };
-
-    const handleRejectSubmit = async () => {
-        if (!rejectionReason.trim()) {
-            toast.error("Please provide a rejection reason");
-            return;
-        }
-        if (rejectingJobId) {
-            await rejectMutate({ jobId: rejectingJobId, reason: rejectionReason });
-        }
-    };
 
     if (isLoading) {
         return (
@@ -157,23 +102,10 @@ const PendingJobsContent = () => {
                             <CardContent className="pt-0">
                                 <p className="text-sm text-muted-foreground mb-3">{job.description}</p>
                                 <div className="flex gap-2">
-                                    <Button
-                                        size="sm"
-                                        variant="default"
-                                        disabled={isApproving}
-                                        onClick={() => handleApprovе(job.id)}
-                                    >
-                                        <Check className="h-4 w-4 mr-1" />
-                                        Approve
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        disabled={isRejecting}
-                                        onClick={() => setRejectingJobId(job.id)}
-                                    >
-                                        <X className="h-4 w-4 mr-1" />
-                                        Reject
+                                    <Button size="sm" variant="outline" asChild>
+                                        <Link href={`/admin/dashboard/pending-jobs/${job.id}`}>
+                                            <Eye className="h-4 w-4 mr-1" /> Details
+                                        </Link>
                                     </Button>
                                 </div>
                             </CardContent>
@@ -181,43 +113,6 @@ const PendingJobsContent = () => {
                     ))}
                 </div>
             )}
-
-            {/* Rejection Dialog */}
-            <Dialog open={!!rejectingJobId} onOpenChange={(open) => !open && setRejectingJobId(null)}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Reject Job Post</DialogTitle>
-                        <DialogDescription>
-                            Provide a reason for rejecting this job post. The recruiter will be notified.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <Textarea
-                        placeholder="Enter rejection reason..."
-                        value={rejectionReason}
-                        onChange={(e) => setRejectionReason(e.target.value)}
-                        className="min-h-24"
-                    />
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => {
-                                setRejectingJobId(null);
-                                setRejectionReason("");
-                            }}
-                            disabled={isRejecting}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={handleRejectSubmit}
-                            disabled={isRejecting || !rejectionReason.trim()}
-                        >
-                            Reject Job Post
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 };

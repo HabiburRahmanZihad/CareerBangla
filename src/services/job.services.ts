@@ -63,3 +63,8 @@ export async function getPendingJobs(params?: Record<string, unknown>) {
     logger.read("Fetching pending jobs (admin)", params);
     return serverHttpClient.get<IJob[]>("/jobs/admin/pending", { params });
 }
+
+export async function getPendingJobById(id: string) {
+    logger.read(`Fetching pending job details (admin) → id: ${id}`);
+    return serverHttpClient.get<IJob>(`/jobs/admin/pending/${id}`);
+}
