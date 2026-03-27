@@ -17,7 +17,7 @@ import {
 } from "@/services/subscription.services";
 import { UserInfo } from "@/types/user.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, isFuture } from "date-fns";
 import {
     AlertCircle,
     ArrowLeft,
@@ -168,6 +168,7 @@ const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
     const isPremium = userInfo?.isPremium;
     const premiumUntil = userInfo?.premiumUntil;
     const isLifetime = isPremium && !premiumUntil;
+    const hasActivePremium = Boolean(isPremium) && (!premiumUntil || isFuture(new Date(premiumUntil)));
 
     const getDiscountAmount = useCallback(() => {
         if (!appliedCoupon) return 0;
@@ -270,10 +271,10 @@ const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
                                 className="w-full h-12 text-md"
                                 size="lg"
                                 onClick={() => setStep("checkout")}
-                                disabled={isLifetime}
+                                disabled={hasActivePremium}
                             >
-                                {isLifetime ? (
-                                    "Already Boosted"
+                                {hasActivePremium ? (
+                                    "Already Premium"
                                 ) : (
                                     <><Rocket className="w-4 h-4 mr-2" /> Upgrade to Career Boost</>
                                 )}
