@@ -22,9 +22,24 @@ const CategoriesManagementContent = () => {
 
     const { mutateAsync: addCategory, isPending } = useMutation({
         mutationFn: (name: string) => createJobCategory({ name }),
-        onSuccess: () => {
+        onSuccess: (response) => {
             toast.success("Category created");
             setNewCategory("");
+
+            queryClient.setQueryData(["job-categories"], (oldData: any) => {
+                const oldList = Array.isArray(oldData?.data) ? oldData.data : [];
+                const created = response?.data;
+
+                if (!created?.id) {
+                    return oldData;
+                }
+
+                return {
+                    ...oldData,
+                    data: [created, ...oldList],
+                };
+            });
+
             queryClient.invalidateQueries({ queryKey: ["job-categories"] });
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed"),
@@ -48,7 +63,7 @@ const CategoriesManagementContent = () => {
         );
     }
 
-    const categories = data?.data || [];
+    const categories = Array.isArray(data?.data) ? data.data : [];
 
     return (
         <div className="space-y-6 max-w-2xl">
@@ -90,7 +105,7 @@ const CategoriesManagementContent = () => {
                         <div className="space-y-2">
                             {categories.map((cat) => (
                                 <div key={cat.id} className="flex items-center justify-between p-3 border rounded-lg">
-                                    <span className="font-medium">{cat.name}</span>
+                                    <span className="font-medium">{cat.name || cat.title || "Untitled Category"}</span>
                                     <Button
                                         variant="ghost"
                                         size="icon"
