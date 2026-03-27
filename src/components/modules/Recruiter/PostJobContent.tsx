@@ -16,7 +16,8 @@ import { createJob, getJobCategories } from "@/services/job.services";
 import { getMyRecruiterProfile } from "@/services/recruiter.services";
 import { createJobZodSchema } from "@/zod/job.validation";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isFuture } from "date-fns";
 import { AlertCircle, Lock, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -49,6 +50,7 @@ const TOTAL_STEPS = 4;
 
 const PostJobContent = () => {
     const router = useRouter();
+    const queryClient = useQueryClient();
     const [serverError, setServerError] = useState<string | null>(null);
     const [currentStep, setCurrentStep] = useState(1);
     const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
@@ -68,7 +70,7 @@ const PostJobContent = () => {
     const draftStorageKey = `careerbangla.post-job-draft.${(profileData as any)?.data?.id || "recruiter"}`;
     const premiumUntil = ((profileData as any)?.data?.premiumUntil ?? (profileData as any)?.data?.user?.premiumUntil) as string | undefined;
     const rawPremium = (profileData as any)?.data?.isPremium ?? (profileData as any)?.data?.user?.isPremium;
-    const hasActivePremium = Boolean(rawPremium) && (!premiumUntil || new Date(premiumUntil).getTime() > Date.now());
+    const hasActivePremium = Boolean(rawPremium) && (!premiumUntil || isFuture(new Date(premiumUntil)));
     // Recruiters don't need 100% completion, just need to be verified/approved
     const isProfileComplete = true;
     const canPost = isVerified && hasActivePremium;
@@ -76,10 +78,15 @@ const PostJobContent = () => {
 
     const { mutateAsync, isPending } = useMutation({
         mutationFn: (data: Record<string, unknown>) => createJob(data),
-        onSuccess: () => {
+        onSuccess: async () => {
             if (typeof window !== "undefined") {
                 localStorage.removeItem(draftStorageKey);
             }
+
+            await queryClient.invalidateQueries({ queryKey: ["recruiter-jobs-by-status"] });
+            await queryClient.invalidateQueries({ queryKey: ["my-jobs"] });
+            await queryClient.refetchQueries({ queryKey: ["recruiter-jobs-by-status"], type: "active" });
+
             toast.success("Job posted successfully!");
             router.push("/recruiter/dashboard/my-jobs/pending");
         },
@@ -299,7 +306,10 @@ const PostJobContent = () => {
             }
 
             if (typeof parsedDraft.step === "number" && parsedDraft.step >= 1 && parsedDraft.step <= TOTAL_STEPS) {
-                setCurrentStep(parsedDraft.step);
+                const nextStep = parsedDraft.step;
+                window.setTimeout(() => {
+                    setCurrentStep(nextStep);
+                }, 0);
             }
         } catch {
             localStorage.removeItem(draftStorageKey);

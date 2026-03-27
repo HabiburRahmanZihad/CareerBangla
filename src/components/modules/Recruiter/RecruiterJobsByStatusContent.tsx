@@ -53,14 +53,44 @@ const RecruiterJobsByStatusContent = ({ title, description, status, emptyMessage
     const { data, isLoading, isFetching } = useQuery({
         queryKey: ["recruiter-jobs-by-status", status, currentPage, searchTerm],
         queryFn: () => getMyJobs(queryParams),
+        staleTime: 0,
+        refetchOnMount: "always",
+        refetchOnWindowFocus: true,
+        refetchOnReconnect: true,
     });
 
     const { mutateAsync: removeJob, isPending: deleting } = useMutation({
         mutationFn: (id: string) => deleteJob(id),
-        onSuccess: () => {
+        onSuccess: (_result, deletedId) => {
+            queryClient.setQueriesData({ queryKey: ["recruiter-jobs-by-status"] }, (oldData: any) => {
+                if (!oldData || typeof oldData !== "object") return oldData;
+
+                const oldJobs = Array.isArray(oldData.data) ? oldData.data : [];
+                const nextJobs = oldJobs.filter((job: IJob) => job.id !== deletedId);
+
+                if (!oldData.meta) {
+                    return { ...oldData, data: nextJobs };
+                }
+
+                const prevTotal = Number(oldData.meta.total || oldJobs.length);
+                const nextTotal = Math.max(0, prevTotal - (oldJobs.length === nextJobs.length ? 0 : 1));
+                const limit = Number(oldData.meta.limit || PER_PAGE);
+
+                return {
+                    ...oldData,
+                    data: nextJobs,
+                    meta: {
+                        ...oldData.meta,
+                        total: nextTotal,
+                        totalPages: Math.max(1, Math.ceil(nextTotal / Math.max(limit, 1))),
+                    },
+                };
+            });
+
             toast.success("Job deleted successfully");
             queryClient.invalidateQueries({ queryKey: ["recruiter-jobs-by-status"] });
             queryClient.invalidateQueries({ queryKey: ["my-jobs"] });
+            queryClient.refetchQueries({ queryKey: ["recruiter-jobs-by-status"], type: "active" });
         },
         onError: (err: any) => {
             toast.error(err?.response?.data?.message || "Failed to delete job");
