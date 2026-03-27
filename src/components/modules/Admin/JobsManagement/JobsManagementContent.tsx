@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import DeleteJobConfirmation from "@/components/shared/DeleteJobConfirmation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,6 +38,11 @@ const JobsManagementContent = () => {
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [jobTypeFilter, setJobTypeFilter] = useState("ALL");
     const [currentPage, setCurrentPage] = useState(1);
+    const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; jobId: string | null; jobTitle: string }>({
+        isOpen: false,
+        jobId: null,
+        jobTitle: "",
+    });
 
     const queryParams = useMemo(
         () => ({
@@ -55,9 +61,10 @@ const JobsManagementContent = () => {
     });
 
     const { mutateAsync: deleteMutate, isPending: deleting } = useMutation({
-        mutationFn: (id: string) => deleteJob(id),
+        mutationFn: ({ id, reason }: { id: string; reason: string }) => deleteJob(id, reason),
         onSuccess: () => {
-            toast.success("Job deleted successfully");
+            toast.success("Job deleted successfully and recruiter notified");
+            setDeleteConfirmation({ isOpen: false, jobId: null, jobTitle: "" });
             queryClient.invalidateQueries({ queryKey: ["admin-all-jobs"] });
             queryClient.invalidateQueries({ queryKey: ["pending-jobs"] });
         },
@@ -246,8 +253,11 @@ const JobsManagementContent = () => {
                                     className="text-destructive h-8 w-8"
                                     disabled={deleting || updatingStatus || isFetching}
                                     onClick={() => {
-                                        if (confirm("Delete this job? This action cannot be undone."))
-                                            deleteMutate(job.id);
+                                        setDeleteConfirmation({
+                                            isOpen: true,
+                                            jobId: job.id,
+                                            jobTitle: job.title,
+                                        });
                                     }}
                                 >
                                     <Trash2 className="h-4 w-4" />
@@ -283,6 +293,21 @@ const JobsManagementContent = () => {
                     </Button>
                 </div>
             )}
+
+            <DeleteJobConfirmation
+                isOpen={deleteConfirmation.isOpen}
+                jobTitle={deleteConfirmation.jobTitle}
+                isLoading={deleting}
+                onConfirm={(reason) => {
+                    if (deleteConfirmation.jobId) {
+                        deleteMutate({
+                            id: deleteConfirmation.jobId,
+                            reason,
+                        });
+                    }
+                }}
+                onCancel={() => setDeleteConfirmation({ isOpen: false, jobId: null, jobTitle: "" })}
+            />
         </div>
     );
 };

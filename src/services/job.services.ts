@@ -29,9 +29,10 @@ export async function updateJob(id: string, data: Record<string, unknown>) {
     return serverHttpClient.patch<IJob>(`/jobs/${id}`, data);
 }
 
-export async function deleteJob(id: string) {
-    logger.delete(`Deleting job → id: ${id}`);
-    return serverHttpClient.delete<IJob>(`/jobs/${id}`);
+export async function deleteJob(id: string, reason?: string) {
+    logger.delete(`Deleting job → id: ${id}, reason: ${reason || "N/A"}`);
+    const url = reason ? `/jobs/${id}?reason=${encodeURIComponent(reason)}` : `/jobs/${id}`;
+    return serverHttpClient.delete<IJob>(url);
 }
 
 export async function getJobCategories() {
