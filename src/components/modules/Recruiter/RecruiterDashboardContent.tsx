@@ -43,7 +43,7 @@ const RecruiterDashboardContent = ({ userInfo }: RecruiterDashboardContentProps)
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Link href="/recruiter/dashboard/my-jobs">
+                <Link href="/recruiter/dashboard/my-jobs/pending">
                     <Card className="hover:shadow-md transition-shadow cursor-pointer">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <CardTitle className="text-sm font-medium text-muted-foreground">My Jobs</CardTitle>

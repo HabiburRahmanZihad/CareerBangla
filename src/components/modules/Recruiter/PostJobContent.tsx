@@ -81,7 +81,7 @@ const PostJobContent = () => {
                 localStorage.removeItem(draftStorageKey);
             }
             toast.success("Job posted successfully!");
-            router.push("/recruiter/dashboard/my-jobs");
+            router.push("/recruiter/dashboard/my-jobs/pending");
         },
         onError: (err: any) => {
             setServerError(err?.response?.data?.message || "Failed to post job");

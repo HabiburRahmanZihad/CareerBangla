@@ -41,11 +41,6 @@ export const recruiterNavItems: NavSection[] = [
         title: "Job Management",
         items: [
             {
-                title: "My Jobs",
-                href: "/recruiter/dashboard/my-jobs",
-                icon: "Briefcase",
-            },
-            {
                 title: "Pending Jobs",
                 href: "/recruiter/dashboard/my-jobs/pending",
                 icon: "Clock",
