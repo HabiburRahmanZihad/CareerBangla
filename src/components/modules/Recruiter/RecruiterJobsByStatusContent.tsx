@@ -183,7 +183,7 @@ const RecruiterJobsByStatusContent = ({ title, description, status, emptyMessage
                             <CardContent className="pt-0 space-y-3">
                                 <div className="flex items-center gap-2">
                                     <Button variant="outline" size="sm" asChild>
-                                        <Link href={`/jobs/${job.id}`}>View</Link>
+                                        <Link href={`/recruiter/dashboard/my-jobs/${job.id}`}>View</Link>
                                     </Button>
                                     <Button
                                         variant="outline"
