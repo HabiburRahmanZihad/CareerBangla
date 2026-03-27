@@ -276,7 +276,12 @@ export interface IApplication {
     userId: string;
     jobId: string;
     coverLetter?: string;
-    status: "PENDING" | "REVIEWED" | "SHORTLISTED" | "REJECTED" | "ACCEPTED" | "WITHDRAWN";
+    status: "PENDING" | "SHORTLISTED" | "INTERVIEW" | "HIRED" | "REJECTED";
+    interviewDate?: string;
+    interviewNote?: string;
+    hiredDate?: string;
+    hiredCompany?: string;
+    hiredDesignation?: string;
     user?: UserInfo & { resume?: IResume };
     job?: IJob;
     createdAt?: string;

@@ -71,6 +71,11 @@ const RecruiterApplicationsContent = () => {
         date: string;
         note: string;
     } | null>(null);
+    const [hiredModal, setHiredModal] = useState<{
+        appId: string;
+        company: string;
+        designation: string;
+    } | null>(null);
     const [downloadingCv, setDownloadingCv] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [skillsFilter, setSkillsFilter] = useState("");
@@ -94,16 +99,19 @@ const RecruiterApplicationsContent = () => {
     });
 
     const { mutateAsync: changeStatus, isPending: isUpdating } = useMutation({
-        mutationFn: (payload: { id: string; status: string; interviewDate?: string; interviewNote?: string }) =>
+        mutationFn: (payload: { id: string; status: string; interviewDate?: string; interviewNote?: string; hiredCompany?: string; hiredDesignation?: string }) =>
             updateApplicationStatus(payload.id, {
                 status: payload.status,
                 interviewDate: payload.interviewDate,
                 interviewNote: payload.interviewNote,
+                hiredCompany: payload.hiredCompany,
+                hiredDesignation: payload.hiredDesignation,
             }),
         onSuccess: () => {
             toast.success("Application status updated");
             queryClient.invalidateQueries({ queryKey: ["job-applications", selectedJobId] });
             setInterviewModal(null);
+            setHiredModal(null);
         },
         onError: (err: any) => {
             toast.error(err?.response?.data?.message || "Failed to update status");
@@ -113,6 +121,8 @@ const RecruiterApplicationsContent = () => {
     const handleStatusChange = (appId: string, newStatus: string) => {
         if (newStatus === "INTERVIEW") {
             setInterviewModal({ appId, date: "", note: "" });
+        } else if (newStatus === "HIRED") {
+            setHiredModal({ appId, company: "", designation: "" });
         } else {
             changeStatus({ id: appId, status: newStatus });
         }
@@ -125,6 +135,16 @@ const RecruiterApplicationsContent = () => {
             status: "INTERVIEW",
             interviewDate: interviewModal.date || undefined,
             interviewNote: interviewModal.note || undefined,
+        });
+    };
+
+    const handleHiredSubmit = () => {
+        if (!hiredModal) return;
+        changeStatus({
+            id: hiredModal.appId,
+            status: "HIRED",
+            hiredCompany: hiredModal.company || undefined,
+            hiredDesignation: hiredModal.designation || undefined,
         });
     };
 
@@ -334,6 +354,22 @@ const RecruiterApplicationsContent = () => {
                                         </div>
                                     )}
 
+                                    {/* Hired details if hired */}
+                                    {app.status === "HIRED" && (
+                                        <div className="flex items-center gap-4 mb-3 text-sm bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-md px-3 py-2">
+                                            {app.hiredCompany && (
+                                                <span className="flex items-center gap-1 text-green-700 dark:text-green-300">
+                                                    <span className="font-semibold">Company:</span> {app.hiredCompany}
+                                                </span>
+                                            )}
+                                            {app.hiredDesignation && (
+                                                <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                                                    <span className="font-semibold">Designation:</span> {app.hiredDesignation}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <p className="text-xs text-muted-foreground">
                                             Applied {app.createdAt && formatDistanceToNow(new Date(app.createdAt), { addSuffix: true })}
@@ -417,6 +453,47 @@ const RecruiterApplicationsContent = () => {
                                 <Button variant="outline" onClick={() => setInterviewModal(null)}>Cancel</Button>
                                 <Button onClick={handleInterviewSubmit} disabled={isUpdating}>
                                     {isUpdating ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Scheduling...</> : "Schedule Interview"}
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
+            {/* Hire confirmation modal */}
+            {hiredModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <Card className="w-full max-w-md mx-4">
+                        <CardHeader>
+                            <CardTitle className="text-green-700">Mark Candidate as Hired</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="hired-company">Company Name *</Label>
+                                <Input
+                                    id="hired-company"
+                                    placeholder="e.g. Tech Corp"
+                                    value={hiredModal.company}
+                                    onChange={(e) => setHiredModal({ ...hiredModal, company: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="hired-designation">Designation *</Label>
+                                <Input
+                                    id="hired-designation"
+                                    placeholder="e.g. Senior Software Engineer"
+                                    value={hiredModal.designation}
+                                    onChange={(e) => setHiredModal({ ...hiredModal, designation: e.target.value })}
+                                />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                                <Button variant="outline" onClick={() => setHiredModal(null)}>Cancel</Button>
+                                <Button
+                                    onClick={handleHiredSubmit}
+                                    disabled={isUpdating || !hiredModal.company || !hiredModal.designation}
+                                    className="bg-green-600 hover:bg-green-700"
+                                >
+                                    {isUpdating ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Marking...</> : "Confirm Hire"}
                                 </Button>
                             </div>
                         </CardContent>

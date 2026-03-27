@@ -24,7 +24,7 @@ export async function getApplicationsByJob(jobId: string, params?: Record<string
     return serverHttpClient.get<{ applications: IApplication[]; isPremiumRecruiter: boolean }>(`/applications/job/${jobId}`, { params });
 }
 
-export async function updateApplicationStatus(id: string, data: { status: string; interviewDate?: string; interviewNote?: string }) {
+export async function updateApplicationStatus(id: string, data: { status: string; interviewDate?: string; interviewNote?: string; hiredCompany?: string; hiredDesignation?: string }) {
     logger.update(`Updating application status → id: ${id}, status: ${data.status}`);
     return serverHttpClient.patch<IApplication>(`/applications/status/${id}`, data);
 }
@@ -54,4 +54,9 @@ export async function downloadCvForRecruiter(candidateId: string, applicationId?
         },
         responseType: "arraybuffer",
     });
+}
+
+export async function getHiredCandidates(params?: Record<string, unknown>) {
+    logger.read("Fetching hired candidates");
+    return serverHttpClient.get<IApplication[]>("/applications/hired-candidates", { params });
 }
