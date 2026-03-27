@@ -165,7 +165,7 @@ const PendingJobsContent = () => {
                                 <SelectItem value="ALL">All Categories</SelectItem>
                                 {categories.map((category) => (
                                     <SelectItem key={category.id} value={category.id}>
-                                        {category.title || category.name || "Untitled"}
+                                        {category.title || "Untitled"}
                                     </SelectItem>
                                 ))}
                             </SelectContent>

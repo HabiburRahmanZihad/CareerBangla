@@ -386,7 +386,7 @@ const JobDetailsContent = ({ job, userRole }: JobDetailsContentProps) => {
                                 <CardTitle className="text-lg">Category</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <Badge className="px-3 py-1">{job.category.name}</Badge>
+                                <Badge className="px-3 py-1">{job.category.title}</Badge>
                             </CardContent>
                         </Card>
                     )}

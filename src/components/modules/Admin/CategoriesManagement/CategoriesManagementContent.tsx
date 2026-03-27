@@ -66,7 +66,7 @@ const CategoriesManagementContent = () => {
 
     const categories = Array.isArray(data?.data) ? data.data : [];
     const filteredCategories = categories.filter((cat) => {
-        const label = (cat.name || cat.title || "").toLowerCase();
+        const label = (cat.title || "").toLowerCase();
         return label.includes(searchTerm.toLowerCase().trim());
     });
 

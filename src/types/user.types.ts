@@ -266,8 +266,7 @@ export interface IJob {
 
 export interface IJobCategory {
     id: string;
-    name?: string;
-    title?: string;
+    title: string;
     icon?: string;
     createdAt?: string;
 }
