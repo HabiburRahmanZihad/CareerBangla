@@ -192,6 +192,8 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
             await updateMyProfile({ phone: trimmed || undefined });
             toast.success("Phone number updated!");
             setIsEditingPhone(false);
+            // Immediately refresh queries to show updated data
+            await queryClient.invalidateQueries({ queryKey: ["my-resume"] });
             router.refresh();
         } catch (err: any) {
             toast.error(err?.response?.data?.message || "Failed to update phone number");
@@ -400,7 +402,7 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                             ) : (
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm font-medium">
-                                        {userInfo.phone || <span className="text-muted-foreground italic">Not set</span>}
+                                        {phoneValue || <span className="text-muted-foreground italic">Not set</span>}
                                     </p>
                                     <Button
                                         size="icon"
