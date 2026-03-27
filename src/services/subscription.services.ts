@@ -12,6 +12,7 @@ export interface ISubscriptionPlanResponse {
     lifetime: boolean;
     durationDays?: number | null;
     recruiterOnly?: boolean;
+    isActive?: boolean;
 }
 
 export interface IMySubscription {

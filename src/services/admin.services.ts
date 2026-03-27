@@ -83,3 +83,8 @@ export async function updateJob(jobId: string, data: Record<string, unknown>) {
     logger.update(`Updating job → jobId: ${jobId}`);
     return serverHttpClient.patch<IJob>(`/admins/jobs/${jobId}`, data);
 }
+
+export async function updateSubscriptionPlan(planKey: string, data: Record<string, unknown>) {
+    logger.update(`Updating subscription plan → planKey: ${planKey}`);
+    return serverHttpClient.patch(`/admins/subscription-plans/${planKey}`, data);
+}
