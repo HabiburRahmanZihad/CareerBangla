@@ -5,9 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { deleteJob, getMyJobs, updateJob } from "@/services/job.services";
+import { deleteJob, getMyJobs } from "@/services/job.services";
 import { IJob } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
@@ -65,18 +64,6 @@ const RecruiterJobsByStatusContent = ({ title, description, status, emptyMessage
         },
         onError: (err: any) => {
             toast.error(err?.response?.data?.message || "Failed to delete job");
-        },
-    });
-
-    const { mutateAsync: updateStatusMutate, isPending: updating } = useMutation({
-        mutationFn: ({ id, nextStatus }: { id: string; nextStatus: string }) => updateJob(id, { status: nextStatus }),
-        onSuccess: () => {
-            toast.success("Job status updated");
-            queryClient.invalidateQueries({ queryKey: ["recruiter-jobs-by-status"] });
-            queryClient.invalidateQueries({ queryKey: ["my-jobs"] });
-        },
-        onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "Failed to update job status");
         },
     });
 
@@ -198,24 +185,11 @@ const RecruiterJobsByStatusContent = ({ title, description, status, emptyMessage
                                     <Button variant="outline" size="sm" asChild>
                                         <Link href={`/jobs/${job.id}`}>View</Link>
                                     </Button>
-                                    <Select
-                                        defaultValue={job.status}
-                                        onValueChange={(nextStatus) => updateStatusMutate({ id: job.id, nextStatus })}
-                                    >
-                                        <SelectTrigger className="w-28 h-8 text-xs">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="ACTIVE">Active</SelectItem>
-                                            <SelectItem value="CLOSED">Closed</SelectItem>
-                                            <SelectItem value="DRAFT">Draft</SelectItem>
-                                        </SelectContent>
-                                    </Select>
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         className="text-destructive"
-                                        disabled={deleting || updating || isFetching}
+                                        disabled={deleting || isFetching}
                                         onClick={() => {
                                             if (confirm("Are you sure you want to delete this job?")) {
                                                 removeJob(job.id);

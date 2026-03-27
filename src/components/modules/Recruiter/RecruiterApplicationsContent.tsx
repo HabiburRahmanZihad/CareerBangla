@@ -38,6 +38,31 @@ const validTransitions: Record<string, string[]> = {
     REJECTED: [],
 };
 
+const toPdfBlob = (payload: unknown): Blob => {
+    if (payload instanceof Blob) {
+        return payload;
+    }
+
+    if (payload instanceof ArrayBuffer) {
+        return new Blob([payload], { type: "application/pdf" });
+    }
+
+    if (ArrayBuffer.isView(payload)) {
+        const view = payload as ArrayBufferView;
+        const bytes = new Uint8Array(view.buffer, view.byteOffset || 0, view.byteLength || 0);
+        return new Blob([bytes as unknown as BlobPart], { type: "application/pdf" });
+    }
+
+    if (payload && typeof payload === "object" && "type" in payload && "data" in payload) {
+        const maybeBuffer = payload as { type?: unknown; data?: unknown };
+        if (maybeBuffer.type === "Buffer" && Array.isArray(maybeBuffer.data)) {
+            return new Blob([new Uint8Array(maybeBuffer.data)], { type: "application/pdf" });
+        }
+    }
+
+    return new Blob([payload as BlobPart], { type: "application/pdf" });
+};
+
 const RecruiterApplicationsContent = () => {
     const queryClient = useQueryClient();
     const [selectedJobId, setSelectedJobId] = useState<string>("");
@@ -107,7 +132,8 @@ const RecruiterApplicationsContent = () => {
         setDownloadingCv(userId);
         try {
             const response = await downloadCvForRecruiter(userId, applicationId);
-            const blob = response.data;
+            const rawPayload = (response as any)?.data ?? response;
+            const blob = toPdfBlob(rawPayload);
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
