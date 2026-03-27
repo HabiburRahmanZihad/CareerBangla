@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { changePassword } from "@/services/auth.services";
-import { changePasswordZodSchema, IChangePasswordPayload } from "@/zod/auth.validation";
+import { changePasswordFormZodSchema, IChangePasswordPayload } from "@/zod/auth.validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeOff } from "lucide-react";
@@ -35,10 +35,15 @@ const ChangePasswordContent = () => {
         defaultValues: {
             currentPassword: "",
             newPassword: "",
+            confirmPassword: "",
         },
         onSubmit: async ({ value }) => {
             setServerError(null);
-            await mutateAsync(value);
+            // Only send currentPassword and newPassword to backend (confirmPassword is for frontend validation only)
+            await mutateAsync({
+                currentPassword: value.currentPassword,
+                newPassword: value.newPassword,
+            });
         },
     });
 
@@ -61,7 +66,7 @@ const ChangePasswordContent = () => {
                     >
                         <form.Field
                             name="currentPassword"
-                            validators={{ onChange: changePasswordZodSchema.shape.currentPassword }}
+                            validators={{ onChange: changePasswordFormZodSchema.shape.currentPassword }}
                         >
                             {(field) => (
                                 <AppField
@@ -80,7 +85,7 @@ const ChangePasswordContent = () => {
 
                         <form.Field
                             name="newPassword"
-                            validators={{ onChange: changePasswordZodSchema.shape.newPassword }}
+                            validators={{ onChange: changePasswordFormZodSchema.shape.newPassword }}
                         >
                             {(field) => (
                                 <AppField
@@ -88,6 +93,25 @@ const ChangePasswordContent = () => {
                                     label="New Password"
                                     type={showNewPassword ? "text" : "password"}
                                     placeholder="Enter new password"
+                                    append={
+                                        <Button type="button" onClick={() => setShowNewPassword((v) => !v)} variant="ghost" size="icon">
+                                            {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                                        </Button>
+                                    }
+                                />
+                            )}
+                        </form.Field>
+
+                        <form.Field
+                            name="confirmPassword"
+                            validators={{ onChange: changePasswordFormZodSchema.shape.confirmPassword }}
+                        >
+                            {(field) => (
+                                <AppField
+                                    field={field}
+                                    label="Confirm Password"
+                                    type={showNewPassword ? "text" : "password"}
+                                    placeholder="Re-enter new password"
                                     append={
                                         <Button type="button" onClick={() => setShowNewPassword((v) => !v)} variant="ghost" size="icon">
                                             {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}

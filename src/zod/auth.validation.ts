@@ -46,9 +46,10 @@ export type IForgotPasswordPayload = z.infer<typeof forgotPasswordZodSchema>;
 
 export const resetPasswordZodSchema = z.object({
     email: z.email("Invalid email address"),
-    otp: z.string().length(6, "OTP must be 6 digits"),
+    otp: z.string().length(6, "OTP must be 6 digits").regex(/^\d{6}$/, "OTP must contain only digits"),
     newPassword: z.string()
-        .min(8, "Password must be at least 8 characters long"),
+        .min(8, "Password must be at least 8 characters long")
+        .refine((value) => !/\s/.test(value), "Password cannot contain spaces"),
 });
 
 export type IResetPasswordPayload = z.infer<typeof resetPasswordZodSchema>;
@@ -60,10 +61,24 @@ export const verifyEmailZodSchema = z.object({
 
 export type IVerifyEmailPayload = z.infer<typeof verifyEmailZodSchema>;
 
+// Form validation schema includes confirmPassword for client-side verification
+export const changePasswordFormZodSchema = z.object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z.string()
+        .min(8, "New password must be at least 8 characters long")
+        .refine((value) => !/\s/.test(value), "Password cannot contain spaces"),
+    confirmPassword: z.string().min(1, "Password confirmation is required"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+});
+
+// API payload schema - only currentPassword and newPassword
 export const changePasswordZodSchema = z.object({
     currentPassword: z.string().min(1, "Current password is required"),
     newPassword: z.string()
-        .min(8, "New password must be at least 8 characters long"),
+        .min(8, "New password must be at least 8 characters long")
+        .refine((value) => !/\s/.test(value), "Password cannot contain spaces"),
 });
 
 export type IChangePasswordPayload = z.infer<typeof changePasswordZodSchema>;
