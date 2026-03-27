@@ -75,7 +75,7 @@ const RecruiterApplicationsContent = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [skillsFilter, setSkillsFilter] = useState("");
     const [educationFilter, setEducationFilter] = useState("");
-    const [statusFilter, setStatusFilter] = useState<string>("");
+    const [statusFilter, setStatusFilter] = useState<string>("all");
 
     const { data: jobsData, isLoading: jobsLoading } = useQuery({
         queryKey: ["my-jobs"],
@@ -88,7 +88,7 @@ const RecruiterApplicationsContent = () => {
             search: searchTerm || undefined,
             skills: skillsFilter || undefined,
             education: educationFilter || undefined,
-            status: statusFilter || undefined,
+            status: statusFilter !== "all" ? statusFilter : undefined,
         }),
         enabled: !!selectedJobId,
     });
@@ -206,7 +206,7 @@ const RecruiterApplicationsContent = () => {
                                             <SelectValue placeholder="Filter by status" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">All Statuses</SelectItem>
+                                            <SelectItem value="all">All Statuses</SelectItem>
                                             <SelectItem value="PENDING">Pending</SelectItem>
                                             <SelectItem value="SHORTLISTED">Shortlisted</SelectItem>
                                             <SelectItem value="INTERVIEW">Interview</SelectItem>
