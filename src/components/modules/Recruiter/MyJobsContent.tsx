@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { deleteJob, getMyJobs } from "@/services/job.services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { Edit, PlusCircle, Trash2 } from "lucide-react";
+import { CheckCircle2, Clock3, Edit, PlusCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -25,6 +25,16 @@ const MyJobsContent = () => {
     const { data, isLoading } = useQuery({
         queryKey: ["my-jobs"],
         queryFn: () => getMyJobs({ limit: "50" }),
+    });
+
+    const { data: pendingSummary } = useQuery({
+        queryKey: ["my-jobs-summary", "pending"],
+        queryFn: () => getMyJobs({ status: "DRAFT", page: "1", limit: "1" }),
+    });
+
+    const { data: approvedSummary } = useQuery({
+        queryKey: ["my-jobs-summary", "approved"],
+        queryFn: () => getMyJobs({ status: "ACTIVE", page: "1", limit: "1" }),
     });
 
     const { mutateAsync: removeJob } = useMutation({
@@ -50,6 +60,8 @@ const MyJobsContent = () => {
     }
 
     const jobs = data?.data || [];
+    const pendingCount = Number((pendingSummary as any)?.meta?.total || 0);
+    const approvedCount = Number((approvedSummary as any)?.meta?.total || 0);
 
     return (
         <div className="space-y-6">
@@ -61,6 +73,40 @@ const MyJobsContent = () => {
                         Post New Job
                     </Link>
                 </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card>
+                    <CardContent className="py-5 flex items-center justify-between gap-4">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Pending / Not Approved</p>
+                            <p className="text-3xl font-bold mt-1">{pendingCount}</p>
+                            <p className="text-xs text-muted-foreground mt-1">Jobs waiting for admin approval</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                            <Clock3 className="h-5 w-5 text-muted-foreground" />
+                            <Button variant="outline" size="sm" asChild>
+                                <Link href="/recruiter/dashboard/my-jobs/pending">Manage Pending</Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardContent className="py-5 flex items-center justify-between gap-4">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Approved Jobs</p>
+                            <p className="text-3xl font-bold mt-1">{approvedCount}</p>
+                            <p className="text-xs text-muted-foreground mt-1">Live jobs approved by admin</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                            <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
+                            <Button variant="outline" size="sm" asChild>
+                                <Link href="/recruiter/dashboard/my-jobs/approved">Manage Approved</Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
 
             {jobs.length === 0 ? (

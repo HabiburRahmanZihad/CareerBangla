@@ -46,6 +46,16 @@ export const recruiterNavItems: NavSection[] = [
                 icon: "Briefcase",
             },
             {
+                title: "Pending Jobs",
+                href: "/recruiter/dashboard/my-jobs/pending",
+                icon: "Clock",
+            },
+            {
+                title: "Approved Jobs",
+                href: "/recruiter/dashboard/my-jobs/approved",
+                icon: "CheckCircle",
+            },
+            {
                 title: "Post a Job",
                 href: "/recruiter/dashboard/post-job",
                 icon: "PlusCircle",
