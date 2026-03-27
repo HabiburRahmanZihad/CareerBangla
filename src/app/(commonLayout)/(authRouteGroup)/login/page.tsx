@@ -4,7 +4,7 @@ import { getUserInfo } from "@/services/auth.services";
 import { redirect } from "next/navigation";
 
 interface LoginParams {
-  searchParams: Promise<{ redirect?: string; error?: string }>;
+  searchParams: Promise<{ redirect?: string; error?: string; forceLogout?: string }>;
 }
 
 const LoginPage = async ({ searchParams }: LoginParams) => {
@@ -18,9 +18,10 @@ const LoginPage = async ({ searchParams }: LoginParams) => {
   const params = await searchParams;
   const redirectPath = params.redirect;
   const error = params.error;
+  const forceLogoutMode = params.forceLogout === "1";
 
   return (
-    <LoginForm redirectPath={redirectPath} oauthError={error} />
+    <LoginForm redirectPath={redirectPath} oauthError={error} forceLogoutMode={forceLogoutMode} />
   )
 }
 

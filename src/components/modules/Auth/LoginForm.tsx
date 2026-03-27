@@ -4,7 +4,6 @@ import { loginAction } from "@/app/(commonLayout)/(authRouteGroup)/login/_action
 import AppField from "@/components/shared/form/AppField";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import envConfig from "@/lib/envConfig";
@@ -14,6 +13,8 @@ import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+
+const DEVICE_LIMIT_LOGIN_CONTEXT_KEY = "device-limit-login-context";
 
 const oauthErrorMessages: Record<string, string> = {
   oauth_failed: "Google sign-in failed. Please try again or use email login.",
@@ -25,15 +26,14 @@ const oauthErrorMessages: Record<string, string> = {
 interface LoginFormProps {
   redirectPath?: string;
   oauthError?: string;
+  forceLogoutMode?: boolean;
 }
 
-const LoginForm = ({ redirectPath, oauthError }: LoginFormProps) => {
+const LoginForm = ({ redirectPath, oauthError, forceLogoutMode = false }: LoginFormProps) => {
   const [serverError, setServerError] = useState<string | null>(
     oauthError ? oauthErrorMessages[oauthError] || "Authentication failed. Please try again." : null
   );
   const [showPassword, setShowPassword] = useState(false);
-  const [deviceLimitExceeded, setDeviceLimitExceeded] = useState(false);
-  const [isLoggingOutAll, setIsLoggingOutAll] = useState(false);
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: ({ payload, forceLogout }: { payload: ILoginPayload; forceLogout?: boolean }) =>
@@ -48,19 +48,24 @@ const LoginForm = ({ redirectPath, oauthError }: LoginFormProps) => {
 
     onSubmit: async ({ value }) => {
       setServerError(null);
-      setDeviceLimitExceeded(false);
       try {
         console.log("[Login] Submitting login for:", value.identifier);
         console.log("[Login] Redirect path from URL:", redirectPath);
 
-        const result = await mutateAsync({ payload: value }) as any;
+        const result = await mutateAsync({ payload: value, forceLogout: forceLogoutMode }) as any;
 
         console.log("[Login] Server response:", { success: result.success, redirectPath: result.redirectPath, message: result.message });
 
         if (!result.success) {
           if (result.code === "DEVICE_LIMIT_EXCEEDED") {
-            setDeviceLimitExceeded(true);
-            setServerError(result.message);
+            if (typeof window !== "undefined") {
+              window.sessionStorage.setItem(
+                DEVICE_LIMIT_LOGIN_CONTEXT_KEY,
+                JSON.stringify({ payload: value, redirectPath })
+              );
+            }
+            const deviceLimitPath = `/login/device-limit${redirectPath ? `?redirect=${encodeURIComponent(redirectPath)}` : ""}`;
+            window.location.href = deviceLimitPath;
             return;
           }
           setServerError(result.message || "Login failed");
@@ -69,6 +74,10 @@ const LoginForm = ({ redirectPath, oauthError }: LoginFormProps) => {
 
         const targetPath = result.redirectPath || "/dashboard";
         console.log("[Login] Navigating to:", targetPath);
+
+        if (typeof window !== "undefined") {
+          window.sessionStorage.removeItem(DEVICE_LIMIT_LOGIN_CONTEXT_KEY);
+        }
 
         // Use full page navigation to ensure cookies are properly sent
         // router.push + router.refresh can cause race conditions with freshly set cookies
@@ -154,7 +163,15 @@ const LoginForm = ({ redirectPath, oauthError }: LoginFormProps) => {
             </Link>
           </div>
 
-          {serverError && !deviceLimitExceeded && (
+          {forceLogoutMode && (
+            <Alert>
+              <AlertDescription>
+                Device limit detected earlier. Login now will sign out your other devices.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {serverError && (
             <Alert variant={"destructive"}>
               <AlertDescription>{serverError}</AlertDescription>
             </Alert>
@@ -208,48 +225,6 @@ const LoginForm = ({ redirectPath, oauthError }: LoginFormProps) => {
           Login with Google
         </Button>
 
-        {/* Device Limit Exceeded Dialog */}
-        <AlertDialog open={deviceLimitExceeded} onOpenChange={setDeviceLimitExceeded}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Multiple Device Login</AlertDialogTitle>
-              <AlertDialogDescription>
-                {serverError || "You are already logged in on another device. Would you like to logout from all devices and continue?"}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={isLoggingOutAll || isPending}>
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                disabled={isLoggingOutAll || isPending}
-                onClick={async (e) => {
-                  e.preventDefault();
-                  setIsLoggingOutAll(true);
-                  setServerError(null);
-                  try {
-                    const values = form.state.values;
-                    const result = await mutateAsync({ payload: values, forceLogout: true }) as any;
-                    if (!result.success) {
-                      setServerError(result.message || "Login failed");
-                      setDeviceLimitExceeded(false);
-                      return;
-                    }
-                    window.location.href = result.redirectPath || "/dashboard";
-                  } catch (error: any) {
-                    setServerError(`Failed: ${error.message}`);
-                    setDeviceLimitExceeded(false);
-                  } finally {
-                    setIsLoggingOutAll(false);
-                  }
-                }}
-                className="bg-destructive hover:bg-destructive/90"
-              >
-                {isLoggingOutAll ? "Logging out..." : "Logout from all devices & Login"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </CardContent>
 
       <CardFooter className="justify-center border-t pt-4">
