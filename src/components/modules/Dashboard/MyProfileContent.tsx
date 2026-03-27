@@ -326,8 +326,8 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                 </CardContent>
             </Card>
 
-            {/* ── Career Boost Status (Only for regular users) ── */}
-            {userInfo.role !== "ADMIN" && userInfo.role !== "SUPER_ADMIN" && (
+            {/* ── Career Boost Status (Only for regular users & recruiters) ── */}
+            {userInfo.role !== "ADMIN" && userInfo.role !== "SUPER_ADMIN" && userInfo.role !== "RECRUITER" && (
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-base">
@@ -381,7 +381,7 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
             )}
 
             {/* ── Profile Completion (Only for regular users) ── */}
-            {userInfo.role !== "ADMIN" && userInfo.role !== "SUPER_ADMIN" && (
+            {userInfo.role !== "ADMIN" && userInfo.role !== "SUPER_ADMIN" && userInfo.role !== "RECRUITER" && (
                 resumeLoading ? (
                     <Skeleton className="h-16 w-full" />
                 ) : (
@@ -811,7 +811,7 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
             )}
 
             {/* ── Quick Actions (Only for regular users) ── */}
-            {userInfo.role !== "ADMIN" && userInfo.role !== "SUPER_ADMIN" && (
+            {userInfo.role !== "ADMIN" && userInfo.role !== "SUPER_ADMIN" && userInfo.role !== "RECRUITER" && (
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base">Quick Actions</CardTitle>
