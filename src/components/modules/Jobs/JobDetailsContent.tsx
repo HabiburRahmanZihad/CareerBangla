@@ -10,7 +10,7 @@ import { getMyResume } from "@/services/resume.services";
 import { IJob } from "@/types/user.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { AlertCircle, ArrowLeft, Award, BookOpen, Briefcase, Building2, Calendar, Clock, DollarSign, MapPin, Users, Zap } from "lucide-react";
+import { AlertCircle, ArrowLeft, Award, BookOpen, Briefcase, Building2, Calendar, Clock, DollarSign, Mail, MapPin, Phone, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import { toast } from "sonner";
 interface JobDetailsContentProps {
     job: IJob;
     userRole?: string;
+    isPremium?: boolean;
 }
 
 const jobTypeLabels: Record<string, string> = {
@@ -36,7 +37,7 @@ const experienceLevelLabels: Record<string, string> = {
     EXECUTIVE: "Executive",
 };
 
-const JobDetailsContent = ({ job, userRole }: JobDetailsContentProps) => {
+const JobDetailsContent = ({ job, userRole, isPremium }: JobDetailsContentProps) => {
     const [coverLetter, setCoverLetter] = useState("");
     const [showApplyForm, setShowApplyForm] = useState(false);
 
@@ -374,6 +375,40 @@ const JobDetailsContent = ({ job, userRole }: JobDetailsContentProps) => {
                                             {job.recruiter.companyWebsite}
                                         </a>
                                     </div>
+                                )}
+
+                                {/* Premium Contact Info */}
+                                {isPremium && (
+                                    <>
+                                        {job.recruiter.email && (
+                                            <div className="pt-3 border-t">
+                                                <p className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+                                                    <Mail className="h-3 w-3" />
+                                                    Email
+                                                </p>
+                                                <a
+                                                    href={`mailto:${job.recruiter.email}`}
+                                                    className="text-primary hover:underline text-sm font-medium break-all"
+                                                >
+                                                    {job.recruiter.email}
+                                                </a>
+                                            </div>
+                                        )}
+                                        {job.recruiter.contactNumber && (
+                                            <div>
+                                                <p className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+                                                    <Phone className="h-3 w-3" />
+                                                    Phone
+                                                </p>
+                                                <a
+                                                    href={`tel:${job.recruiter.contactNumber}`}
+                                                    className="text-primary hover:underline text-sm font-medium"
+                                                >
+                                                    {job.recruiter.contactNumber}
+                                                </a>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </CardContent>
                         </Card>

@@ -25,6 +25,7 @@ const JobDetailsPage = async ({ params }: JobDetailsPageProps) => {
                 <JobDetailsContent
                     job={jobResponse.data}
                     userRole={userInfo?.role}
+                    isPremium={userInfo?.isPremium}
                 />
             </div>
         );
