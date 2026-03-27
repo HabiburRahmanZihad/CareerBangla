@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createJobCategory, deleteJobCategory, getJobCategories } from "@/services/job.services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PlusCircle, RefreshCw, Trash2 } from "lucide-react";
+import { PlusCircle, RefreshCw, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 const CategoriesManagementContent = () => {
     const queryClient = useQueryClient();
     const [newCategory, setNewCategory] = useState("");
+    const [searchTerm, setSearchTerm] = useState("");
 
     const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["job-categories"],
@@ -64,9 +65,13 @@ const CategoriesManagementContent = () => {
     }
 
     const categories = Array.isArray(data?.data) ? data.data : [];
+    const filteredCategories = categories.filter((cat) => {
+        const label = (cat.name || cat.title || "").toLowerCase();
+        return label.includes(searchTerm.toLowerCase().trim());
+    });
 
     return (
-        <div className="space-y-6 max-w-2xl">
+        <div className="space-y-6 max-w-7xl">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">Job Categories</h1>
                 <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isFetching}>
@@ -99,17 +104,29 @@ const CategoriesManagementContent = () => {
                     <CardTitle>Existing Categories ({categories.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
+                    <div className="mb-4 relative max-w-sm">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Search category..."
+                            className="pl-9"
+                        />
+                    </div>
+
                     {categories.length === 0 ? (
                         <p className="text-center text-muted-foreground py-4">No categories yet.</p>
+                    ) : filteredCategories.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-4">No categories matched your search.</p>
                     ) : (
-                        <div className="space-y-2">
-                            {categories.map((cat) => (
-                                <div key={cat.id} className="flex items-center justify-between p-3 border rounded-lg">
-                                    <span className="font-medium">{cat.name || cat.title || "Untitled Category"}</span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+                            {filteredCategories.map((cat) => (
+                                <div key={cat.id} className="flex items-start justify-between p-3 border rounded-lg min-h-20 hover:shadow-sm transition-shadow">
+                                    <span className="font-medium text-sm leading-snug wrap-break-word pr-2">{cat.name || cat.title || "Untitled Category"}</span>
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="text-destructive h-8 w-8"
+                                        className="text-destructive h-8 w-8 shrink-0"
                                         onClick={() => {
                                             if (confirm("Delete this category?")) removeCategory(cat.id);
                                         }}
