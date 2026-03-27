@@ -83,7 +83,7 @@ const JobDetailsContent = ({ job }: JobDetailsContentProps) => {
                                     <Badge>{job.locationType}</Badge>
                                     <Badge variant="outline">{jobTypeLabels[job.jobType]}</Badge>
                                     <Badge variant="secondary">{experienceLevelLabels[job.experienceLevel]}</Badge>
-                                    <Badge variant={job.status === "OPEN" ? "default" : "destructive"}>
+                                    <Badge variant={job.status === "LIVE" ? "default" : "destructive"}>
                                         {job.status}
                                     </Badge>
                                 </div>
@@ -155,7 +155,7 @@ const JobDetailsContent = ({ job }: JobDetailsContentProps) => {
                     {/* Apply Card */}
                     <Card>
                         <CardContent className="pt-6 space-y-4">
-                            {job.status === "OPEN" ? (
+                            {job.status === "LIVE" ? (
                                 <>
                                     {!showApplyForm ? (
                                         <div className="space-y-3">

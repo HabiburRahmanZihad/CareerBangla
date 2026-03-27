@@ -209,16 +209,13 @@ const RecruiterInactiveJobsContent = ({ title, description, emptyMessage }: Recr
                             </CardHeader>
                             <CardContent className="pt-0 space-y-3">
                                 <div className="flex items-center gap-2">
-                                    <Button variant="outline" size="sm" asChild>
-                                        <Link href={`/recruiter/dashboard/my-jobs/${job.id}`}>View</Link>
-                                    </Button>
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         className="text-destructive"
                                         disabled={deleting || isFetching}
                                         onClick={() => {
-                                            if (confirm("Are you sure you want to permanently delete this inactive job? This action cannot be undone.")) {
+                                            if (confirm("Are you sure you want to permanently delete this job? This action cannot be undone.")) {
                                                 removeJob(job.id);
                                             }
                                         }}
