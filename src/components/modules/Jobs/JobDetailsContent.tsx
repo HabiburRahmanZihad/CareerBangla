@@ -10,7 +10,7 @@ import { getMyResume } from "@/services/resume.services";
 import { IJob } from "@/types/user.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { AlertCircle, ArrowLeft, Award, BookOpen, Briefcase, Building2, Calendar, Clock, DollarSign, Mail, MapPin, Phone, Users, Zap } from "lucide-react";
+import { AlertCircle, ArrowLeft, Award, BookOpen, Briefcase, Building2, Calendar, Clock, DollarSign, Mail, MapPin, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -376,13 +376,22 @@ const JobDetailsContent = ({ job, userRole, isPremium }: JobDetailsContentProps)
                                         </a>
                                     </div>
                                 )}
+                            </CardContent>
+                        </Card>
+                    )}
 
-                                {/* Premium Contact Info */}
-                                {isPremium && (
+                    {/* Recruiter Contact Info */}
+                    {job.recruiter && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg">Contact Recruiter</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {isPremium ? (
                                     <>
-                                        {job.recruiter.email && (
-                                            <div className="pt-3 border-t">
-                                                <p className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+                                        {job.recruiter.email ? (
+                                            <div>
+                                                <p className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1 mb-2">
                                                     <Mail className="h-3 w-3" />
                                                     Email
                                                 </p>
@@ -393,22 +402,20 @@ const JobDetailsContent = ({ job, userRole, isPremium }: JobDetailsContentProps)
                                                     {job.recruiter.email}
                                                 </a>
                                             </div>
-                                        )}
-                                        {job.recruiter.contactNumber && (
-                                            <div>
-                                                <p className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
-                                                    <Phone className="h-3 w-3" />
-                                                    Phone
-                                                </p>
-                                                <a
-                                                    href={`tel:${job.recruiter.contactNumber}`}
-                                                    className="text-primary hover:underline text-sm font-medium"
-                                                >
-                                                    {job.recruiter.contactNumber}
-                                                </a>
-                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">No contact email available</p>
                                         )}
                                     </>
+                                ) : (
+                                    <Alert className="bg-amber-50 border-amber-200">
+                                        <AlertCircle className="h-4 w-4 text-amber-600" />
+                                        <AlertDescription className="text-xs text-amber-800">
+                                            <span className="font-medium">Premium Feature:</span> Upgrade to Premium to contact the recruiter directly via email.{" "}
+                                            <Link href="/dashboard/subscriptions" className="underline font-semibold hover:text-amber-900">
+                                                Buy Premium
+                                            </Link>
+                                        </AlertDescription>
+                                    </Alert>
                                 )}
                             </CardContent>
                         </Card>
