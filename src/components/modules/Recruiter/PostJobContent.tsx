@@ -17,9 +17,10 @@ import { getMyRecruiterProfile } from "@/services/recruiter.services";
 import { createJobZodSchema } from "@/zod/job.validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { AlertCircle, ShieldAlert } from "lucide-react";
+import { AlertCircle, Lock, ShieldAlert } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const splitList = (value: string): string[] =>
@@ -64,6 +65,10 @@ const PostJobContent = () => {
 
     const isVerified = (profileData?.data?.status === "APPROVED") || false;
     const profileCompletion = profileData?.data?.profileCompletion ?? 0;
+    const draftStorageKey = `careerbangla.post-job-draft.${(profileData as any)?.data?.id || "recruiter"}`;
+    const premiumUntil = (profileData as any)?.data?.premiumUntil as string | undefined;
+    const rawPremium = (profileData as any)?.data?.isPremium ?? (profileData as any)?.data?.user?.isPremium;
+    const hasActivePremium = Boolean(rawPremium) && (!premiumUntil || new Date(premiumUntil).getTime() > Date.now());
     // Recruiters don't need 100% completion, just need to be verified/approved
     const isProfileComplete = true;
     const canPost = isVerified;
@@ -72,6 +77,9 @@ const PostJobContent = () => {
     const { mutateAsync, isPending } = useMutation({
         mutationFn: (data: Record<string, unknown>) => createJob(data),
         onSuccess: () => {
+            if (typeof window !== "undefined") {
+                localStorage.removeItem(draftStorageKey);
+            }
             toast.success("Job posted successfully!");
             router.push("/recruiter/dashboard/my-jobs");
         },
@@ -191,10 +199,10 @@ const PostJobContent = () => {
                 applicationEmail: value.applicationEmail || undefined,
                 applicationLink: value.applicationLink || undefined,
                 contactPhone: value.contactPhone || undefined,
-                featuredJob: value.featuredJob,
-                urgentHiring: value.urgentHiring,
-                allowVideoCv: value.allowVideoCv,
-                tags: splitList(value.tags),
+                featuredJob: hasActivePremium ? value.featuredJob : false,
+                urgentHiring: hasActivePremium ? value.urgentHiring : false,
+                allowVideoCv: hasActivePremium ? value.allowVideoCv : false,
+                tags: hasActivePremium ? splitList(value.tags) : [],
             };
 
             await mutateAsync(payload);
@@ -250,6 +258,48 @@ const PostJobContent = () => {
         setStepErrors({});
         setCurrentStep((prev) => Math.max(prev - 1, 1));
     };
+
+    const handleSaveDraft = () => {
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        const draft = {
+            values: form.state.values,
+            step: currentStep,
+            updatedAt: new Date().toISOString(),
+        };
+
+        localStorage.setItem(draftStorageKey, JSON.stringify(draft));
+        toast.success("Draft saved");
+    };
+
+    useEffect(() => {
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        const rawDraft = localStorage.getItem(draftStorageKey);
+        if (!rawDraft) {
+            return;
+        }
+
+        try {
+            const parsedDraft = JSON.parse(rawDraft) as { values?: Record<string, unknown>; step?: number };
+
+            if (parsedDraft.values && typeof parsedDraft.values === "object") {
+                Object.entries(parsedDraft.values).forEach(([key, value]) => {
+                    form.setFieldValue(key as never, value as never);
+                });
+            }
+
+            if (typeof parsedDraft.step === "number" && parsedDraft.step >= 1 && parsedDraft.step <= TOTAL_STEPS) {
+                setCurrentStep(parsedDraft.step);
+            }
+        } catch {
+            localStorage.removeItem(draftStorageKey);
+        }
+    }, [draftStorageKey, form]);
 
     return (
         <div className="space-y-6 max-w-4xl">
@@ -662,6 +712,18 @@ const PostJobContent = () => {
                                 <div className="space-y-4 rounded-md border p-4">
                                     <h3 className="font-semibold">8. Advanced / Optional Features</h3>
 
+                                    {!hasActivePremium && (
+                                        <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                                            <div className="flex items-center gap-2">
+                                                <Lock className="h-3.5 w-3.5" />
+                                                <span>Premium recruiters only: Featured Job, Urgent Hiring, Allow Video CV, and Tags.</span>
+                                            </div>
+                                            <Link href="/recruiter/dashboard/subscriptions" className="inline-block mt-1 font-medium underline">
+                                                Upgrade to Career Boost
+                                            </Link>
+                                        </div>
+                                    )}
+
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <form.Field name="featuredJob">
                                             {(field) => (
@@ -669,7 +731,11 @@ const PostJobContent = () => {
                                                     <Checkbox
                                                         id={field.name}
                                                         checked={field.state.value}
-                                                        onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
+                                                        disabled={!hasActivePremium}
+                                                        onCheckedChange={(checked) => {
+                                                            if (!hasActivePremium) return;
+                                                            field.handleChange(Boolean(checked));
+                                                        }}
                                                     />
                                                     <Label htmlFor={field.name}>Featured Job</Label>
                                                 </div>
@@ -682,7 +748,11 @@ const PostJobContent = () => {
                                                     <Checkbox
                                                         id={field.name}
                                                         checked={field.state.value}
-                                                        onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
+                                                        disabled={!hasActivePremium}
+                                                        onCheckedChange={(checked) => {
+                                                            if (!hasActivePremium) return;
+                                                            field.handleChange(Boolean(checked));
+                                                        }}
                                                     />
                                                     <Label htmlFor={field.name}>Urgent Hiring Badge</Label>
                                                 </div>
@@ -695,7 +765,11 @@ const PostJobContent = () => {
                                                     <Checkbox
                                                         id={field.name}
                                                         checked={field.state.value}
-                                                        onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
+                                                        disabled={!hasActivePremium}
+                                                        onCheckedChange={(checked) => {
+                                                            if (!hasActivePremium) return;
+                                                            field.handleChange(Boolean(checked));
+                                                        }}
                                                     />
                                                     <Label htmlFor={field.name}>Allow Video CV</Label>
                                                 </div>
@@ -704,7 +778,7 @@ const PostJobContent = () => {
                                     </div>
 
                                     <form.Field name="tags">
-                                        {(field) => <AppField field={field} label="Tags / Keywords" placeholder="frontend, react, urgent" />}
+                                        {(field) => <AppField field={field} label="Tags / Keywords" placeholder="frontend, react, urgent" disabled={!hasActivePremium} />}
                                     </form.Field>
                                 </div>
                             </>
@@ -721,15 +795,21 @@ const PostJobContent = () => {
                                 Previous
                             </Button>
 
-                            {currentStep < TOTAL_STEPS ? (
-                                <Button type="button" onClick={handleNextStep}>
-                                    Next Step
+                            <div className="flex items-center gap-2">
+                                <Button type="button" variant="secondary" onClick={handleSaveDraft}>
+                                    Save Draft
                                 </Button>
-                            ) : (
-                                <AppSubmitButton isPending={isPending} pendingLabel="Posting Job..." disabled={!canPost || isGuardLoading}>
-                                    Post Job
-                                </AppSubmitButton>
-                            )}
+
+                                {currentStep < TOTAL_STEPS ? (
+                                    <Button type="button" onClick={handleNextStep}>
+                                        Next Step
+                                    </Button>
+                                ) : (
+                                    <AppSubmitButton isPending={isPending} pendingLabel="Posting Job..." disabled={!canPost || isGuardLoading}>
+                                        Post Job
+                                    </AppSubmitButton>
+                                )}
+                            </div>
                         </div>
                     </form>
                 </CardContent>
