@@ -4,6 +4,7 @@
 import AppField from "@/components/shared/form/AppField";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -36,9 +37,20 @@ const getFieldError = (field: { state: { meta: { isTouched: boolean; errors: unk
     return typeof firstError === "string" ? firstError : String(firstError);
 };
 
+const STEP_FIELDS: Record<number, string[]> = {
+    1: ["title", "categoryId", "vacancies", "company", "companyAddress"],
+    2: ["description", "responsibilities", "skills", "education", "experienceYears", "ageMin", "ageMax"],
+    3: ["salaryMin", "salaryMax", "location", "locationType", "jobType"],
+    4: ["applicationDeadline", "applicationMethod", "applicationEmail", "applicationLink", "contactPhone"],
+};
+
+const TOTAL_STEPS = 4;
+
 const PostJobContent = () => {
     const router = useRouter();
     const [serverError, setServerError] = useState<string | null>(null);
+    const [currentStep, setCurrentStep] = useState(1);
+    const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
 
     const { data: categoriesData } = useQuery({
         queryKey: ["job-categories"],
@@ -189,7 +201,54 @@ const PostJobContent = () => {
         },
     });
 
-    const categories = categoriesData?.data || [];
+    const categoriesRaw = categoriesData as unknown;
+    const categories = Array.isArray(categoriesRaw)
+        ? categoriesRaw
+        : Array.isArray((categoriesRaw as { data?: unknown })?.data)
+            ? ((categoriesRaw as { data: unknown[] }).data)
+            : [];
+
+    const activeFields = STEP_FIELDS[currentStep] || [];
+
+    const getStepFieldError = (name: string, fallback?: string | null): string | undefined => {
+        return stepErrors[name] || fallback || undefined;
+    };
+
+    const validateCurrentStep = () => {
+        const parsed = createJobZodSchema.safeParse(form.state.values);
+
+        if (parsed.success) {
+            setStepErrors({});
+            return true;
+        }
+
+        const active = new Set(activeFields);
+        const nextErrors: Record<string, string> = {};
+
+        for (const issue of parsed.error.issues) {
+            const key = typeof issue.path[0] === "string" ? issue.path[0] : "";
+            if (active.has(key) && !nextErrors[key]) {
+                nextErrors[key] = issue.message;
+            }
+        }
+
+        setStepErrors(nextErrors);
+        return Object.keys(nextErrors).length === 0;
+    };
+
+    const handleNextStep = () => {
+        setServerError(null);
+        if (!validateCurrentStep()) {
+            return;
+        }
+        setCurrentStep((prev) => Math.min(prev + 1, TOTAL_STEPS));
+    };
+
+    const handlePreviousStep = () => {
+        setServerError(null);
+        setStepErrors({});
+        setCurrentStep((prev) => Math.max(prev - 1, 1));
+    };
 
     return (
         <div className="space-y-6 max-w-4xl">
@@ -219,400 +278,431 @@ const PostJobContent = () => {
                 </>
             )}
 
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {[1, 2, 3, 4].map((step) => (
+                    <div
+                        key={step}
+                        className={`rounded-md border px-3 py-2 text-xs text-center ${currentStep === step ? "border-primary bg-primary/10 text-primary font-semibold" : "text-muted-foreground"}`}
+                    >
+                        Step {step}
+                    </div>
+                ))}
+            </div>
+
             <Card>
                 <CardHeader>
-                    <CardTitle>Job Details</CardTitle>
+                    <CardTitle>Job Details (Step {currentStep} of {TOTAL_STEPS})</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form
                         noValidate
                         onSubmit={(e) => {
                             e.preventDefault();
+                            if (currentStep < TOTAL_STEPS) {
+                                handleNextStep();
+                                return;
+                            }
                             form.handleSubmit();
                         }}
                         className="space-y-4"
                     >
-                        <div className="space-y-4 rounded-md border p-4">
-                            <h3 className="font-semibold">1. Basic Information</h3>
+                        {currentStep === 1 && (
+                            <>
+                                <div className="space-y-4 rounded-md border p-4">
+                                    <h3 className="font-semibold">1. Basic Information</h3>
 
-                            <form.Field name="title" validators={{ onChange: createJobZodSchema.shape.title }}>
-                                {(field) => <AppField field={field} label="Job Title" placeholder="e.g. Senior React Developer" />}
-                            </form.Field>
+                                    <form.Field name="title" validators={{ onChange: createJobZodSchema.shape.title }}>
+                                        {(field) => <AppField field={field} label="Job Title" placeholder="e.g. Senior React Developer" serverError={getStepFieldError("title")} />}
+                                    </form.Field>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <Label>Job Category</Label>
-                                    <form.Field name="categoryId" validators={{ onChange: createJobZodSchema.shape.categoryId }}>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <Label>Job Category</Label>
+                                            <form.Field name="categoryId" validators={{ onChange: createJobZodSchema.shape.categoryId }}>
+                                                {(field) => {
+                                                    const error = getStepFieldError("categoryId", getFieldError(field));
+                                                    return (
+                                                        <>
+                                                            <Select value={field.state.value} onValueChange={(v) => field.handleChange(v)}>
+                                                                <SelectTrigger>
+                                                                    <SelectValue placeholder="Select category" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {categories.filter((cat: any) => cat?.id).map((cat: any) => (
+                                                                        <SelectItem key={cat.id} value={cat.id}>
+                                                                            {cat.name || cat.title}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                            {error && <p className="text-sm text-destructive">{error}</p>}
+                                                        </>
+                                                    );
+                                                }}
+                                            </form.Field>
+                                        </div>
+
+                                        <form.Field name="vacancies" validators={{ onChange: createJobZodSchema.shape.vacancies }}>
+                                            {(field) => <AppField field={field} label="Vacancy / Number of Positions" type="number" placeholder="e.g. 3" serverError={getStepFieldError("vacancies")} />}
+                                        </form.Field>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 rounded-md border p-4">
+                                    <h3 className="font-semibold">2. Company Information</h3>
+
+                                    <form.Field name="company" validators={{ onChange: createJobZodSchema.shape.company }}>
+                                        {(field) => <AppField field={field} label="Company Name" placeholder="Your company name" serverError={getStepFieldError("company")} />}
+                                    </form.Field>
+
+                                    <form.Field name="companyAddress" validators={{ onChange: createJobZodSchema.shape.companyAddress }}>
+                                        {(field) => <AppField field={field} label="Company Address" placeholder="Company address" serverError={getStepFieldError("companyAddress")} />}
+                                    </form.Field>
+
+                                    <form.Field name="companyDescription">
+                                        {(field) => (
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor={field.name}>Company Description</Label>
+                                                <Textarea
+                                                    id={field.name}
+                                                    value={field.state.value}
+                                                    placeholder="Short company overview"
+                                                    onBlur={field.handleBlur}
+                                                    onChange={(e) => field.handleChange(e.target.value)}
+                                                />
+                                            </div>
+                                        )}
+                                    </form.Field>
+
+                                    <form.Field name="companyLogo">
+                                        {(field) => (
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="company-logo">Company Logo (optional)</Label>
+                                                <Input
+                                                    id="company-logo"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => field.handleChange(e.target.files?.[0]?.name || "")}
+                                                />
+                                            </div>
+                                        )}
+                                    </form.Field>
+                                </div>
+                            </>
+                        )}
+
+                        {currentStep === 2 && (
+                            <>
+                                <div className="space-y-4 rounded-md border p-4">
+                                    <h3 className="font-semibold">3. Job Details</h3>
+
+                                    <form.Field name="description" validators={{ onChange: createJobZodSchema.shape.description }}>
                                         {(field) => {
                                             const error = getFieldError(field);
                                             return (
-                                                <>
-                                                    <Select value={field.state.value} onValueChange={(v) => field.handleChange(v)}>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Select category" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {categories.map((cat: any) => (
-                                                                <SelectItem key={cat.id} value={cat.id}>
-                                                                    {cat.name || cat.title}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    {error && <p className="text-sm text-destructive">{error}</p>}
-                                                </>
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor={field.name}>Job Description</Label>
+                                                    <Textarea
+                                                        id={field.name}
+                                                        value={field.state.value}
+                                                        placeholder="Describe the role..."
+                                                        onBlur={field.handleBlur}
+                                                        onChange={(e) => field.handleChange(e.target.value)}
+                                                    />
+                                                    {(getStepFieldError("description", error)) && <p className="text-sm text-destructive">{getStepFieldError("description", error)}</p>}
+                                                </div>
                                             );
                                         }}
                                     </form.Field>
+
+                                    <form.Field name="responsibilities" validators={{ onChange: createJobZodSchema.shape.responsibilities }}>
+                                        {(field) => {
+                                            const error = getFieldError(field);
+                                            return (
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor={field.name}>Responsibilities & Context</Label>
+                                                    <Textarea
+                                                        id={field.name}
+                                                        value={field.state.value}
+                                                        placeholder="Use comma or new line separated items"
+                                                        onBlur={field.handleBlur}
+                                                        onChange={(e) => field.handleChange(e.target.value)}
+                                                    />
+                                                    {(getStepFieldError("responsibilities", error)) && <p className="text-sm text-destructive">{getStepFieldError("responsibilities", error)}</p>}
+                                                </div>
+                                            );
+                                        }}
+                                    </form.Field>
+
+                                    <form.Field name="additionalRequirements">
+                                        {(field) => (
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor={field.name}>Additional Requirements</Label>
+                                                <Textarea
+                                                    id={field.name}
+                                                    value={field.state.value}
+                                                    placeholder="Use comma or new line separated items"
+                                                    onBlur={field.handleBlur}
+                                                    onChange={(e) => field.handleChange(e.target.value)}
+                                                />
+                                            </div>
+                                        )}
+                                    </form.Field>
+
+                                    <form.Field name="skills" validators={{ onChange: createJobZodSchema.shape.skills }}>
+                                        {(field) => <AppField field={field} label="Required Skills (comma separated)" placeholder="React, TypeScript, Node.js" serverError={getStepFieldError("skills")} />}
+                                    </form.Field>
                                 </div>
 
-                                <form.Field name="vacancies" validators={{ onChange: createJobZodSchema.shape.vacancies }}>
-                                    {(field) => <AppField field={field} label="Vacancy / Number of Positions" type="number" placeholder="e.g. 3" />}
-                                </form.Field>
-                            </div>
-                        </div>
+                                <div className="space-y-4 rounded-md border p-4">
+                                    <h3 className="font-semibold">4. Candidate Criteria</h3>
 
-                        <div className="space-y-4 rounded-md border p-4">
-                            <h3 className="font-semibold">2. Company Information</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <form.Field name="education" validators={{ onChange: createJobZodSchema.shape.education }}>
+                                            {(field) => <AppField field={field} label="Education Level" placeholder="e.g. Bachelor" serverError={getStepFieldError("education")} />}
+                                        </form.Field>
 
-                            <form.Field name="company" validators={{ onChange: createJobZodSchema.shape.company }}>
-                                {(field) => <AppField field={field} label="Company Name" placeholder="Your company name" />}
-                            </form.Field>
+                                        <form.Field name="experienceYears" validators={{ onChange: createJobZodSchema.shape.experienceYears }}>
+                                            {(field) => <AppField field={field} label="Experience (Years)" type="number" placeholder="e.g. 2" serverError={getStepFieldError("experienceYears")} />}
+                                        </form.Field>
 
-                            <form.Field name="companyAddress" validators={{ onChange: createJobZodSchema.shape.companyAddress }}>
-                                {(field) => <AppField field={field} label="Company Address" placeholder="Company address" />}
-                            </form.Field>
-
-                            <form.Field name="companyDescription">
-                                {(field) => (
-                                    <div className="space-y-1.5">
-                                        <Label htmlFor={field.name}>Company Description</Label>
-                                        <Textarea
-                                            id={field.name}
-                                            value={field.state.value}
-                                            placeholder="Short company overview"
-                                            onBlur={field.handleBlur}
-                                            onChange={(e) => field.handleChange(e.target.value)}
-                                        />
-                                    </div>
-                                )}
-                            </form.Field>
-
-                            <form.Field name="companyLogo">
-                                {(field) => (
-                                    <div className="space-y-1.5">
-                                        <Label htmlFor="company-logo">Company Logo (optional)</Label>
-                                        <Input
-                                            id="company-logo"
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) => field.handleChange(e.target.files?.[0]?.name || "")}
-                                        />
-                                    </div>
-                                )}
-                            </form.Field>
-                        </div>
-
-                        <div className="space-y-4 rounded-md border p-4">
-                            <h3 className="font-semibold">3. Job Details</h3>
-
-                            <form.Field name="description" validators={{ onChange: createJobZodSchema.shape.description }}>
-                                {(field) => {
-                                    const error = getFieldError(field);
-                                    return (
                                         <div className="space-y-1.5">
-                                            <Label htmlFor={field.name}>Job Description</Label>
-                                            <Textarea
-                                                id={field.name}
-                                                value={field.state.value}
-                                                placeholder="Describe the role..."
-                                                onBlur={field.handleBlur}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                            />
-                                            {error && <p className="text-sm text-destructive">{error}</p>}
+                                            <Label>Experience Level</Label>
+                                            <form.Field name="experienceLevel">
+                                                {(field) => (
+                                                    <Select value={field.state.value} onValueChange={(v) => field.handleChange(v)}>
+                                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="ENTRY">Entry</SelectItem>
+                                                            <SelectItem value="MID">Mid</SelectItem>
+                                                            <SelectItem value="SENIOR">Senior</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                )}
+                                            </form.Field>
                                         </div>
-                                    );
-                                }}
-                            </form.Field>
 
-                            <form.Field name="responsibilities" validators={{ onChange: createJobZodSchema.shape.responsibilities }}>
-                                {(field) => {
-                                    const error = getFieldError(field);
-                                    return (
                                         <div className="space-y-1.5">
-                                            <Label htmlFor={field.name}>Responsibilities & Context</Label>
-                                            <Textarea
-                                                id={field.name}
-                                                value={field.state.value}
-                                                placeholder="Use comma or new line separated items"
-                                                onBlur={field.handleBlur}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                            />
-                                            {error && <p className="text-sm text-destructive">{error}</p>}
-                                        </div>
-                                    );
-                                }}
-                            </form.Field>
-
-                            <form.Field name="additionalRequirements">
-                                {(field) => (
-                                    <div className="space-y-1.5">
-                                        <Label htmlFor={field.name}>Additional Requirements</Label>
-                                        <Textarea
-                                            id={field.name}
-                                            value={field.state.value}
-                                            placeholder="Use comma or new line separated items"
-                                            onBlur={field.handleBlur}
-                                            onChange={(e) => field.handleChange(e.target.value)}
-                                        />
-                                    </div>
-                                )}
-                            </form.Field>
-
-                            <form.Field name="skills" validators={{ onChange: createJobZodSchema.shape.skills }}>
-                                {(field) => <AppField field={field} label="Required Skills (comma separated)" placeholder="React, TypeScript, Node.js" />}
-                            </form.Field>
-                        </div>
-
-                        <div className="space-y-4 rounded-md border p-4">
-                            <h3 className="font-semibold">4. Candidate Criteria</h3>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <form.Field name="education" validators={{ onChange: createJobZodSchema.shape.education }}>
-                                    {(field) => <AppField field={field} label="Education Level" placeholder="e.g. Bachelor" />}
-                                </form.Field>
-
-                                <form.Field name="experienceYears" validators={{ onChange: createJobZodSchema.shape.experienceYears }}>
-                                    {(field) => <AppField field={field} label="Experience (Years)" type="number" placeholder="e.g. 2" />}
-                                </form.Field>
-
-                                <div className="space-y-1.5">
-                                    <Label>Experience Level</Label>
-                                    <form.Field name="experienceLevel">
-                                        {(field) => (
-                                            <Select value={field.state.value} onValueChange={(v) => field.handleChange(v)}>
-                                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="ENTRY">Entry</SelectItem>
-                                                    <SelectItem value="MID">Mid</SelectItem>
-                                                    <SelectItem value="SENIOR">Senior</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        )}
-                                    </form.Field>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <Label>Gender Preference</Label>
-                                    <form.Field name="genderPreference">
-                                        {(field) => (
-                                            <Select value={field.state.value} onValueChange={(v) => field.handleChange(v)}>
-                                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="ANY">Any</SelectItem>
-                                                    <SelectItem value="MALE">Male</SelectItem>
-                                                    <SelectItem value="FEMALE">Female</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        )}
-                                    </form.Field>
-                                </div>
-
-                                <form.Field name="ageMin">
-                                    {(field) => <AppField field={field} label="Age Min" type="number" placeholder="e.g. 21" />}
-                                </form.Field>
-
-                                <form.Field name="ageMax">
-                                    {(field) => <AppField field={field} label="Age Max" type="number" placeholder="e.g. 35" />}
-                                </form.Field>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 rounded-md border p-4">
-                            <h3 className="font-semibold">5. Salary & Benefits</h3>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <form.Field name="salaryMin">
-                                    {(field) => <AppField field={field} label="Minimum Salary (BDT)" type="number" placeholder="e.g. 30000" />}
-                                </form.Field>
-
-                                <form.Field name="salaryMax">
-                                    {(field) => <AppField field={field} label="Maximum Salary (BDT)" type="number" placeholder="e.g. 60000" />}
-                                </form.Field>
-
-                                <div className="space-y-1.5">
-                                    <Label>Salary Type</Label>
-                                    <form.Field name="salaryType">
-                                        {(field) => (
-                                            <Select value={field.state.value} onValueChange={(v) => field.handleChange(v)}>
-                                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="NEGOTIABLE">Negotiable</SelectItem>
-                                                    <SelectItem value="FIXED">Fixed</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        )}
-                                    </form.Field>
-                                </div>
-                            </div>
-
-                            <form.Field name="compensationBenefits">
-                                {(field) => (
-                                    <div className="space-y-1.5">
-                                        <Label htmlFor={field.name}>Compensation & Benefits</Label>
-                                        <Textarea
-                                            id={field.name}
-                                            value={field.state.value}
-                                            placeholder="Bonus, Lunch, Mobile bill, Insurance"
-                                            onBlur={field.handleBlur}
-                                            onChange={(e) => field.handleChange(e.target.value)}
-                                        />
-                                    </div>
-                                )}
-                            </form.Field>
-                        </div>
-
-                        <div className="space-y-4 rounded-md border p-4">
-                            <h3 className="font-semibold">6. Location & Work Type</h3>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <form.Field name="location" validators={{ onChange: createJobZodSchema.shape.location }}>
-                                    {(field) => <AppField field={field} label="Job Location" placeholder="e.g. Dhaka, Bangladesh" />}
-                                </form.Field>
-
-                                <div className="space-y-1.5">
-                                    <Label>Workplace Type</Label>
-                                    <form.Field name="locationType">
-                                        {(field) => (
-                                            <Select value={field.state.value} onValueChange={(v) => field.handleChange(v)}>
-                                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="ONSITE">On-site</SelectItem>
-                                                    <SelectItem value="REMOTE">Remote</SelectItem>
-                                                    <SelectItem value="HYBRID">Hybrid</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        )}
-                                    </form.Field>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <Label>Employment Type</Label>
-                                    <form.Field name="jobType">
-                                        {(field) => (
-                                            <Select value={field.state.value} onValueChange={(v) => field.handleChange(v)}>
-                                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="FULL_TIME">Full-time</SelectItem>
-                                                    <SelectItem value="PART_TIME">Part-time</SelectItem>
-                                                    <SelectItem value="CONTRACT">Contract</SelectItem>
-                                                    <SelectItem value="INTERNSHIP">Internship</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        )}
-                                    </form.Field>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 rounded-md border p-4">
-                            <h3 className="font-semibold">7. Application Information</h3>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <form.Field name="applicationDeadline" validators={{ onChange: createJobZodSchema.shape.applicationDeadline }}>
-                                    {(field) => <AppField field={field} label="Application Deadline" type="date" />}
-                                </form.Field>
-
-                                <div className="space-y-1.5">
-                                    <Label>Application Method</Label>
-                                    <form.Field name="applicationMethod">
-                                        {(field) => (
-                                            <Select value={field.state.value} onValueChange={(v) => field.handleChange(v)}>
-                                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="PLATFORM">Apply via Platform</SelectItem>
-                                                    <SelectItem value="EMAIL">Email</SelectItem>
-                                                    <SelectItem value="LINK">External Link</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        )}
-                                    </form.Field>
-                                </div>
-
-                                <form.Subscribe selector={(state) => state.values.applicationMethod}>
-                                    {(applicationMethod) =>
-                                        applicationMethod === "EMAIL" ? (
-                                            <form.Field name="applicationEmail">
-                                                {(field) => <AppField field={field} label="Application Email" type="email" placeholder="hr@company.com" />}
+                                            <Label>Gender Preference</Label>
+                                            <form.Field name="genderPreference">
+                                                {(field) => (
+                                                    <Select value={field.state.value} onValueChange={(v) => field.handleChange(v)}>
+                                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="ANY">Any</SelectItem>
+                                                            <SelectItem value="MALE">Male</SelectItem>
+                                                            <SelectItem value="FEMALE">Female</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                )}
                                             </form.Field>
-                                        ) : null
-                                    }
-                                </form.Subscribe>
+                                        </div>
 
-                                <form.Subscribe selector={(state) => state.values.applicationMethod}>
-                                    {(applicationMethod) =>
-                                        applicationMethod === "LINK" ? (
-                                            <form.Field name="applicationLink">
-                                                {(field) => <AppField field={field} label="Application Link" placeholder="https://..." />}
+                                        <form.Field name="ageMin">
+                                            {(field) => <AppField field={field} label="Age Min" type="number" placeholder="e.g. 21" serverError={getStepFieldError("ageMin")} />}
+                                        </form.Field>
+
+                                        <form.Field name="ageMax">
+                                            {(field) => <AppField field={field} label="Age Max" type="number" placeholder="e.g. 35" serverError={getStepFieldError("ageMax")} />}
+                                        </form.Field>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {currentStep === 3 && (
+                            <>
+                                <div className="space-y-4 rounded-md border p-4">
+                                    <h3 className="font-semibold">5. Salary & Benefits</h3>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <form.Field name="salaryMin">
+                                            {(field) => <AppField field={field} label="Minimum Salary (BDT)" type="number" placeholder="e.g. 30000" serverError={getStepFieldError("salaryMin")} />}
+                                        </form.Field>
+
+                                        <form.Field name="salaryMax">
+                                            {(field) => <AppField field={field} label="Maximum Salary (BDT)" type="number" placeholder="e.g. 60000" serverError={getStepFieldError("salaryMax")} />}
+                                        </form.Field>
+
+                                        <div className="space-y-1.5">
+                                            <Label>Salary Type</Label>
+                                            <form.Field name="salaryType">
+                                                {(field) => (
+                                                    <Select value={field.state.value} onValueChange={(v) => field.handleChange(v)}>
+                                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="NEGOTIABLE">Negotiable</SelectItem>
+                                                            <SelectItem value="FIXED">Fixed</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                )}
                                             </form.Field>
-                                        ) : null
-                                    }
-                                </form.Subscribe>
-
-                                <form.Field name="contactPhone">
-                                    {(field) => <AppField field={field} label="Contact Phone Number" type="tel" placeholder="+8801XXXXXXXXX" />}
-                                </form.Field>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 rounded-md border p-4">
-                            <h3 className="font-semibold">8. Advanced / Optional Features</h3>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <form.Field name="featuredJob">
-                                    {(field) => (
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox
-                                                id={field.name}
-                                                checked={field.state.value}
-                                                onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
-                                            />
-                                            <Label htmlFor={field.name}>Featured Job</Label>
                                         </div>
-                                    )}
-                                </form.Field>
+                                    </div>
 
-                                <form.Field name="urgentHiring">
-                                    {(field) => (
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox
-                                                id={field.name}
-                                                checked={field.state.value}
-                                                onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
-                                            />
-                                            <Label htmlFor={field.name}>Urgent Hiring Badge</Label>
+                                    <form.Field name="compensationBenefits">
+                                        {(field) => (
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor={field.name}>Compensation & Benefits</Label>
+                                                <Textarea
+                                                    id={field.name}
+                                                    value={field.state.value}
+                                                    placeholder="Bonus, Lunch, Mobile bill, Insurance"
+                                                    onBlur={field.handleBlur}
+                                                    onChange={(e) => field.handleChange(e.target.value)}
+                                                />
+                                            </div>
+                                        )}
+                                    </form.Field>
+                                </div>
+
+                                <div className="space-y-4 rounded-md border p-4">
+                                    <h3 className="font-semibold">6. Location & Work Type</h3>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <form.Field name="location" validators={{ onChange: createJobZodSchema.shape.location }}>
+                                            {(field) => <AppField field={field} label="Job Location" placeholder="e.g. Dhaka, Bangladesh" serverError={getStepFieldError("location")} />}
+                                        </form.Field>
+
+                                        <div className="space-y-1.5">
+                                            <Label>Workplace Type</Label>
+                                            <form.Field name="locationType">
+                                                {(field) => (
+                                                    <Select value={field.state.value} onValueChange={(v) => field.handleChange(v)}>
+                                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="ONSITE">On-site</SelectItem>
+                                                            <SelectItem value="REMOTE">Remote</SelectItem>
+                                                            <SelectItem value="HYBRID">Hybrid</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                )}
+                                            </form.Field>
                                         </div>
-                                    )}
-                                </form.Field>
 
-                                <form.Field name="allowVideoCv">
-                                    {(field) => (
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox
-                                                id={field.name}
-                                                checked={field.state.value}
-                                                onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
-                                            />
-                                            <Label htmlFor={field.name}>Allow Video CV</Label>
+                                        <div className="space-y-1.5">
+                                            <Label>Employment Type</Label>
+                                            <form.Field name="jobType">
+                                                {(field) => (
+                                                    <Select value={field.state.value} onValueChange={(v) => field.handleChange(v)}>
+                                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="FULL_TIME">Full-time</SelectItem>
+                                                            <SelectItem value="PART_TIME">Part-time</SelectItem>
+                                                            <SelectItem value="CONTRACT">Contract</SelectItem>
+                                                            <SelectItem value="INTERNSHIP">Internship</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                )}
+                                            </form.Field>
                                         </div>
-                                    )}
-                                </form.Field>
-                            </div>
+                                    </div>
+                                </div>
+                            </>
+                        )}
 
-                            <form.Field name="tags">
-                                {(field) => <AppField field={field} label="Tags / Keywords" placeholder="frontend, react, urgent" />}
-                            </form.Field>
-                        </div>
+                        {currentStep === 4 && (
+                            <>
+                                <div className="space-y-4 rounded-md border p-4">
+                                    <h3 className="font-semibold">7. Application Information</h3>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <form.Field name="applicationDeadline" validators={{ onChange: createJobZodSchema.shape.applicationDeadline }}>
+                                            {(field) => <AppField field={field} label="Application Deadline" type="date" serverError={getStepFieldError("applicationDeadline")} />}
+                                        </form.Field>
+
+                                        <div className="space-y-1.5">
+                                            <Label>Application Method</Label>
+                                            <form.Field name="applicationMethod">
+                                                {(field) => (
+                                                    <Select value={field.state.value} onValueChange={(v) => field.handleChange(v)}>
+                                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="PLATFORM">Apply via Platform</SelectItem>
+                                                            <SelectItem value="EMAIL">Email</SelectItem>
+                                                            <SelectItem value="LINK">External Link</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                )}
+                                            </form.Field>
+                                        </div>
+
+                                        <form.Subscribe selector={(state) => state.values.applicationMethod}>
+                                            {(applicationMethod) =>
+                                                applicationMethod === "EMAIL" ? (
+                                                    <form.Field name="applicationEmail">
+                                                        {(field) => <AppField field={field} label="Application Email" type="email" placeholder="hr@company.com" serverError={getStepFieldError("applicationEmail")} />}
+                                                    </form.Field>
+                                                ) : null
+                                            }
+                                        </form.Subscribe>
+
+                                        <form.Subscribe selector={(state) => state.values.applicationMethod}>
+                                            {(applicationMethod) =>
+                                                applicationMethod === "LINK" ? (
+                                                    <form.Field name="applicationLink">
+                                                        {(field) => <AppField field={field} label="Application Link" placeholder="https://..." serverError={getStepFieldError("applicationLink")} />}
+                                                    </form.Field>
+                                                ) : null
+                                            }
+                                        </form.Subscribe>
+
+                                        <form.Field name="contactPhone">
+                                            {(field) => <AppField field={field} label="Contact Phone Number" type="tel" placeholder="+8801XXXXXXXXX" serverError={getStepFieldError("contactPhone")} />}
+                                        </form.Field>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 rounded-md border p-4">
+                                    <h3 className="font-semibold">8. Advanced / Optional Features</h3>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <form.Field name="featuredJob">
+                                            {(field) => (
+                                                <div className="flex items-center gap-2">
+                                                    <Checkbox
+                                                        id={field.name}
+                                                        checked={field.state.value}
+                                                        onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
+                                                    />
+                                                    <Label htmlFor={field.name}>Featured Job</Label>
+                                                </div>
+                                            )}
+                                        </form.Field>
+
+                                        <form.Field name="urgentHiring">
+                                            {(field) => (
+                                                <div className="flex items-center gap-2">
+                                                    <Checkbox
+                                                        id={field.name}
+                                                        checked={field.state.value}
+                                                        onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
+                                                    />
+                                                    <Label htmlFor={field.name}>Urgent Hiring Badge</Label>
+                                                </div>
+                                            )}
+                                        </form.Field>
+
+                                        <form.Field name="allowVideoCv">
+                                            {(field) => (
+                                                <div className="flex items-center gap-2">
+                                                    <Checkbox
+                                                        id={field.name}
+                                                        checked={field.state.value}
+                                                        onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
+                                                    />
+                                                    <Label htmlFor={field.name}>Allow Video CV</Label>
+                                                </div>
+                                            )}
+                                        </form.Field>
+                                    </div>
+
+                                    <form.Field name="tags">
+                                        {(field) => <AppField field={field} label="Tags / Keywords" placeholder="frontend, react, urgent" />}
+                                    </form.Field>
+                                </div>
+                            </>
+                        )}
 
                         {serverError && (
                             <Alert variant="destructive">
@@ -620,9 +710,21 @@ const PostJobContent = () => {
                             </Alert>
                         )}
 
-                        <AppSubmitButton isPending={isPending} pendingLabel="Posting Job..." disabled={!canPost || isGuardLoading}>
-                            Post Job
-                        </AppSubmitButton>
+                        <div className="flex items-center justify-between gap-3">
+                            <Button type="button" variant="outline" onClick={handlePreviousStep} disabled={currentStep === 1}>
+                                Previous
+                            </Button>
+
+                            {currentStep < TOTAL_STEPS ? (
+                                <Button type="button" onClick={handleNextStep}>
+                                    Next Step
+                                </Button>
+                            ) : (
+                                <AppSubmitButton isPending={isPending} pendingLabel="Posting Job..." disabled={!canPost || isGuardLoading}>
+                                    Post Job
+                                </AppSubmitButton>
+                            )}
+                        </div>
                     </form>
                 </CardContent>
             </Card>
