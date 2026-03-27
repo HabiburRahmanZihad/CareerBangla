@@ -345,15 +345,17 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                 </Card>
             )}
 
-            {/* ── Profile Completion ── */}
-            {resumeLoading ? (
-                <Skeleton className="h-16 w-full" />
-            ) : (
-                <Card>
-                    <CardContent className="pt-6">
-                        <ProfileCompletionBar completion={profileCompletion} />
-                    </CardContent>
-                </Card>
+            {/* ── Profile Completion (Only for regular users) ── */}
+            {userInfo.role !== "ADMIN" && userInfo.role !== "SUPER_ADMIN" && (
+                resumeLoading ? (
+                    <Skeleton className="h-16 w-full" />
+                ) : (
+                    <Card>
+                        <CardContent className="pt-6">
+                            <ProfileCompletionBar completion={profileCompletion} />
+                        </CardContent>
+                    </Card>
+                )
             )}
 
             {/* ── Account Details ── */}
