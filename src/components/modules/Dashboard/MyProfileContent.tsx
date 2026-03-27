@@ -30,7 +30,7 @@ import {
     Github,
     Globe,
     GraduationCap,
-    Image3,
+    Image as ImageIcon,
     Languages,
     Linkedin,
     Loader2,
@@ -508,7 +508,7 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                             <Card>
                                 <CardHeader className="pb-3">
                                     <CardTitle className="flex items-center gap-2 text-base">
-                                        <Image3 className="w-4 h-4 text-primary" />
+                                        <ImageIcon className="w-4 h-4 text-primary" />
                                         Company Logo
                                     </CardTitle>
                                 </CardHeader>
@@ -516,7 +516,7 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                                     <div className="relative w-32 h-32 border rounded-lg overflow-hidden bg-muted">
                                         <Image
                                             src={recruiter.companyLogo}
-                                            alt={recruiter.companyName}
+                                            alt={recruiter.companyName || "Company Logo"}
                                             fill
                                             className="object-contain p-2"
                                         />
