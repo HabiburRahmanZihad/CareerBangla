@@ -244,9 +244,16 @@ export interface IJob {
     jobType: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERNSHIP" | "REMOTE";
     experienceLevel: "ENTRY" | "MID" | "SENIOR" | "LEAD" | "EXECUTIVE";
     skills: string[];
+    requirements?: string[];
+    responsibilities?: string[];
+    benefits?: string[];
     salaryMin?: number;
     salaryMax?: number;
+    vacancies?: number;
+    experience?: string;
+    education?: string;
     applicationDeadline?: string;
+    deadline?: string;
     status: "PENDING" | "LIVE" | "CLOSED" | "INACTIVE";
     isDeleted: boolean;
     category?: IJobCategory;
@@ -259,7 +266,9 @@ export interface IJob {
 
 export interface IJobCategory {
     id: string;
-    name: string;
+    name?: string;
+    title?: string;
+    icon?: string;
     createdAt?: string;
 }
 

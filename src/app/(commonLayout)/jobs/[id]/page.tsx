@@ -1,4 +1,5 @@
 import JobDetailsContent from "@/components/modules/Jobs/JobDetailsContent";
+import { getUserInfo } from "@/services/auth.services";
 import { getJobById } from "@/services/job.services";
 import { notFound } from "next/navigation";
 
@@ -10,15 +11,21 @@ const JobDetailsPage = async ({ params }: JobDetailsPageProps) => {
     const { id } = await params;
 
     try {
-        const response = await getJobById(id);
+        const [jobResponse, userInfo] = await Promise.all([
+            getJobById(id),
+            getUserInfo().catch(() => null),
+        ]);
 
-        if (!response.data) {
+        if (!jobResponse.data) {
             notFound();
         }
 
         return (
             <div className="container mx-auto px-4 py-8">
-                <JobDetailsContent job={response.data} />
+                <JobDetailsContent
+                    job={jobResponse.data}
+                    userRole={userInfo?.role}
+                />
             </div>
         );
     } catch {
