@@ -12,12 +12,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import envConfig from "@/lib/envConfig";
 import { deleteMyAccount, updateMyProfile } from "@/services/auth.services";
 import { getMyResume } from "@/services/resume.services";
+import { getMyRecruiterProfile } from "@/services/recruiter.services";
 import { UserInfo } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
     Award,
     Briefcase,
+    Building,
     Calendar,
     Camera,
     CheckCircle2,
@@ -28,6 +30,7 @@ import {
     Github,
     Globe,
     GraduationCap,
+    Image3,
     Languages,
     Linkedin,
     Loader2,
@@ -140,10 +143,20 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
     const { data: resumeData, isLoading: resumeLoading } = useQuery({
         queryKey: ["my-resume"],
         queryFn: () => getMyResume(),
+        enabled: userInfo.role !== "RECRUITER",
+    });
+
+    const { data: recruiterData, isLoading: recruiterLoading } = useQuery({
+        queryKey: ["my-recruiter-profile"],
+        queryFn: () => getMyRecruiterProfile(),
+        enabled: userInfo.role === "RECRUITER",
     });
 
     const resume = resumeData?.data;
     const profileCompletion = resume?.profileCompletion ?? 0;
+
+    const recruiter = recruiterData?.data;
+    const isRecruiter = userInfo.role === "RECRUITER";
 
     // Premium status logic
     const isPremium = userInfo.isPremium;
@@ -213,9 +226,9 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                         {/* Photo with upload */}
                         <div className="relative group shrink-0">
                             <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-border bg-muted">
-                                {resume?.profilePhoto || userInfo.image ? (
+                                {(isRecruiter ? recruiter?.profilePhoto : resume?.profilePhoto) || userInfo.image ? (
                                     <Image
-                                        src={resume?.profilePhoto || userInfo.image || ""}
+                                        src={(isRecruiter ? recruiter?.profilePhoto : resume?.profilePhoto) || userInfo.image || ""}
                                         alt={userInfo.name}
                                         fill
                                         className="object-cover"
@@ -269,24 +282,44 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                                         <Sparkles className="w-3 h-3" /> Career Boost
                                     </Badge>
                                 )}
+                                {recruiter?.status && recruiter.status !== "APPROVED" && (
+                                    <Badge variant="outline" className={`text-xs ${
+                                        recruiter.status === "PENDING"
+                                            ? "text-yellow-600 border-yellow-300"
+                                            : "text-red-600 border-red-300"
+                                    }`}>
+                                        {recruiter.status}
+                                    </Badge>
+                                )}
                             </div>
-                            {resume?.professionalTitle && (
+                            {isRecruiter && recruiter?.companyName ? (
+                                <>
+                                    <p className="text-sm font-medium text-muted-foreground">{recruiter.companyName}</p>
+                                    {recruiter.designation && (
+                                        <p className="text-sm text-muted-foreground">{recruiter.designation}</p>
+                                    )}
+                                </>
+                            ) : !isRecruiter && resume?.professionalTitle ? (
                                 <p className="text-sm text-muted-foreground">{resume.professionalTitle}</p>
-                            )}
+                            ) : null}
                             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                     <Mail className="h-3.5 w-3.5" /> {userInfo.email}
                                 </span>
-                                {(resume?.contactNumber || userInfo.phone) && (
+                                {(isRecruiter ? recruiter?.contactNumber : (resume?.contactNumber || userInfo.phone)) && (
                                     <span className="flex items-center gap-1">
-                                        <Phone className="h-3.5 w-3.5" /> {resume?.contactNumber || userInfo.phone}
+                                        <Phone className="h-3.5 w-3.5" /> {isRecruiter ? recruiter?.contactNumber : (resume?.contactNumber || userInfo.phone)}
                                     </span>
                                 )}
-                                {resume?.address && (
+                                {isRecruiter && recruiter?.companyAddress ? (
+                                    <span className="flex items-center gap-1">
+                                        <MapPin className="h-3.5 w-3.5" /> {recruiter.companyAddress}
+                                    </span>
+                                ) : !isRecruiter && resume?.address ? (
                                     <span className="flex items-center gap-1">
                                         <MapPin className="h-3.5 w-3.5" /> {resume.address}
                                     </span>
-                                )}
+                                ) : null}
                             </div>
                         </div>
                     </div>
@@ -436,14 +469,81 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
             </Section>
 
             {/* ── Resume Details (loaded from resume data) ── */}
-            {resumeLoading ? (
-                <Skeleton className="h-40 w-full" />
-            ) : resume ? (
-                <>
-                    {/* Personal Info */}
-                    {(resume.fullName || resume.professionalTitle || resume.email || resume.contactNumber || resume.address || resume.nationality || resume.dateOfBirth || resume.gender) && (
-                        <Section icon={User} title="Personal Information">
+            {isRecruiter ? (
+                // ── RECRUITER PROFILE SECTIONS ──
+                recruiterLoading ? (
+                    <Skeleton className="h-40 w-full" />
+                ) : recruiter ? (
+                    <>
+                        {/* Company Information */}
+                        <Section icon={Briefcase} title="Company Information">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <InfoRow icon={Building} label="Company Name" value={recruiter.companyName} />
+                                <InfoRow icon={Globe} label="Company Website" value={recruiter.companyWebsite} href={recruiter.companyWebsite} />
+                                <InfoRow icon={MapPin} label="Company Address" value={recruiter.companyAddress} />
+                                <InfoRow icon={Users} label="Company Size" value={recruiter.companySize} />
+                                <InfoRow icon={Briefcase} label="Industry" value={recruiter.industry} />
+                            </div>
+                        </Section>
+
+                        {/* Recruiter Details */}
+                        <Section icon={Shield} title="Recruiter Details">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <InfoRow icon={User} label="Full Name" value={recruiter.name} />
+                                <InfoRow icon={Briefcase} label="Designation" value={recruiter.designation} />
+                                <InfoRow icon={Mail} label="Email" value={recruiter.email} />
+                                <InfoRow icon={Phone} label="Contact Number" value={recruiter.contactNumber} />
+                            </div>
+                        </Section>
+
+                        {/* Company Description */}
+                        {recruiter.description && (
+                            <Section icon={FileText} title="About Company">
+                                <p className="text-sm text-muted-foreground leading-relaxed">{recruiter.description}</p>
+                            </Section>
+                        )}
+
+                        {/* Company Logo Preview */}
+                        {recruiter.companyLogo && (
+                            <Card>
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="flex items-center gap-2 text-base">
+                                        <Image3 className="w-4 h-4 text-primary" />
+                                        Company Logo
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    <div className="relative w-32 h-32 border rounded-lg overflow-hidden bg-muted">
+                                        <Image
+                                            src={recruiter.companyLogo}
+                                            alt={recruiter.companyName}
+                                            fill
+                                            className="object-contain p-2"
+                                        />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </>
+                ) : (
+                    <Card>
+                        <CardContent className="py-12 text-center">
+                            <Briefcase className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                            <p className="text-muted-foreground">No recruiter profile data available.</p>
+                        </CardContent>
+                    </Card>
+                )
+            ) : (
+                <>
+                    {/* ── JOB SEEKER RESUME SECTIONS ── */}
+                    {resumeLoading ? (
+                        <Skeleton className="h-40 w-full" />
+                    ) : resume ? (
+                        <>
+                            {/* Personal Info */}
+                            {(resume.fullName || resume.professionalTitle || resume.email || resume.contactNumber || resume.address || resume.nationality || resume.dateOfBirth || resume.gender) && (
+                                <Section icon={User} title="Personal Information">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <InfoRow icon={User} label="Full Name" value={resume.fullName} />
                                 <InfoRow icon={FileText} label="Professional Title" value={resume.professionalTitle} />
                                 <InfoRow icon={Mail} label="Resume Email" value={resume.email} />
@@ -706,6 +806,8 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                         </Link>
                     </CardContent>
                 </Card>
+            )}
+            </>
             )}
 
             {/* ── Quick Actions (Only for regular users) ── */}
