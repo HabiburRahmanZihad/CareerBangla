@@ -6,9 +6,9 @@ const RecruiterInactiveJobsPage = async () => {
 
     return (
         <RecruiterInactiveJobsContent
-            title="Inactive Jobs"
-            description="Jobs with passed deadlines are shown here. You can permanently delete them if needed."
-            emptyMessage="No inactive jobs found."
+            title="Inactive & Closed Jobs"
+            description="Jobs with passed deadlines (Inactive) or rejected by admin (Closed) are shown here. You can permanently delete them if needed."
+            emptyMessage="No inactive or closed jobs found."
         />
     );
 };

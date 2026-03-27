@@ -25,6 +25,7 @@ type RecruiterInactiveJobsContentProps = {
 
 const statusColors: Record<string, string> = {
     INACTIVE: "bg-red-100 text-red-800",
+    CLOSED: "bg-gray-100 text-gray-800",
 };
 
 const RecruiterInactiveJobsContent = ({ title, description, emptyMessage }: RecruiterInactiveJobsContentProps) => {
