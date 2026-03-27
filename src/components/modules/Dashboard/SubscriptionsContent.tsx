@@ -11,7 +11,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import envConfig from "@/lib/envConfig";
 import {
     getMySubscriptions,
+    getSubscriptionPlans,
     IMySubscription,
+    ISubscriptionPlanResponse,
     purchaseSubscription,
     validateCoupon,
 } from "@/services/subscription.services";
@@ -62,7 +64,7 @@ const PaymentResultBanner = ({ showPaymentResult, setShowPaymentResult }: { show
                 <div className="flex-1">
                     <h3 className="text-lg font-bold text-green-700 dark:text-green-300">Payment Successful!</h3>
                     <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                        Your Career Boost subscription has been activated. An invoice has been sent to your email.
+                        Your premium plan has been activated. An invoice has been sent to your email.
                     </p>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => setShowPaymentResult(null)}>
@@ -105,11 +107,12 @@ const PaymentResultBanner = ({ showPaymentResult, setShowPaymentResult }: { show
     );
 };
 
-const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
+const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps) => {
     const searchParams = useSearchParams();
     const paymentStatus = searchParams.get("payment");
 
     const [step, setStep] = useState<Step>(paymentStatus ? "history" : "overview");
+    const [selectedPlanKey, setSelectedPlanKey] = useState("BOOST_LIFETIME");
     const [couponCode, setCouponCode] = useState("");
     const [referralCode, setReferralCode] = useState("");
     const [gateway, setGateway] = useState<"STRIPE" | "SSLCOMMERZ">("SSLCOMMERZ");
@@ -129,10 +132,15 @@ const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
         enabled: step === "history",
     });
 
+    const { data: plansData } = useQuery({
+        queryKey: ["subscription-plans"],
+        queryFn: () => getSubscriptionPlans(),
+    });
+
     const { mutateAsync: purchase, isPending: purchasePending } = useMutation({
         mutationFn: () =>
             purchaseSubscription({
-                planKey: "BOOST_LIFETIME",
+                planKey: selectedPlanKey,
                 couponCode: appliedCoupon?.code || undefined,
                 referralCode: referralCode || undefined,
                 gateway,
@@ -165,26 +173,60 @@ const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
         },
     });
 
+    const isRecruiter = (userInfo?.role || userRole) === "RECRUITER";
+    const rawPlans: ISubscriptionPlanResponse[] =
+        ((plansData as any)?.data?.plans as ISubscriptionPlanResponse[])
+        || ((plansData as any)?.plans as ISubscriptionPlanResponse[])
+        || [];
+
+    const availablePlans = rawPlans.filter((plan) => {
+        if (isRecruiter) {
+            return plan.planKey.startsWith("RECRUITER_");
+        }
+        return !plan.planKey.startsWith("RECRUITER_");
+    });
+
+    const fallbackPlan: ISubscriptionPlanResponse = {
+        name: "Career Boost (Lifetime)",
+        planKey: "BOOST_LIFETIME",
+        amount: CAREER_BOOST_PRICE,
+        description: "Lifetime access to all Career Boost features. One-time payment, no recurring charges.",
+        features: CAREER_BOOST_FEATURES,
+        lifetime: true,
+    };
+
+    const resolvedPlans = availablePlans.length > 0 ? availablePlans : [fallbackPlan];
+    const selectedPlan = resolvedPlans.find((plan) => plan.planKey === selectedPlanKey) || resolvedPlans[0] || fallbackPlan;
+
+    useEffect(() => {
+        if (!resolvedPlans.some((plan) => plan.planKey === selectedPlanKey)) {
+            setSelectedPlanKey(resolvedPlans[0]?.planKey || "BOOST_LIFETIME");
+        }
+    }, [resolvedPlans, selectedPlanKey]);
+
     const isPremium = userInfo?.isPremium;
     const premiumUntil = userInfo?.premiumUntil;
     const isLifetime = isPremium && !premiumUntil;
     const hasActivePremium = Boolean(isPremium) && (!premiumUntil || isFuture(new Date(premiumUntil)));
+    const disableOverviewPurchaseButton = !isRecruiter && hasActivePremium;
 
     const getDiscountAmount = useCallback(() => {
+        const selectedPlanAmount = selectedPlan?.amount ?? CAREER_BOOST_PRICE;
         if (!appliedCoupon) return 0;
         if (appliedCoupon.discountPercent) {
-            return Math.round(CAREER_BOOST_PRICE * (appliedCoupon.discountPercent / 100));
+            return Math.round(selectedPlanAmount * (appliedCoupon.discountPercent / 100));
         }
         if (appliedCoupon.discountAmount) {
-            return Math.min(appliedCoupon.discountAmount, CAREER_BOOST_PRICE);
+            return Math.min(appliedCoupon.discountAmount, selectedPlanAmount);
         }
         return 0;
-    }, [appliedCoupon]);
+    }, [appliedCoupon, selectedPlan?.amount]);
 
     const getFinalAmount = useCallback(() => {
+        const selectedPlanAmount = selectedPlan?.amount ?? CAREER_BOOST_PRICE;
         const discount = getDiscountAmount();
-        return Math.max(CAREER_BOOST_PRICE - discount, 1);
-    }, [getDiscountAmount]);
+        return Math.max(selectedPlanAmount - discount, 1);
+    }, [getDiscountAmount, selectedPlan?.amount]);
 
     const handleApplyCoupon = () => {
         if (!couponCode.trim()) return;
@@ -198,14 +240,34 @@ const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
 
     const subscriptions: IMySubscription[] = (historyData?.data as any) || [];
 
+    const getHistoryPlanLabel = useCallback((sub: IMySubscription) => {
+        const gatewayData = sub.paymentGatewayData as Record<string, unknown> | null;
+        const planKey = typeof gatewayData?.planKey === "string" ? gatewayData.planKey : null;
+        const planFromKey = resolvedPlans.find((plan) => plan.planKey === planKey);
+        if (planFromKey) return planFromKey.name;
+
+        const fallbackMap: Record<string, string> = {
+            PREMIUM: "Career Boost (Lifetime)",
+            RECRUITER_MONTHLY: "Recruiter Premium (Monthly)",
+            RECRUITER_6_MONTHS: "Recruiter Premium (3 Months)",
+            RECRUITER_YEARLY: "Recruiter Premium (Yearly)",
+        };
+
+        return fallbackMap[sub.plan] || "Premium Subscription";
+    }, [resolvedPlans]);
+
     // ── Step 1: Overview - Career Boost Plan ──
     if (step === "overview") {
         return (
             <div className="space-y-8">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Career Boost</h1>
-                        <p className="text-muted-foreground mt-2">Supercharge your career with lifetime access to all premium features.</p>
+                        <h1 className="text-3xl font-bold tracking-tight">{isRecruiter ? "Recruiter Premium Plans" : "Career Boost"}</h1>
+                        <p className="text-muted-foreground mt-2">
+                            {isRecruiter
+                                ? "Choose a recruiter premium plan that matches your hiring pace."
+                                : "Supercharge your career with lifetime access to all premium features."}
+                        </p>
                     </div>
                     <Button variant="outline" onClick={() => { setStep("history"); refetchHistory(); }}>
                         <CreditCard className="w-4 h-4 mr-2" /> My Purchases
@@ -214,7 +276,7 @@ const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
 
                 <PaymentResultBanner showPaymentResult={showPaymentResult} setShowPaymentResult={setShowPaymentResult} />
 
-                {isLifetime && (
+                {!isRecruiter && isLifetime && (
                     <div className="bg-primary/10 border border-primary/20 rounded-xl p-6 shadow-sm">
                         <h3 className="text-lg font-bold text-primary flex items-center gap-2">
                             <Rocket className="w-5 h-5" /> You have Lifetime Career Boost
@@ -225,7 +287,7 @@ const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
                     </div>
                 )}
 
-                {isPremium && premiumUntil && (
+                {!isRecruiter && isPremium && premiumUntil && (
                     <div className="bg-primary/10 border border-primary/20 rounded-xl p-6 shadow-sm">
                         <h3 className="text-lg font-bold text-primary flex items-center gap-2">
                             <Rocket className="w-5 h-5" /> Career Boost Active
@@ -237,51 +299,106 @@ const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
                     </div>
                 )}
 
-                {/* Career Boost Card */}
-                <div className="max-w-lg mx-auto">
-                    <Card className="relative border-primary shadow-lg">
-                        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 text-sm">
-                            <Sparkles className="w-3.5 h-3.5 mr-1" /> Lifetime Access
-                        </Badge>
-                        <CardHeader className="text-center pt-8 pb-2">
-                            <CardTitle className="text-3xl flex items-center justify-center gap-2">
-                                <Rocket className="w-7 h-7 text-primary" /> Career Boost
-                            </CardTitle>
-                            <p className="text-sm text-muted-foreground">One-time payment, forever access</p>
-                        </CardHeader>
-                        <CardContent className="text-center pb-6">
-                            <div className="my-6">
-                                <span className="text-5xl font-extrabold">&#2547;{CAREER_BOOST_PRICE}</span>
-                                <span className="text-muted-foreground ml-2">one-time</span>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-6">
-                                Lifetime access to all Career Boost features. No recurring charges, no expiration.
-                            </p>
-                            <ul className="space-y-3 text-sm text-left max-w-xs mx-auto">
-                                {CAREER_BOOST_FEATURES.map((feature, i) => (
-                                    <li key={i} className="flex items-center gap-2">
-                                        <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
-                                        <span>{feature}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </CardContent>
-                        <CardFooter>
-                            <Button
-                                className="w-full h-12 text-md"
-                                size="lg"
-                                onClick={() => setStep("checkout")}
-                                disabled={hasActivePremium}
-                            >
-                                {hasActivePremium ? (
-                                    "Already Premium"
-                                ) : (
-                                    <><Rocket className="w-4 h-4 mr-2" /> Upgrade to Career Boost</>
-                                )}
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                </div>
+                {isRecruiter && hasActivePremium && (
+                    <div className="bg-primary/10 border border-primary/20 rounded-xl p-6 shadow-sm">
+                        <h3 className="text-lg font-bold text-primary flex items-center gap-2">
+                            <Rocket className="w-5 h-5" /> Recruiter Premium Active
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            You have already purchased a premium plan. If you want, you can buy additional months in advance, which will extend your subscription duration and let you stay worry-free.
+                        </p>
+                    </div>
+                )}
+
+                {isRecruiter ? (
+                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                        {resolvedPlans.map((plan) => {
+                            const isSelected = selectedPlan.planKey === plan.planKey;
+
+                            return (
+                                <Card key={plan.planKey} className={`relative ${isSelected ? "border-primary shadow-lg" : ""}`}>
+                                    {isSelected && (
+                                        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 text-sm">
+                                            <Sparkles className="w-3.5 h-3.5 mr-1" /> Selected
+                                        </Badge>
+                                    )}
+                                    <CardHeader className="text-center pt-8 pb-2">
+                                        <CardTitle className="text-xl">{plan.name.replace("6 Months", "3 Months")}</CardTitle>
+                                        <p className="text-sm text-muted-foreground">{plan.description.replace("6 months", "3 months")}</p>
+                                    </CardHeader>
+                                    <CardContent className="text-center pb-6">
+                                        <div className="my-4">
+                                            <span className="text-4xl font-extrabold">&#2547;{plan.amount}</span>
+                                        </div>
+                                        <ul className="space-y-2 text-sm text-left max-w-xs mx-auto">
+                                            {plan.features.map((feature, i) => (
+                                                <li key={i} className="flex items-center gap-2">
+                                                    <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                                                    <span>{feature}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </CardContent>
+                                    <CardFooter>
+                                        <Button
+                                            className="w-full h-11"
+                                            variant={isSelected ? "default" : "outline"}
+                                            onClick={() => {
+                                                setSelectedPlanKey(plan.planKey);
+                                                setStep("checkout");
+                                            }}
+                                        >
+                                            Choose Plan
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="max-w-lg mx-auto">
+                        <Card className="relative border-primary shadow-lg">
+                            <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 text-sm">
+                                <Sparkles className="w-3.5 h-3.5 mr-1" /> Lifetime Access
+                            </Badge>
+                            <CardHeader className="text-center pt-8 pb-2">
+                                <CardTitle className="text-3xl flex items-center justify-center gap-2">
+                                    <Rocket className="w-7 h-7 text-primary" /> Career Boost
+                                </CardTitle>
+                                <p className="text-sm text-muted-foreground">One-time payment, forever access</p>
+                            </CardHeader>
+                            <CardContent className="text-center pb-6">
+                                <div className="my-6">
+                                    <span className="text-5xl font-extrabold">&#2547;{selectedPlan.amount}</span>
+                                    <span className="text-muted-foreground ml-2">one-time</span>
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-6">{selectedPlan.description}</p>
+                                <ul className="space-y-3 text-sm text-left max-w-xs mx-auto">
+                                    {selectedPlan.features.map((feature, i) => (
+                                        <li key={i} className="flex items-center gap-2">
+                                            <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                                            <span>{feature}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </CardContent>
+                            <CardFooter>
+                                <Button
+                                    className="w-full h-12 text-md"
+                                    size="lg"
+                                    onClick={() => setStep("checkout")}
+                                    disabled={disableOverviewPurchaseButton}
+                                >
+                                    {disableOverviewPurchaseButton ? (
+                                        "Already Premium"
+                                    ) : (
+                                        <><Rocket className="w-4 h-4 mr-2" /> Upgrade to Career Boost</>
+                                    )}
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </div>
+                )}
             </div>
         );
     }
@@ -298,7 +415,7 @@ const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
                         <ArrowLeft className="w-4 h-4 mr-2" /> Back
                     </Button>
                     <h1 className="text-3xl font-bold tracking-tight">Complete Your Purchase</h1>
-                    <p className="text-muted-foreground mt-1">Review and proceed to payment for lifetime Career Boost access.</p>
+                    <p className="text-muted-foreground mt-1">Review your selected plan and proceed to payment.</p>
                 </div>
 
                 {/* Plan Summary */}
@@ -307,15 +424,15 @@ const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
                         <CardTitle className="flex items-center justify-between">
                             <span className="flex items-center gap-2">
                                 <Rocket className="w-5 h-5 text-primary" />
-                                Career Boost
+                                {selectedPlan.name.replace("6 Months", "3 Months")}
                             </span>
-                            <Badge>Lifetime</Badge>
+                            <Badge>{selectedPlan.lifetime ? "Lifetime" : "Duration"}</Badge>
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        <p className="text-sm text-muted-foreground">Lifetime access to all Career Boost features. One-time payment, no recurring charges.</p>
+                        <p className="text-sm text-muted-foreground">{selectedPlan.description.replace("6 months", "3 months")}</p>
                         <ul className="grid grid-cols-2 gap-2 text-sm">
-                            {CAREER_BOOST_FEATURES.map((f, i) => (
+                            {selectedPlan.features.map((f, i) => (
                                 <li key={i} className="flex items-center gap-1.5">
                                     <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
                                     {f}
@@ -398,8 +515,8 @@ const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
                 <Card className="bg-muted/30">
                     <CardContent className="pt-6 space-y-3">
                         <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Career Boost (Lifetime)</span>
-                            <span>&#2547;{CAREER_BOOST_PRICE}</span>
+                            <span className="text-muted-foreground">{selectedPlan.name.replace("6 Months", "3 Months")}</span>
+                            <span>&#2547;{selectedPlan.amount}</span>
                         </div>
                         {discount > 0 && (
                             <div className="flex justify-between text-sm text-green-600">
@@ -417,9 +534,9 @@ const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
                             className="w-full h-12 text-md"
                             size="lg"
                             onClick={() => purchase()}
-                            disabled={purchasePending || isLifetime}
+                            disabled={purchasePending || (!isRecruiter && isLifetime)}
                         >
-                            {isLifetime ? (
+                            {!isRecruiter && isLifetime ? (
                                 "You already have Lifetime Career Boost"
                             ) : purchasePending ? (
                                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
@@ -474,7 +591,7 @@ const SubscriptionsContent = ({ userInfo }: SubscriptionsContentProps) => {
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                             <div className="flex-1 space-y-1">
                                                 <div className="flex items-center gap-2">
-                                                    <h3 className="font-semibold text-lg">Career Boost (Lifetime)</h3>
+                                                    <h3 className="font-semibold text-lg">{getHistoryPlanLabel(sub)}</h3>
                                                     <Badge variant={sub.status === "PAID" ? "default" : sub.status === "UNPAID" ? "secondary" : "destructive"}>
                                                         {sub.status}
                                                     </Badge>

@@ -10,6 +10,8 @@ export interface ISubscriptionPlanResponse {
     description: string;
     features: string[];
     lifetime: boolean;
+    durationDays?: number | null;
+    recruiterOnly?: boolean;
 }
 
 export interface IMySubscription {
