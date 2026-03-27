@@ -20,7 +20,6 @@ const UsersManagementContent = () => {
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all-status");
-    const [roleFilter, setRoleFilter] = useState<string>("all-roles");
     const [editingUser, setEditingUser] = useState<any>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [expandedResumeId, setExpandedResumeId] = useState<string | null>(null);
@@ -70,8 +69,7 @@ const UsersManagementContent = () => {
         const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === "all-status" || user.status === statusFilter;
-        const matchesRole = roleFilter === "all-roles" || user.role === roleFilter;
-        return matchesSearch && matchesStatus && matchesRole;
+        return matchesSearch && matchesStatus;
     });
 
     return (
@@ -104,26 +102,13 @@ const UsersManagementContent = () => {
                         <SelectItem value="BLOCKED">Blocked</SelectItem>
                     </SelectContent>
                 </Select>
-                <Select value={roleFilter} onValueChange={setRoleFilter}>
-                    <SelectTrigger className="w-40">
-                        <SelectValue placeholder="Filter by role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all-roles">All Roles</SelectItem>
-                        <SelectItem value="USER">User</SelectItem>
-                        <SelectItem value="RECRUITER">Recruiter</SelectItem>
-                        <SelectItem value="ADMIN">Admin</SelectItem>
-                        <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                    </SelectContent>
-                </Select>
-                {(searchTerm || statusFilter !== "all-status" || roleFilter !== "all-roles") && (
+                {(searchTerm || statusFilter !== "all-status") && (
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
                             setSearchTerm("");
                             setStatusFilter("all-status");
-                            setRoleFilter("all-roles");
                         }}
                     >
                         Clear Filters
