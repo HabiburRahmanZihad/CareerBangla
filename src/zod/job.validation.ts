@@ -3,7 +3,7 @@ import { z } from "zod";
 const jobSchemaBase = z.object({
     // 1) Basic Information
     title: z.string().min(1, "Job title is required").min(3, "Title must be at least 3 characters"),
-    categoryId: z.string().min(1, "Job category is required"),
+    categoryId: z.string().optional(),
     vacancies: z.string().min(1, "Vacancy is required"),
 
     // 2) Company Information

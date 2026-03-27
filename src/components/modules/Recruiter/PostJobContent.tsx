@@ -207,6 +207,7 @@ const PostJobContent = () => {
         : Array.isArray((categoriesRaw as { data?: unknown })?.data)
             ? ((categoriesRaw as { data: unknown[] }).data)
             : [];
+    const hasCategories = categories.length > 0;
 
     const activeFields = STEP_FIELDS[currentStep] || [];
 
@@ -318,14 +319,14 @@ const PostJobContent = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                             <Label>Job Category</Label>
-                                            <form.Field name="categoryId" validators={{ onChange: createJobZodSchema.shape.categoryId }}>
+                                            <form.Field name="categoryId">
                                                 {(field) => {
                                                     const error = getStepFieldError("categoryId", getFieldError(field));
                                                     return (
                                                         <>
                                                             <Select value={field.state.value} onValueChange={(v) => field.handleChange(v)}>
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder="Select category" />
+                                                                <SelectTrigger disabled={!hasCategories}>
+                                                                    <SelectValue placeholder={hasCategories ? "Select category" : "No category available"} />
                                                                 </SelectTrigger>
                                                                 <SelectContent>
                                                                     {categories.filter((cat: any) => cat?.id).map((cat: any) => (
@@ -335,6 +336,11 @@ const PostJobContent = () => {
                                                                     ))}
                                                                 </SelectContent>
                                                             </Select>
+                                                            {!hasCategories && (
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    No job categories available right now. You can still post without selecting one.
+                                                                </p>
+                                                            )}
                                                             {error && <p className="text-sm text-destructive">{error}</p>}
                                                         </>
                                                     );
