@@ -13,8 +13,7 @@ import { getMyRecruiterProfile } from "@/services/recruiter.services";
 import { createJobZodSchema } from "@/zod/job.validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { AlertCircle, Coins, ShieldAlert } from "lucide-react";
-import Link from "next/link";
+import { AlertCircle, ShieldAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -33,10 +32,11 @@ const PostJobContent = () => {
         queryFn: () => getMyRecruiterProfile(),
     });
 
-    const isVerified = profileData?.data?.isVerified ?? false;
+    const isVerified = (profileData?.data?.status === "APPROVED") || false;
     const profileCompletion = profileData?.data?.profileCompletion ?? 0;
-    const isProfileComplete = profileCompletion >= 100;
-    const canPost = isVerified && isProfileComplete;
+    // Recruiters don't need 100% completion, just need to be verified/approved
+    const isProfileComplete = true;
+    const canPost = isVerified;
     const isGuardLoading = profileLoading;
 
     const { mutateAsync, isPending } = useMutation({
