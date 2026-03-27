@@ -2,6 +2,24 @@ import { UserRole } from "@/lib/authUtils";
 
 export type UserStatus = "ACTIVE" | "BLOCKED" | "DELETED";
 
+// Forward declarations for circular references
+export interface IApplication {
+    id: string;
+    userId: string;
+    jobId: string;
+    coverLetter?: string;
+    status: "PENDING" | "SHORTLISTED" | "INTERVIEW" | "HIRED" | "REJECTED";
+    interviewDate?: string;
+    interviewNote?: string;
+    hiredDate?: string;
+    hiredCompany?: string;
+    hiredDesignation?: string;
+    user?: Omit<UserInfo, 'applications'> & { resume?: IResume };
+    job?: IJob;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
 export interface UserInfo {
     id: string;
     name: string;
@@ -18,6 +36,7 @@ export interface UserInfo {
     premiumUntil?: string;
     isHired?: boolean;
     referralCode?: string;
+    applications?: IApplication[];
 }
 
 export interface IUserWithDetails extends UserInfo {
@@ -269,23 +288,6 @@ export interface IJobCategory {
     title: string;
     icon?: string;
     createdAt?: string;
-}
-
-export interface IApplication {
-    id: string;
-    userId: string;
-    jobId: string;
-    coverLetter?: string;
-    status: "PENDING" | "SHORTLISTED" | "INTERVIEW" | "HIRED" | "REJECTED";
-    interviewDate?: string;
-    interviewNote?: string;
-    hiredDate?: string;
-    hiredCompany?: string;
-    hiredDesignation?: string;
-    user?: UserInfo & { resume?: IResume };
-    job?: IJob;
-    createdAt?: string;
-    updatedAt?: string;
 }
 
 export interface INotification {

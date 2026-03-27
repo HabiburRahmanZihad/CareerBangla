@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { deleteCookie } from "@/lib/cookieUtils";
-import { UserInfo } from "@/types/user.types";
-import { Crown, Key, LogOut, User } from "lucide-react";
+import { IApplication, UserInfo } from "@/types/user.types";
+import { Award, Crown, Key, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -46,16 +46,24 @@ const UserDropdown = ({ userInfo }: UserDropdownProps) => {
                 <DropdownMenuContent align={"end"} className="w-56">
                     <DropdownMenuLabel>
                         <div className="flex flex-col space-y-2">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
                                 <p className="text-sm font-medium">
                                     {userInfo.name}
                                 </p>
-                                {userInfo.isPremium && (
-                                    <Badge className="bg-amber-500 hover:bg-amber-600 flex items-center gap-1">
-                                        <Crown className="h-3 w-3" />
-                                        Pro
-                                    </Badge>
-                                )}
+                                <div className="flex items-center gap-1 flex-wrap justify-end">
+                                    {userInfo.applications?.some((app: IApplication) => app.status === "HIRED") && (
+                                        <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 flex items-center gap-1">
+                                            <Award className="h-3 w-3" />
+                                            Hired
+                                        </Badge>
+                                    )}
+                                    {userInfo.isPremium && (
+                                        <Badge className="bg-amber-500 hover:bg-amber-600 flex items-center gap-1">
+                                            <Crown className="h-3 w-3" />
+                                            Pro
+                                        </Badge>
+                                    )}
+                                </div>
                             </div>
 
                             <p className="text-xs text-muted-foreground">

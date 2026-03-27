@@ -11,9 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import envConfig from "@/lib/envConfig";
 import { deleteMyAccount, updateMyProfile } from "@/services/auth.services";
-import { getMyResume } from "@/services/resume.services";
 import { getMyRecruiterProfile } from "@/services/recruiter.services";
-import { UserInfo } from "@/types/user.types";
+import { getMyResume } from "@/services/resume.services";
+import { IApplication, UserInfo } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
@@ -282,12 +282,17 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                                         <Sparkles className="w-3 h-3" /> Career Boost
                                     </Badge>
                                 )}
+                                {/* Show Hired badge if user has any hired applications */}
+                                {userInfo.applications?.some((app: IApplication) => app.status === "HIRED") && (
+                                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 text-xs gap-1">
+                                        <Award className="w-3 h-3" /> Hired
+                                    </Badge>
+                                )}
                                 {recruiter?.status && recruiter.status !== "APPROVED" && (
-                                    <Badge variant="outline" className={`text-xs ${
-                                        recruiter.status === "PENDING"
-                                            ? "text-yellow-600 border-yellow-300"
-                                            : "text-red-600 border-red-300"
-                                    }`}>
+                                    <Badge variant="outline" className={`text-xs ${recruiter.status === "PENDING"
+                                        ? "text-yellow-600 border-yellow-300"
+                                        : "text-red-600 border-red-300"
+                                        }`}>
                                         {recruiter.status}
                                     </Badge>
                                 )}
@@ -544,270 +549,270 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                             {(resume.fullName || resume.professionalTitle || resume.email || resume.contactNumber || resume.address || resume.nationality || resume.dateOfBirth || resume.gender) && (
                                 <Section icon={User} title="Personal Information">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <InfoRow icon={User} label="Full Name" value={resume.fullName} />
-                                <InfoRow icon={FileText} label="Professional Title" value={resume.professionalTitle} />
-                                <InfoRow icon={Mail} label="Resume Email" value={resume.email} />
-                                <InfoRow icon={Phone} label="Contact Number" value={resume.contactNumber} />
-                                <InfoRow icon={MapPin} label="Address" value={resume.address} />
-                                <InfoRow icon={Globe} label="Nationality" value={resume.nationality} />
-                                {resume.dateOfBirth && (
-                                    <InfoRow
-                                        icon={Calendar}
-                                        label="Date of Birth"
-                                        value={format(new Date(resume.dateOfBirth), "MMMM d, yyyy")}
-                                    />
-                                )}
-                                {resume.gender && (
-                                    <InfoRow icon={User} label="Gender" value={resume.gender?.toLowerCase()} />
-                                )}
-                            </div>
-                        </Section>
-                    )}
-
-                    {/* Social Links */}
-                    {(resume.linkedinUrl || resume.githubUrl || resume.portfolioUrl) && (
-                        <Section icon={Globe} title="Social Links">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <InfoRow icon={Linkedin} label="LinkedIn" value={resume.linkedinUrl} href={resume.linkedinUrl} />
-                                <InfoRow icon={Github} label="GitHub" value={resume.githubUrl} href={resume.githubUrl} />
-                                <InfoRow icon={Globe} label="Portfolio" value={resume.portfolioUrl} href={resume.portfolioUrl} />
-                            </div>
-                        </Section>
-                    )}
-
-                    {/* Professional Summary */}
-                    {resume.professionalSummary && (
-                        <Section icon={FileText} title="Professional Summary">
-                            <p className="text-sm text-muted-foreground leading-relaxed">{resume.professionalSummary}</p>
-                        </Section>
-                    )}
-
-                    {/* Skills */}
-                    {(resume.technicalSkills?.length || resume.softSkills?.length || resume.toolsAndTechnologies?.length) ? (
-                        <Section icon={Code2} title="Skills">
-                            <div className="space-y-4">
-                                {resume.technicalSkills && resume.technicalSkills.length > 0 && (
-                                    <div>
-                                        <p className="text-xs font-medium text-muted-foreground mb-2">Technical Skills</p>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {resume.technicalSkills.map((skill: string, i: number) => (
-                                                <Badge key={i} variant="secondary" className="text-xs">{skill}</Badge>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                                {resume.softSkills && resume.softSkills.length > 0 && (
-                                    <div>
-                                        <p className="text-xs font-medium text-muted-foreground mb-2">Soft Skills</p>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {resume.softSkills.map((skill: string, i: number) => (
-                                                <Badge key={i} variant="outline" className="text-xs">{skill}</Badge>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                                {resume.toolsAndTechnologies && resume.toolsAndTechnologies.length > 0 && (
-                                    <div>
-                                        <p className="text-xs font-medium text-muted-foreground mb-2">Tools & Technologies</p>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {resume.toolsAndTechnologies.map((tool: string, i: number) => (
-                                                <Badge key={i} variant="secondary" className="text-xs bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">{tool}</Badge>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </Section>
-                    ) : null}
-
-                    {/* Work Experience */}
-                    {resume.workExperience && resume.workExperience.length > 0 && (
-                        <Section icon={Briefcase} title="Work Experience" count={resume.workExperience.length}>
-                            <div className="space-y-4">
-                                {resume.workExperience.map((exp: any, i: number) => (
-                                    <div key={i} className="border rounded-lg p-4">
-                                        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
-                                            <h4 className="font-semibold text-sm">{exp.jobTitle}</h4>
-                                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                                <Clock className="w-3 h-3" />
-                                                {exp.startDate ? format(new Date(exp.startDate), "MMM yyyy") : "N/A"}
-                                                {" — "}
-                                                {exp.endDate ? format(new Date(exp.endDate), "MMM yyyy") : "Present"}
-                                            </span>
-                                        </div>
-                                        {exp.companyName && (
-                                            <p className="text-xs text-muted-foreground mt-0.5">{exp.companyName}</p>
+                                        <InfoRow icon={User} label="Full Name" value={resume.fullName} />
+                                        <InfoRow icon={FileText} label="Professional Title" value={resume.professionalTitle} />
+                                        <InfoRow icon={Mail} label="Resume Email" value={resume.email} />
+                                        <InfoRow icon={Phone} label="Contact Number" value={resume.contactNumber} />
+                                        <InfoRow icon={MapPin} label="Address" value={resume.address} />
+                                        <InfoRow icon={Globe} label="Nationality" value={resume.nationality} />
+                                        {resume.dateOfBirth && (
+                                            <InfoRow
+                                                icon={Calendar}
+                                                label="Date of Birth"
+                                                value={format(new Date(resume.dateOfBirth), "MMMM d, yyyy")}
+                                            />
                                         )}
-                                        {exp.responsibilities && exp.responsibilities.length > 0 && (
-                                            <ul className="mt-2 space-y-1">
-                                                {exp.responsibilities.map((r: string, j: number) => (
-                                                    <li key={j} className="text-sm text-muted-foreground flex items-start gap-2">
-                                                        <span className="text-primary mt-1.5 shrink-0">&#8226;</span> {r}
-                                                    </li>
-                                                ))}
-                                            </ul>
+                                        {resume.gender && (
+                                            <InfoRow icon={User} label="Gender" value={resume.gender?.toLowerCase()} />
                                         )}
                                     </div>
-                                ))}
-                            </div>
-                        </Section>
-                    )}
+                                </Section>
+                            )}
 
-                    {/* Education */}
-                    {resume.education && resume.education.length > 0 && (
-                        <Section icon={GraduationCap} title="Education" count={resume.education.length}>
-                            <div className="space-y-3">
-                                {resume.education.map((edu: any, i: number) => (
-                                    <div key={i} className="border rounded-lg p-4">
-                                        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
-                                            <h4 className="font-semibold text-sm">
-                                                {edu.degree}{edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}
-                                            </h4>
-                                            <span className="text-xs text-muted-foreground">
-                                                {edu.startDate ? format(new Date(edu.startDate), "MMM yyyy") : ""}
-                                                {edu.startDate && " — "}
-                                                {edu.endDate ? format(new Date(edu.endDate), "MMM yyyy") : "Present"}
-                                            </span>
-                                        </div>
-                                        {edu.institutionName && (
-                                            <p className="text-xs text-muted-foreground mt-0.5">{edu.institutionName}</p>
-                                        )}
+                            {/* Social Links */}
+                            {(resume.linkedinUrl || resume.githubUrl || resume.portfolioUrl) && (
+                                <Section icon={Globe} title="Social Links">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <InfoRow icon={Linkedin} label="LinkedIn" value={resume.linkedinUrl} href={resume.linkedinUrl} />
+                                        <InfoRow icon={Github} label="GitHub" value={resume.githubUrl} href={resume.githubUrl} />
+                                        <InfoRow icon={Globe} label="Portfolio" value={resume.portfolioUrl} href={resume.portfolioUrl} />
                                     </div>
-                                ))}
-                            </div>
-                        </Section>
-                    )}
+                                </Section>
+                            )}
 
-                    {/* Projects */}
-                    {resume.projects && resume.projects.length > 0 && (
-                        <Section icon={Code2} title="Projects" count={resume.projects.length}>
-                            <div className="space-y-3">
-                                {resume.projects.map((proj: any, i: number) => (
-                                    <div key={i} className="border rounded-lg p-4">
-                                        <h4 className="font-semibold text-sm">{proj.projectName}</h4>
-                                        {proj.role && <p className="text-xs text-muted-foreground">{proj.role}</p>}
-                                        {proj.description && <p className="text-sm text-muted-foreground mt-1">{proj.description}</p>}
-                                        {proj.technologiesUsed && proj.technologiesUsed.length > 0 && (
-                                            <div className="flex flex-wrap gap-1 mt-2">
-                                                {proj.technologiesUsed.map((t: string, j: number) => (
-                                                    <Badge key={j} variant="secondary" className="text-[10px]">{t}</Badge>
-                                                ))}
+                            {/* Professional Summary */}
+                            {resume.professionalSummary && (
+                                <Section icon={FileText} title="Professional Summary">
+                                    <p className="text-sm text-muted-foreground leading-relaxed">{resume.professionalSummary}</p>
+                                </Section>
+                            )}
+
+                            {/* Skills */}
+                            {(resume.technicalSkills?.length || resume.softSkills?.length || resume.toolsAndTechnologies?.length) ? (
+                                <Section icon={Code2} title="Skills">
+                                    <div className="space-y-4">
+                                        {resume.technicalSkills && resume.technicalSkills.length > 0 && (
+                                            <div>
+                                                <p className="text-xs font-medium text-muted-foreground mb-2">Technical Skills</p>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {resume.technicalSkills.map((skill: string, i: number) => (
+                                                        <Badge key={i} variant="secondary" className="text-xs">{skill}</Badge>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {resume.softSkills && resume.softSkills.length > 0 && (
+                                            <div>
+                                                <p className="text-xs font-medium text-muted-foreground mb-2">Soft Skills</p>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {resume.softSkills.map((skill: string, i: number) => (
+                                                        <Badge key={i} variant="outline" className="text-xs">{skill}</Badge>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {resume.toolsAndTechnologies && resume.toolsAndTechnologies.length > 0 && (
+                                            <div>
+                                                <p className="text-xs font-medium text-muted-foreground mb-2">Tools & Technologies</p>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {resume.toolsAndTechnologies.map((tool: string, i: number) => (
+                                                        <Badge key={i} variant="secondary" className="text-xs bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">{tool}</Badge>
+                                                    ))}
+                                                </div>
                                             </div>
                                         )}
                                     </div>
-                                ))}
-                            </div>
-                        </Section>
-                    )}
+                                </Section>
+                            ) : null}
 
-                    {/* Certifications */}
-                    {resume.certifications && resume.certifications.length > 0 && (
-                        <Section icon={Award} title="Certifications" count={resume.certifications.length}>
-                            <div className="space-y-2">
-                                {resume.certifications.map((cert: any, i: number) => (
-                                    <div key={i} className="flex items-baseline justify-between border rounded-lg p-3">
-                                        <div>
-                                            <p className="text-sm font-medium">{cert.certificationName}</p>
-                                            {cert.issuingOrganization && (
-                                                <p className="text-xs text-muted-foreground">{cert.issuingOrganization}</p>
-                                            )}
-                                        </div>
-                                        {cert.issueDate && (
-                                            <span className="text-xs text-muted-foreground shrink-0">
-                                                {format(new Date(cert.issueDate), "MMM yyyy")}
-                                            </span>
-                                        )}
+                            {/* Work Experience */}
+                            {resume.workExperience && resume.workExperience.length > 0 && (
+                                <Section icon={Briefcase} title="Work Experience" count={resume.workExperience.length}>
+                                    <div className="space-y-4">
+                                        {resume.workExperience.map((exp: any, i: number) => (
+                                            <div key={i} className="border rounded-lg p-4">
+                                                <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+                                                    <h4 className="font-semibold text-sm">{exp.jobTitle}</h4>
+                                                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                                        <Clock className="w-3 h-3" />
+                                                        {exp.startDate ? format(new Date(exp.startDate), "MMM yyyy") : "N/A"}
+                                                        {" — "}
+                                                        {exp.endDate ? format(new Date(exp.endDate), "MMM yyyy") : "Present"}
+                                                    </span>
+                                                </div>
+                                                {exp.companyName && (
+                                                    <p className="text-xs text-muted-foreground mt-0.5">{exp.companyName}</p>
+                                                )}
+                                                {exp.responsibilities && exp.responsibilities.length > 0 && (
+                                                    <ul className="mt-2 space-y-1">
+                                                        {exp.responsibilities.map((r: string, j: number) => (
+                                                            <li key={j} className="text-sm text-muted-foreground flex items-start gap-2">
+                                                                <span className="text-primary mt-1.5 shrink-0">&#8226;</span> {r}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
-                        </Section>
-                    )}
+                                </Section>
+                            )}
 
-                    {/* Languages */}
-                    {resume.languages && resume.languages.length > 0 && (
-                        <Section icon={Languages} title="Languages" count={resume.languages.length}>
-                            <div className="flex flex-wrap gap-2">
-                                {resume.languages.map((lang: any, i: number) => (
-                                    <Badge key={i} variant="outline" className="text-xs py-1 px-3">
-                                        {lang.language} {lang.proficiencyLevel ? `(${lang.proficiencyLevel})` : ""}
-                                    </Badge>
-                                ))}
-                            </div>
-                        </Section>
-                    )}
-
-                    {/* Awards */}
-                    {resume.awards && resume.awards.length > 0 && (
-                        <Section icon={Award} title="Awards" count={resume.awards.length}>
-                            <div className="space-y-2">
-                                {resume.awards.map((award: any, i: number) => (
-                                    <div key={i} className="flex items-baseline justify-between border rounded-lg p-3">
-                                        <div>
-                                            <p className="text-sm font-medium">{award.title}</p>
-                                            {award.issuer && <p className="text-xs text-muted-foreground">{award.issuer}</p>}
-                                        </div>
-                                        {award.date && (
-                                            <span className="text-xs text-muted-foreground shrink-0">
-                                                {format(new Date(award.date), "MMM yyyy")}
-                                            </span>
-                                        )}
+                            {/* Education */}
+                            {resume.education && resume.education.length > 0 && (
+                                <Section icon={GraduationCap} title="Education" count={resume.education.length}>
+                                    <div className="space-y-3">
+                                        {resume.education.map((edu: any, i: number) => (
+                                            <div key={i} className="border rounded-lg p-4">
+                                                <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+                                                    <h4 className="font-semibold text-sm">
+                                                        {edu.degree}{edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}
+                                                    </h4>
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {edu.startDate ? format(new Date(edu.startDate), "MMM yyyy") : ""}
+                                                        {edu.startDate && " — "}
+                                                        {edu.endDate ? format(new Date(edu.endDate), "MMM yyyy") : "Present"}
+                                                    </span>
+                                                </div>
+                                                {edu.institutionName && (
+                                                    <p className="text-xs text-muted-foreground mt-0.5">{edu.institutionName}</p>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
-                        </Section>
-                    )}
+                                </Section>
+                            )}
 
-                    {/* References */}
-                    {resume.references && resume.references.length > 0 && (
-                        <Section icon={Users} title="References" count={resume.references.length}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {resume.references.map((ref: any, i: number) => (
-                                    <div key={i} className="border rounded-lg p-3">
-                                        <p className="text-sm font-medium">{ref.name}</p>
-                                        {ref.designation && (
-                                            <p className="text-xs text-muted-foreground">
-                                                {ref.designation}{ref.company ? ` at ${ref.company}` : ""}
-                                            </p>
-                                        )}
-                                        {ref.email && (
-                                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                                                <Mail className="w-3 h-3" /> {ref.email}
-                                            </p>
-                                        )}
-                                        {ref.phone && (
-                                            <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                                <Phone className="w-3 h-3" /> {ref.phone}
-                                            </p>
-                                        )}
+                            {/* Projects */}
+                            {resume.projects && resume.projects.length > 0 && (
+                                <Section icon={Code2} title="Projects" count={resume.projects.length}>
+                                    <div className="space-y-3">
+                                        {resume.projects.map((proj: any, i: number) => (
+                                            <div key={i} className="border rounded-lg p-4">
+                                                <h4 className="font-semibold text-sm">{proj.projectName}</h4>
+                                                {proj.role && <p className="text-xs text-muted-foreground">{proj.role}</p>}
+                                                {proj.description && <p className="text-sm text-muted-foreground mt-1">{proj.description}</p>}
+                                                {proj.technologiesUsed && proj.technologiesUsed.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1 mt-2">
+                                                        {proj.technologiesUsed.map((t: string, j: number) => (
+                                                            <Badge key={j} variant="secondary" className="text-[10px]">{t}</Badge>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
-                        </Section>
-                    )}
+                                </Section>
+                            )}
 
-                    {/* Interests */}
-                    {resume.interests && resume.interests.length > 0 && (
-                        <Section icon={Sparkles} title="Interests">
-                            <div className="flex flex-wrap gap-1.5">
-                                {resume.interests.map((interest: string, i: number) => (
-                                    <Badge key={i} variant="outline" className="text-xs">{interest}</Badge>
-                                ))}
-                            </div>
-                        </Section>
+                            {/* Certifications */}
+                            {resume.certifications && resume.certifications.length > 0 && (
+                                <Section icon={Award} title="Certifications" count={resume.certifications.length}>
+                                    <div className="space-y-2">
+                                        {resume.certifications.map((cert: any, i: number) => (
+                                            <div key={i} className="flex items-baseline justify-between border rounded-lg p-3">
+                                                <div>
+                                                    <p className="text-sm font-medium">{cert.certificationName}</p>
+                                                    {cert.issuingOrganization && (
+                                                        <p className="text-xs text-muted-foreground">{cert.issuingOrganization}</p>
+                                                    )}
+                                                </div>
+                                                {cert.issueDate && (
+                                                    <span className="text-xs text-muted-foreground shrink-0">
+                                                        {format(new Date(cert.issueDate), "MMM yyyy")}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Section>
+                            )}
+
+                            {/* Languages */}
+                            {resume.languages && resume.languages.length > 0 && (
+                                <Section icon={Languages} title="Languages" count={resume.languages.length}>
+                                    <div className="flex flex-wrap gap-2">
+                                        {resume.languages.map((lang: any, i: number) => (
+                                            <Badge key={i} variant="outline" className="text-xs py-1 px-3">
+                                                {lang.language} {lang.proficiencyLevel ? `(${lang.proficiencyLevel})` : ""}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </Section>
+                            )}
+
+                            {/* Awards */}
+                            {resume.awards && resume.awards.length > 0 && (
+                                <Section icon={Award} title="Awards" count={resume.awards.length}>
+                                    <div className="space-y-2">
+                                        {resume.awards.map((award: any, i: number) => (
+                                            <div key={i} className="flex items-baseline justify-between border rounded-lg p-3">
+                                                <div>
+                                                    <p className="text-sm font-medium">{award.title}</p>
+                                                    {award.issuer && <p className="text-xs text-muted-foreground">{award.issuer}</p>}
+                                                </div>
+                                                {award.date && (
+                                                    <span className="text-xs text-muted-foreground shrink-0">
+                                                        {format(new Date(award.date), "MMM yyyy")}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Section>
+                            )}
+
+                            {/* References */}
+                            {resume.references && resume.references.length > 0 && (
+                                <Section icon={Users} title="References" count={resume.references.length}>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {resume.references.map((ref: any, i: number) => (
+                                            <div key={i} className="border rounded-lg p-3">
+                                                <p className="text-sm font-medium">{ref.name}</p>
+                                                {ref.designation && (
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {ref.designation}{ref.company ? ` at ${ref.company}` : ""}
+                                                    </p>
+                                                )}
+                                                {ref.email && (
+                                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                                        <Mail className="w-3 h-3" /> {ref.email}
+                                                    </p>
+                                                )}
+                                                {ref.phone && (
+                                                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                                        <Phone className="w-3 h-3" /> {ref.phone}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Section>
+                            )}
+
+                            {/* Interests */}
+                            {resume.interests && resume.interests.length > 0 && (
+                                <Section icon={Sparkles} title="Interests">
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {resume.interests.map((interest: string, i: number) => (
+                                            <Badge key={i} variant="outline" className="text-xs">{interest}</Badge>
+                                        ))}
+                                    </div>
+                                </Section>
+                            )}
+                        </>
+                    ) : (
+                        <Card>
+                            <CardContent className="py-12 text-center">
+                                <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                                <p className="text-muted-foreground mb-3">You haven&apos;t created your resume yet.</p>
+                                <Link href="/dashboard/my-resume">
+                                    <Button>Create Resume</Button>
+                                </Link>
+                            </CardContent>
+                        </Card>
                     )}
                 </>
-            ) : (
-                <Card>
-                    <CardContent className="py-12 text-center">
-                        <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                        <p className="text-muted-foreground mb-3">You haven&apos;t created your resume yet.</p>
-                        <Link href="/dashboard/my-resume">
-                            <Button>Create Resume</Button>
-                        </Link>
-                    </CardContent>
-                </Card>
-            )}
-            </>
             )}
 
             {/* ── Quick Actions (Only for regular users) ── */}
