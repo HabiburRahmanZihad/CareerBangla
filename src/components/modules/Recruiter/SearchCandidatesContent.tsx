@@ -153,7 +153,13 @@ const SearchCandidatesContent = () => {
     const candidates = extractDataArray<CandidateListItem>(premiumData);
     const directoryDataArray = extractDataArray<CandidateListItem>(directoryData);
     const candidatesList: CandidateListItem[] = viewMode === "premium" ? candidates : directoryDataArray;
-    const isPremium = viewMode === "directory" ? (directoryData as any)?.isPremiumRecruiter : false;
+    const isPremium = viewMode === "directory"
+        ? Boolean(
+            (directoryData as any)?.isPremiumRecruiter
+            ?? (directoryData as any)?.meta?.isPremiumRecruiter
+            ?? (directoryData as any)?.data?.isPremiumRecruiter
+        )
+        : false;
     const totalPages = Math.max(1, Math.ceil(candidatesList.length / USERS_PER_PAGE));
     const paginatedCandidates = candidatesList.slice((currentPage - 1) * USERS_PER_PAGE, currentPage * USERS_PER_PAGE);
 

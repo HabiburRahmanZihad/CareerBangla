@@ -39,7 +39,7 @@ export async function getApplicantsForJob(jobId: string, params?: Record<string,
 
 export async function getUserDirectory(params?: Record<string, unknown>) {
     logger.read("Fetching user directory (recruiter)");
-    return serverHttpClient.get<{ data: IApplication[] }>("/applications/directory/users", { params });
+    return serverHttpClient.get<IApplication[]>("/applications/directory/users", { params });
 }
 
 export async function downloadCvForRecruiter(candidateId: string, applicationId?: string) {
