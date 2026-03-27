@@ -47,7 +47,11 @@ export async function downloadCvForRecruiter(candidateId: string, applicationId?
     const params: Record<string, unknown> = { candidateId };
     if (applicationId) params.applicationId = applicationId;
 
-    return serverHttpClient.get<Blob>("/resume/recruiter/download-cv", {
+    return serverHttpClient.get<unknown>("/resumes/recruiter/download-cv", {
         params,
+        headers: {
+            Accept: "application/pdf",
+        },
+        responseType: "arraybuffer",
     });
 }

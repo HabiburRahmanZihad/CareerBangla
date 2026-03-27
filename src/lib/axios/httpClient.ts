@@ -1,7 +1,8 @@
 
-import { ApiResponse } from "@/types/api.types";
 import envConfig from "@/lib/envConfig";
 import { logger } from "@/lib/logger";
+import { ApiResponse } from "@/types/api.types";
+import type { AxiosRequestConfig } from "axios";
 import axios, { AxiosError } from "axios";
 
 const axiosInstance = axios.create({
@@ -58,12 +59,14 @@ axiosInstance.interceptors.response.use(
 export interface ApiRequestOptions {
     params?: Record<string, unknown>;
     headers?: Record<string, string>;
+    responseType?: AxiosRequestConfig["responseType"];
 }
 
 const httpGet = async <TData>(endpoint: string, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
     const response = await axiosInstance.get<ApiResponse<TData>>(endpoint, {
         params: options?.params,
         headers: options?.headers,
+        responseType: options?.responseType,
     });
     return response.data;
 };
@@ -72,6 +75,7 @@ const httpPost = async <TData>(endpoint: string, data: unknown, options?: ApiReq
     const response = await axiosInstance.post<ApiResponse<TData>>(endpoint, data, {
         params: options?.params,
         headers: options?.headers,
+        responseType: options?.responseType,
     });
     return response.data;
 };
@@ -80,6 +84,7 @@ const httpPut = async <TData>(endpoint: string, data: unknown, options?: ApiRequ
     const response = await axiosInstance.put<ApiResponse<TData>>(endpoint, data, {
         params: options?.params,
         headers: options?.headers,
+        responseType: options?.responseType,
     });
     return response.data;
 };
@@ -88,6 +93,7 @@ const httpPatch = async <TData>(endpoint: string, data: unknown, options?: ApiRe
     const response = await axiosInstance.patch<ApiResponse<TData>>(endpoint, data, {
         params: options?.params,
         headers: options?.headers,
+        responseType: options?.responseType,
     });
     return response.data;
 };
@@ -96,6 +102,7 @@ const httpDelete = async <TData>(endpoint: string, options?: ApiRequestOptions):
     const response = await axiosInstance.delete<ApiResponse<TData>>(endpoint, {
         params: options?.params,
         headers: options?.headers,
+        responseType: options?.responseType,
     });
     return response.data;
 };

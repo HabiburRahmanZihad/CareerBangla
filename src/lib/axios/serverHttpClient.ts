@@ -1,9 +1,9 @@
 
 import "server-only";
 
-import { ApiResponse } from "@/types/api.types";
 import envConfig from "@/lib/envConfig";
 import { logger } from "@/lib/logger";
+import { ApiResponse } from "@/types/api.types";
 import axios from "axios";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -42,6 +42,7 @@ const httpGet = async <TData>(endpoint: string, options?: ApiRequestOptions): Pr
         const response = await instance.get<ApiResponse<TData>>(endpoint, {
             params: options?.params,
             headers: options?.headers,
+            responseType: options?.responseType,
         });
         logger.apiSuccess("GET", endpoint, response.status);
         return response.data;
@@ -61,6 +62,7 @@ const httpPost = async <TData>(endpoint: string, data: unknown, options?: ApiReq
         const response = await instance.post<ApiResponse<TData>>(endpoint, data, {
             params: options?.params,
             headers: options?.headers,
+            responseType: options?.responseType,
         });
         logger.apiSuccess("POST", endpoint, response.status);
         return response.data;
@@ -80,6 +82,7 @@ const httpPut = async <TData>(endpoint: string, data: unknown, options?: ApiRequ
         const response = await instance.put<ApiResponse<TData>>(endpoint, data, {
             params: options?.params,
             headers: options?.headers,
+            responseType: options?.responseType,
         });
         logger.apiSuccess("PUT", endpoint, response.status);
         return response.data;
@@ -99,6 +102,7 @@ const httpPatch = async <TData>(endpoint: string, data: unknown, options?: ApiRe
         const response = await instance.patch<ApiResponse<TData>>(endpoint, data, {
             params: options?.params,
             headers: options?.headers,
+            responseType: options?.responseType,
         });
         logger.apiSuccess("PATCH", endpoint, response.status);
         return response.data;
@@ -118,6 +122,7 @@ const httpDelete = async <TData>(endpoint: string, options?: ApiRequestOptions):
         const response = await instance.delete<ApiResponse<TData>>(endpoint, {
             params: options?.params,
             headers: options?.headers,
+            responseType: options?.responseType,
         });
         logger.apiSuccess("DELETE", endpoint, response.status);
         return response.data;

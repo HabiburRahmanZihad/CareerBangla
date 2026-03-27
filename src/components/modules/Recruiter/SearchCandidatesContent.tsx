@@ -90,6 +90,33 @@ const getEducationSummary = (resume?: IResume | null): string => {
     return degreeLabel || institutionName || "Education not provided";
 };
 
+const toPdfBlob = (payload: unknown): Blob => {
+    if (payload instanceof Blob) {
+        return payload;
+    }
+
+    if (payload instanceof ArrayBuffer) {
+        return new Blob([payload], { type: "application/pdf" });
+    }
+
+    if (ArrayBuffer.isView(payload)) {
+        const view = payload as ArrayBufferView;
+        const byteOffset = view.byteOffset || 0;
+        const byteLength = view.byteLength || 0;
+        const bytes = new Uint8Array(view.buffer, byteOffset, byteLength);
+        return new Blob([bytes as unknown as BlobPart], { type: "application/pdf" });
+    }
+
+    if (payload && typeof payload === "object" && "type" in payload && "data" in payload) {
+        const maybeBuffer = payload as { type?: unknown; data?: unknown };
+        if (maybeBuffer.type === "Buffer" && Array.isArray(maybeBuffer.data)) {
+            return new Blob([new Uint8Array(maybeBuffer.data)], { type: "application/pdf" });
+        }
+    }
+
+    return new Blob([payload as BlobPart], { type: "application/pdf" });
+};
+
 const SearchCandidatesContent = () => {
     const [viewMode, setViewMode] = useState<"premium" | "directory">("directory");
     const [layoutMode, setLayoutMode] = useState<"grid" | "list">("grid");
@@ -117,7 +144,9 @@ const SearchCandidatesContent = () => {
     const { mutateAsync: downloadCv } = useMutation({
         mutationFn: (candidateId: string) => downloadCvForRecruiter(candidateId),
         onSuccess: (response, candidateId) => {
-            const url = URL.createObjectURL(response.data);
+            const rawPayload = (response as any)?.data ?? response;
+            const pdfBlob = toPdfBlob(rawPayload);
+            const url = URL.createObjectURL(pdfBlob);
             const a = document.createElement("a");
             a.href = url;
             a.download = `candidate-cv-${candidateId}.pdf`;
