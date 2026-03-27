@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { IJob } from "@/types/user.types";
 import { formatDistanceToNow } from "date-fns";
-import { Briefcase, Clock, MapPin } from "lucide-react";
+import { Briefcase, Clock, MapPin, Users } from "lucide-react";
 import Link from "next/link";
 
 interface JobCardProps {
@@ -29,15 +29,23 @@ const JobCard = ({ job }: JobCardProps) => {
         <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-1">
+                    <div className="space-y-1 flex-1">
                         <Link href={`/jobs/${job.id}`} className="text-lg font-semibold hover:text-primary transition-colors line-clamp-1">
                             {job.title}
                         </Link>
                         <p className="text-sm text-muted-foreground">{job.company}</p>
                     </div>
-                    <Badge variant="outline" className={locationTypeColors[job.locationType] || ""}>
-                        {job.locationType}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-2">
+                        <Badge variant="outline" className={locationTypeColors[job.locationType] || ""}>
+                            {job.locationType}
+                        </Badge>
+                        {job._count?.applications !== undefined && (
+                            <div className="bg-blue-500 text-white px-3 py-2 rounded-lg flex items-center gap-1.5 text-sm font-semibold">
+                                <Users className="h-4 w-4" />
+                                <span>{job._count.applications}</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </CardHeader>
 

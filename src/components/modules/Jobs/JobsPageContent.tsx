@@ -129,7 +129,7 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                             <SelectItem value="all">All Categories</SelectItem>
                             {categories.map((cat) => (
                                 <SelectItem key={cat.id} value={cat.id}>
-                                    {cat.name}
+                                    {cat.title}
                                 </SelectItem>
                             ))}
                         </SelectContent>
