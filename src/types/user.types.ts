@@ -241,13 +241,13 @@ export interface IJob {
     company: string;
     location: string;
     locationType: "REMOTE" | "ONSITE" | "HYBRID";
-    jobType: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERNSHIP" | "FREELANCE";
+    jobType: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERNSHIP" | "REMOTE";
     experienceLevel: "ENTRY" | "MID" | "SENIOR" | "LEAD" | "EXECUTIVE";
     skills: string[];
     salaryMin?: number;
     salaryMax?: number;
     applicationDeadline?: string;
-    status: "OPEN" | "CLOSED" | "DRAFT" | "PAUSED";
+    status: "PENDING" | "LIVE" | "CLOSED" | "INACTIVE";
     isDeleted: boolean;
     category?: IJobCategory;
     categoryId?: string;

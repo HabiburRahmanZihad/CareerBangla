@@ -51,6 +51,11 @@ export const recruiterNavItems: NavSection[] = [
                 icon: "CheckCircle",
             },
             {
+                title: "Inactive Jobs",
+                href: "/recruiter/dashboard/my-jobs/inactive",
+                icon: "XCircle",
+            },
+            {
                 title: "Post a Job",
                 href: "/recruiter/dashboard/post-job",
                 icon: "PlusCircle",

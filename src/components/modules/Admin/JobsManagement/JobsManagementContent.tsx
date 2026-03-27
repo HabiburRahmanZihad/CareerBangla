@@ -16,11 +16,10 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 const statusColors: Record<string, string> = {
-    ACTIVE: "bg-green-100 text-green-800",
-    OPEN: "bg-green-100 text-green-800",
+    LIVE: "bg-green-100 text-green-800",
+    PENDING: "bg-yellow-100 text-yellow-800",
     CLOSED: "bg-red-100 text-red-800",
-    DRAFT: "bg-gray-100 text-gray-800",
-    PAUSED: "bg-yellow-100 text-yellow-800",
+    INACTIVE: "bg-gray-200 text-gray-800",
 };
 
 const PER_PAGE = 20;
@@ -147,10 +146,10 @@ const JobsManagementContent = () => {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="ALL">All Statuses</SelectItem>
-                                <SelectItem value="ACTIVE">Active</SelectItem>
-                                <SelectItem value="DRAFT">Pending (Draft)</SelectItem>
+                                <SelectItem value="PENDING">Pending</SelectItem>
+                                <SelectItem value="LIVE">Live</SelectItem>
                                 <SelectItem value="CLOSED">Closed</SelectItem>
-                                <SelectItem value="PAUSED">Paused</SelectItem>
+                                <SelectItem value="INACTIVE">Inactive</SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -235,9 +234,10 @@ const JobsManagementContent = () => {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="ACTIVE">Active</SelectItem>
+                                        <SelectItem value="PENDING">Pending</SelectItem>
+                                        <SelectItem value="LIVE">Live</SelectItem>
                                         <SelectItem value="CLOSED">Closed</SelectItem>
-                                        <SelectItem value="DRAFT">Draft</SelectItem>
+                                        <SelectItem value="INACTIVE">Inactive</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <Button

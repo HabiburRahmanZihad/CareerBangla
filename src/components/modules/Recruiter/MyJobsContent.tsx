@@ -13,10 +13,10 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 const statusColors: Record<string, string> = {
-    OPEN: "bg-green-100 text-green-800",
+    LIVE: "bg-green-100 text-green-800",
+    PENDING: "bg-yellow-100 text-yellow-800",
     CLOSED: "bg-red-100 text-red-800",
-    DRAFT: "bg-gray-100 text-gray-800",
-    PAUSED: "bg-yellow-100 text-yellow-800",
+    INACTIVE: "bg-gray-100 text-gray-800",
 };
 
 const MyJobsContent = () => {
@@ -29,12 +29,12 @@ const MyJobsContent = () => {
 
     const { data: pendingSummary } = useQuery({
         queryKey: ["my-jobs-summary", "pending"],
-        queryFn: () => getMyJobs({ status: "DRAFT", page: "1", limit: "1" }),
+        queryFn: () => getMyJobs({ status: "PENDING", page: "1", limit: "1" }),
     });
 
     const { data: approvedSummary } = useQuery({
         queryKey: ["my-jobs-summary", "approved"],
-        queryFn: () => getMyJobs({ status: "ACTIVE", page: "1", limit: "1" }),
+        queryFn: () => getMyJobs({ status: "LIVE", page: "1", limit: "1" }),
     });
 
     const { mutateAsync: removeJob } = useMutation({

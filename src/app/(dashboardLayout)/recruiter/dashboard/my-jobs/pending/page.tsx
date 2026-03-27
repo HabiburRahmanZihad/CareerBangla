@@ -8,7 +8,7 @@ const RecruiterPendingJobsPage = async () => {
         <RecruiterJobsByStatusContent
             title="Pending / Not Approved Jobs"
             description="Jobs waiting for admin approval are shown here."
-            status="DRAFT"
+            status="PENDING"
             emptyMessage="No pending or unapproved jobs found."
         />
     );

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { deleteJob, getMyJobs } from "@/services/job.services";
+import { deleteInactiveJob, getInactiveJobs } from "@/services/job.services";
 import { IJob } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
@@ -17,21 +17,17 @@ import { toast } from "sonner";
 
 const PER_PAGE = 20;
 
-type RecruiterJobsByStatusContentProps = {
+type RecruiterInactiveJobsContentProps = {
     title: string;
     description: string;
-    status: "PENDING" | "LIVE" | "CLOSED" | "INACTIVE";
     emptyMessage: string;
 };
 
 const statusColors: Record<string, string> = {
-    LIVE: "bg-green-100 text-green-800",
-    PENDING: "bg-yellow-100 text-yellow-800",
-    CLOSED: "bg-red-100 text-red-800",
     INACTIVE: "bg-red-100 text-red-800",
 };
 
-const RecruiterJobsByStatusContent = ({ title, description, status, emptyMessage }: RecruiterJobsByStatusContentProps) => {
+const RecruiterInactiveJobsContent = ({ title, description, emptyMessage }: RecruiterInactiveJobsContentProps) => {
     const queryClient = useQueryClient();
 
     const [layoutMode, setLayoutMode] = useState<"grid" | "list">("list");
@@ -41,17 +37,16 @@ const RecruiterJobsByStatusContent = ({ title, description, status, emptyMessage
 
     const queryParams = useMemo(
         () => ({
-            status,
             page: String(currentPage),
             limit: String(PER_PAGE),
             searchTerm: searchTerm || undefined,
         }),
-        [status, currentPage, searchTerm]
+        [currentPage, searchTerm]
     );
 
     const { data, isLoading, isFetching } = useQuery({
-        queryKey: ["recruiter-jobs-by-status", status, currentPage, searchTerm],
-        queryFn: () => getMyJobs(queryParams),
+        queryKey: ["recruiter-inactive-jobs", currentPage, searchTerm],
+        queryFn: () => getInactiveJobs(queryParams),
         staleTime: 0,
         refetchOnMount: "always",
         refetchOnWindowFocus: true,
@@ -59,9 +54,9 @@ const RecruiterJobsByStatusContent = ({ title, description, status, emptyMessage
     });
 
     const { mutateAsync: removeJob, isPending: deleting } = useMutation({
-        mutationFn: (id: string) => deleteJob(id),
+        mutationFn: (id: string) => deleteInactiveJob(id),
         onSuccess: (_result, deletedId) => {
-            queryClient.setQueriesData({ queryKey: ["recruiter-jobs-by-status"] }, (oldData: any) => {
+            queryClient.setQueriesData({ queryKey: ["recruiter-inactive-jobs"] }, (oldData: any) => {
                 if (!oldData || typeof oldData !== "object") return oldData;
 
                 const oldJobs = Array.isArray(oldData.data) ? oldData.data : [];
@@ -86,10 +81,10 @@ const RecruiterJobsByStatusContent = ({ title, description, status, emptyMessage
                 };
             });
 
-            toast.success("Job deleted successfully");
-            queryClient.invalidateQueries({ queryKey: ["recruiter-jobs-by-status"] });
+            toast.success("Inactive job deleted successfully");
+            queryClient.invalidateQueries({ queryKey: ["recruiter-inactive-jobs"] });
             queryClient.invalidateQueries({ queryKey: ["my-jobs"] });
-            queryClient.refetchQueries({ queryKey: ["recruiter-jobs-by-status"], type: "active" });
+            queryClient.refetchQueries({ queryKey: ["recruiter-inactive-jobs"], type: "active" });
         },
         onError: (err: any) => {
             toast.error(err?.response?.data?.message || "Failed to delete job");
@@ -204,7 +199,9 @@ const RecruiterJobsByStatusContent = ({ title, description, status, emptyMessage
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <Badge className={statusColors[job.status] || ""}>{job.status}</Badge>
+                                        <Badge className={statusColors[job.status] || "bg-gray-100 text-gray-800"}>
+                                            {job.status}
+                                        </Badge>
                                         <Badge variant="outline">{job._count?.applications || 0} apps</Badge>
                                     </div>
                                 </div>
@@ -220,7 +217,7 @@ const RecruiterJobsByStatusContent = ({ title, description, status, emptyMessage
                                         className="text-destructive"
                                         disabled={deleting || isFetching}
                                         onClick={() => {
-                                            if (confirm("Are you sure you want to delete this job?")) {
+                                            if (confirm("Are you sure you want to permanently delete this inactive job? This action cannot be undone.")) {
                                                 removeJob(job.id);
                                             }
                                         }}
@@ -263,4 +260,4 @@ const RecruiterJobsByStatusContent = ({ title, description, status, emptyMessage
     );
 };
 
-export default RecruiterJobsByStatusContent;
+export default RecruiterInactiveJobsContent;

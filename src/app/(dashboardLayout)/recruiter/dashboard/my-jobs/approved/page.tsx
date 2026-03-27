@@ -7,8 +7,8 @@ const RecruiterApprovedJobsPage = async () => {
     return (
         <RecruiterJobsByStatusContent
             title="Approved Jobs"
-            description="Jobs approved by admin and currently active are shown here."
-            status="ACTIVE"
+            description="Jobs approved by admin and currently live are shown here."
+            status="LIVE"
             emptyMessage="No approved jobs found yet."
         />
     );

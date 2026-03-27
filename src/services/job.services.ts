@@ -68,3 +68,13 @@ export async function getPendingJobById(id: string) {
     logger.read(`Fetching pending job details (admin) → id: ${id}`);
     return serverHttpClient.get<IJob>(`/jobs/admin/pending/${id}`);
 }
+
+export async function getInactiveJobs(params?: Record<string, unknown>) {
+    logger.read("Fetching inactive jobs", params);
+    return serverHttpClient.get<IJob[]>("/jobs/my-jobs/inactive", { params });
+}
+
+export async function deleteInactiveJob(id: string) {
+    logger.delete(`Deleting inactive job → id: ${id}`);
+    return serverHttpClient.delete<IJob>(`/jobs/inactive/${id}`);
+}

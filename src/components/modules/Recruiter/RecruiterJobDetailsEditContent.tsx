@@ -107,7 +107,7 @@ const RecruiterJobDetailsEditContent = ({ job }: RecruiterJobDetailsEditContentP
             <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                    If you edit an approved/rejected job, it will move to pending and require admin approval again.
+                    If you edit a live job, it will return to pending status and require admin approval again before going live.
                 </AlertDescription>
             </Alert>
 
