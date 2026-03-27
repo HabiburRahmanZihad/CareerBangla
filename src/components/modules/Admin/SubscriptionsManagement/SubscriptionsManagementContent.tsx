@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { updateSubscriptionPlan } from "@/services/admin.services";
+import { httpClient } from "@/lib/axios/httpClient";
 import { getSubscriptionPlans } from "@/services/subscription.services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle, Pencil, RefreshCw, Rocket } from "lucide-react";
@@ -60,7 +60,7 @@ const SubscriptionsManagementContent = () => {
 
     const { mutateAsync: updatePlanMutate, isPending: isUpdating } = useMutation({
         mutationFn: ({ planKey, payload }: { planKey: string; payload: Record<string, unknown> }) =>
-            updateSubscriptionPlan(planKey, payload),
+            httpClient.patch(`/admins/subscription-plans/${planKey}`, payload),
         onSuccess: () => {
             toast.success("Subscription plan updated successfully");
             setEditingPlan(null);
@@ -68,7 +68,7 @@ const SubscriptionsManagementContent = () => {
             queryClient.invalidateQueries({ queryKey: ["subscription-plans"] });
         },
         onError: (error: any) => {
-            toast.error(error?.response?.data?.message || "Failed to update subscription plan");
+            toast.error(error?.response?.data?.message || error?.message || "Failed to update subscription plan");
         },
     });
 
