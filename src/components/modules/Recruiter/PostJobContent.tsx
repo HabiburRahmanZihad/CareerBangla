@@ -66,12 +66,12 @@ const PostJobContent = () => {
     const isVerified = (profileData?.data?.status === "APPROVED") || false;
     const profileCompletion = profileData?.data?.profileCompletion ?? 0;
     const draftStorageKey = `careerbangla.post-job-draft.${(profileData as any)?.data?.id || "recruiter"}`;
-    const premiumUntil = (profileData as any)?.data?.premiumUntil as string | undefined;
+    const premiumUntil = ((profileData as any)?.data?.premiumUntil ?? (profileData as any)?.data?.user?.premiumUntil) as string | undefined;
     const rawPremium = (profileData as any)?.data?.isPremium ?? (profileData as any)?.data?.user?.isPremium;
     const hasActivePremium = Boolean(rawPremium) && (!premiumUntil || new Date(premiumUntil).getTime() > Date.now());
     // Recruiters don't need 100% completion, just need to be verified/approved
     const isProfileComplete = true;
-    const canPost = isVerified;
+    const canPost = isVerified && hasActivePremium;
     const isGuardLoading = profileLoading;
 
     const { mutateAsync, isPending } = useMutation({
@@ -141,6 +141,11 @@ const PostJobContent = () => {
         },
         onSubmit: async ({ value }) => {
             setServerError(null);
+
+            if (!hasActivePremium) {
+                setServerError("Only premium recruiters can post jobs. Please upgrade your subscription.");
+                return;
+            }
 
             const parsed = createJobZodSchema.safeParse(value);
             if (!parsed.success) {
@@ -323,6 +328,17 @@ const PostJobContent = () => {
                             <AlertCircle className="h-4 w-4" />
                             <AlertDescription>
                                 Your profile is {profileCompletion}% complete. You must complete your profile to 100% before posting jobs.
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                    {isVerified && !hasActivePremium && (
+                        <Alert variant="destructive">
+                            <Lock className="h-4 w-4" />
+                            <AlertDescription>
+                                Only premium recruiters can post jobs. Please upgrade your subscription to continue. {" "}
+                                <Link href="/recruiter/dashboard/subscriptions" className="underline font-medium">
+                                    Upgrade now
+                                </Link>
                             </AlertDescription>
                         </Alert>
                     )}
