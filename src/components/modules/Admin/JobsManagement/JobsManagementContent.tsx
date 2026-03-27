@@ -12,7 +12,8 @@ import { getAllJobsAdmin } from "@/services/admin.services";
 import { deleteJob, updateJob } from "@/services/job.services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { ChevronLeft, ChevronRight, Grid3X3, List, RefreshCw, Search, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit, Grid3X3, List, RefreshCw, Search, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -247,6 +248,16 @@ const JobsManagementContent = () => {
                                         <SelectItem value="INACTIVE">Inactive</SelectItem>
                                     </SelectContent>
                                 </Select>
+                                <Link href={`/admin/dashboard/jobs-management/${job.id}/edit`}>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                        disabled={deleting || updatingStatus || isFetching}
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                </Link>
                                 <Button
                                     variant="ghost"
                                     size="icon"

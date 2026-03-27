@@ -78,3 +78,8 @@ export async function createAdmin(data: Record<string, unknown>) {
     logger.create("Creating admin");
     return serverHttpClient.post<void>("/users/create-admin", data);
 }
+
+export async function updateJob(jobId: string, data: Record<string, unknown>) {
+    logger.update(`Updating job → jobId: ${jobId}`);
+    return serverHttpClient.patch<IJob>(`/admins/jobs/${jobId}`, data);
+}
