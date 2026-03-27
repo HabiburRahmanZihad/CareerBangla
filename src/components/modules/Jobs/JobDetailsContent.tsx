@@ -50,7 +50,7 @@ const JobDetailsContent = ({ job, userRole }: JobDetailsContentProps) => {
     });
 
     const profileCompletion = resumeData?.data?.profileCompletion ?? 0;
-    const isProfileComplete = profileCompletion >= 100;
+    const isProfileComplete = profileCompletion >= 80;
     const canApply = isProfileComplete && !cannotApply;
 
     const { mutateAsync: apply, isPending } = useMutation({
@@ -266,7 +266,7 @@ const JobDetailsContent = ({ job, userRole }: JobDetailsContentProps) => {
                                                     <Alert variant="destructive">
                                                         <AlertCircle className="h-4 w-4" />
                                                         <AlertDescription className="text-xs">
-                                                            Profile {profileCompletion}% complete. Complete to 100% to apply.{" "}
+                                                            Profile {profileCompletion}% complete. Complete to 80% to apply.{" "}
                                                             <Link href="/dashboard/my-resume" className="underline font-medium">Complete Now</Link>
                                                         </AlertDescription>
                                                     </Alert>
