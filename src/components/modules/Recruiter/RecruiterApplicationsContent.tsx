@@ -9,16 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { getApplicationsByJob, updateApplicationStatus } from "@/services/application.services";
+import { downloadCvForRecruiter, getApplicationsByJob, updateApplicationStatus } from "@/services/application.services";
 import { getMyJobs } from "@/services/job.services";
-import envConfig from "@/lib/envConfig";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { useState } from "react";
-import { toast } from "sonner";
+import { Calendar, Crown, FileText, Loader2, Lock, Mail, Phone, StickyNote, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Crown, Lock, Mail, Phone, FileText, User, Loader2, Calendar, StickyNote } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const statusColors: Record<string, string> = {
     PENDING: "bg-yellow-100 text-yellow-800",
@@ -48,6 +47,10 @@ const RecruiterApplicationsContent = () => {
         note: string;
     } | null>(null);
     const [downloadingCv, setDownloadingCv] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [skillsFilter, setSkillsFilter] = useState("");
+    const [educationFilter, setEducationFilter] = useState("");
+    const [statusFilter, setStatusFilter] = useState<string>("");
 
     const { data: jobsData, isLoading: jobsLoading } = useQuery({
         queryKey: ["my-jobs"],
@@ -55,8 +58,13 @@ const RecruiterApplicationsContent = () => {
     });
 
     const { data: applicationsData, isLoading: applicationsLoading } = useQuery({
-        queryKey: ["job-applications", selectedJobId],
-        queryFn: () => getApplicationsByJob(selectedJobId),
+        queryKey: ["job-applications", selectedJobId, { searchTerm, skillsFilter, educationFilter, statusFilter }],
+        queryFn: () => getApplicationsByJob(selectedJobId, {
+            search: searchTerm || undefined,
+            skills: skillsFilter || undefined,
+            education: educationFilter || undefined,
+            status: statusFilter || undefined,
+        }),
         enabled: !!selectedJobId,
     });
 
@@ -95,17 +103,11 @@ const RecruiterApplicationsContent = () => {
         });
     };
 
-    const handleDownloadCv = async (userId: string, userName: string) => {
+    const handleDownloadCv = async (userId: string, userName: string, applicationId?: string) => {
         setDownloadingCv(userId);
         try {
-            const res = await fetch(`${envConfig.apiBaseUrl}/resumes/download-pdf?userId=${userId}`, {
-                credentials: "include",
-            });
-            if (!res.ok) {
-                const err = await res.json().catch(() => null);
-                throw new Error(err?.message || "Failed to download CV");
-            }
-            const blob = await res.blob();
+            const response = await downloadCvForRecruiter(userId, applicationId);
+            const blob = response.data;
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
@@ -114,8 +116,9 @@ const RecruiterApplicationsContent = () => {
             a.click();
             a.remove();
             URL.revokeObjectURL(url);
+            toast.success("CV downloaded successfully");
         } catch (err: any) {
-            toast.error(err.message || "Failed to download CV");
+            toast.error(err?.message || "Failed to download CV");
         } finally {
             setDownloadingCv(null);
         }
@@ -133,19 +136,62 @@ const RecruiterApplicationsContent = () => {
             {jobsLoading ? (
                 <Skeleton className="h-10 w-64" />
             ) : (
-                <div className="max-w-sm">
-                    <Select value={selectedJobId} onValueChange={setSelectedJobId}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a job to view applications" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {jobs.map((job: any) => (
-                                <SelectItem key={job.id} value={job.id}>
-                                    {job.title} ({job._count?.applications || 0} apps)
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                <div>
+                    <div className="max-w-sm mb-4">
+                        <Select value={selectedJobId} onValueChange={setSelectedJobId}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a job to view applications" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {jobs.map((job: any) => (
+                                    <SelectItem key={job.id} value={job.id}>
+                                        {job.title} ({job._count?.applications || 0} apps)
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Filters */}
+                    {selectedJobId && (
+                        <Card className="bg-muted/50">
+                            <CardContent className="pt-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                                    <Input
+                                        placeholder="Search name or email..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="text-xs"
+                                    />
+                                    <Input
+                                        placeholder="Skills (comma separated)"
+                                        value={skillsFilter}
+                                        onChange={(e) => setSkillsFilter(e.target.value)}
+                                        className="text-xs"
+                                    />
+                                    <Input
+                                        placeholder="Education"
+                                        value={educationFilter}
+                                        onChange={(e) => setEducationFilter(e.target.value)}
+                                        className="text-xs"
+                                    />
+                                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                        <SelectTrigger className="text-xs">
+                                            <SelectValue placeholder="Filter by status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="">All Statuses</SelectItem>
+                                            <SelectItem value="PENDING">Pending</SelectItem>
+                                            <SelectItem value="SHORTLISTED">Shortlisted</SelectItem>
+                                            <SelectItem value="INTERVIEW">Interview</SelectItem>
+                                            <SelectItem value="HIRED">Hired</SelectItem>
+                                            <SelectItem value="REJECTED">Rejected</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             )}
 
@@ -293,7 +339,7 @@ const RecruiterApplicationsContent = () => {
                                                     size="sm"
                                                     className="text-xs"
                                                     disabled={downloadingCv === app.user?.id}
-                                                    onClick={() => handleDownloadCv(app.user?.id, app.user?.name || "Applicant")}
+                                                    onClick={() => handleDownloadCv(app.user?.id, app.user?.name || "Applicant", app.id)}
                                                 >
                                                     {downloadingCv === app.user?.id ? (
                                                         <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Downloading...</>

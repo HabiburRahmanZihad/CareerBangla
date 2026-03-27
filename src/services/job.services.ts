@@ -48,3 +48,18 @@ export async function deleteJobCategory(id: string) {
     logger.delete(`Deleting job category → id: ${id}`);
     return serverHttpClient.delete<IJobCategory>(`/jobs/categories/${id}`);
 }
+
+export async function approveJob(id: string) {
+    logger.update(`Approving job → id: ${id}`);
+    return serverHttpClient.patch<IJob>(`/jobs/${id}/approve`, {});
+}
+
+export async function rejectJob(id: string, reason: string) {
+    logger.update(`Rejecting job → id: ${id}, reason: ${reason}`);
+    return serverHttpClient.patch<IJob>(`/jobs/${id}/reject`, { reason });
+}
+
+export async function getPendingJobs(params?: Record<string, unknown>) {
+    logger.read("Fetching pending jobs (admin)", params);
+    return serverHttpClient.get<IJob[]>("/jobs/admin/pending", { params });
+}
