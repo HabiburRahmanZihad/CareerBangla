@@ -17,8 +17,8 @@ export default function ProfileCompletionIndicator({ profileCompletion }: Profil
 
     const getCompletionMessage = (completion: number) => {
         if (completion === 100) return "🎉 Your resume is complete!";
-        if (completion >= 80) return "Almost there! Fill in more sections to stand out.";
-        if (completion >= 60) return "Good progress! Continue adding more details.";
+        if (completion >= 80) return "Great profile! Keep adding details to stand out.";
+        if (completion >= 60) return "You can now apply for jobs! Keep adding details to stand out.";
         if (completion >= 40) return "You're making progress. Add more information.";
         return "Get started by filling in your basic information.";
     };
