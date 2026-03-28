@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getAllRecruiters } from "@/services/recruiter.services";
 import { IRecruiterProfile } from "@/types/user.types";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, CheckCircle, FileText, Loader2 } from "lucide-react";
+import { ArrowRight, CheckCircle, FileText, Loader2, RefreshCw, XCircle } from "lucide-react";
 import Link from "next/link";
 
 const RecruitersManagementDashboard = () => {
@@ -18,6 +18,7 @@ const RecruitersManagementDashboard = () => {
     const recruiters = (data?.data || []) as IRecruiterProfile[];
     const pendingCount = recruiters.filter((r: IRecruiterProfile) => r.status === "PENDING").length;
     const confirmedCount = recruiters.filter((r: IRecruiterProfile) => r.status === "APPROVED").length;
+    const rejectedCount = recruiters.filter((r: IRecruiterProfile) => r.status === "REJECTED").length;
     const totalCount = recruiters.length;
 
     return (
@@ -31,7 +32,7 @@ const RecruitersManagementDashboard = () => {
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Total Recruiters</CardTitle>
@@ -79,10 +80,26 @@ const RecruitersManagementDashboard = () => {
                         )}
                     </CardContent>
                 </Card>
+
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Rejected Recruiters</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {isLoading ? (
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span className="text-2xl font-bold">--</span>
+                            </div>
+                        ) : (
+                            <p className="text-3xl font-bold text-red-600">{rejectedCount}</p>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Navigation Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Recruiter Applications Card */}
                 <Link href="/admin/dashboard/recruiters-management/applications" className="group">
                     <Card className="h-full hover:shadow-lg transition-all duration-300 hover:border-primary">
@@ -174,6 +191,52 @@ const RecruitersManagementDashboard = () => {
                         </CardContent>
                     </Card>
                 </Link>
+
+                {/* Rejected Recruiters Card */}
+                <Link href="/admin/dashboard/recruiters-management/rejected" className="group">
+                    <Card className="h-full hover:shadow-lg transition-all duration-300 hover:border-destructive border-red-200 dark:border-red-900">
+                        <CardHeader>
+                            <div className="flex items-start justify-between">
+                                <div className="space-y-2">
+                                    <CardTitle className="flex items-center gap-2 text-xl">
+                                        <XCircle className="h-5 w-5 text-red-500" />
+                                        Rejected Recruiters
+                                    </CardTitle>
+                                    <CardDescription>
+                                        View rejected applications — re-approve or permanently delete
+                                    </CardDescription>
+                                </div>
+                                <Badge variant="destructive">
+                                    {rejectedCount} Rejected
+                                </Badge>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-3 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-2">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                    <span>View all rejected applicants</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                    <span>Re-approve previously rejected recruiters</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                    <span>Permanently delete from database</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                    <span>Search by name, email, or company</span>
+                                </div>
+                            </div>
+                            <Button variant="destructive" className="w-full group-hover:gap-2 transition-all">
+                                View Rejected
+                                <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </Link>
             </div>
 
             {/* Quick Actions */}
@@ -192,6 +255,11 @@ const RecruitersManagementDashboard = () => {
                         <Link href="/admin/dashboard/recruiters-management/confirmed">
                             <Button variant="outline" size="sm">
                                 Manage Accounts ({confirmedCount})
+                            </Button>
+                        </Link>
+                        <Link href="/admin/dashboard/recruiters-management/rejected">
+                            <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50 dark:hover:bg-red-950">
+                                Rejected Recruiters ({rejectedCount})
                             </Button>
                         </Link>
                     </div>
