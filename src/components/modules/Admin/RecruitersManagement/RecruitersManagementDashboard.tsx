@@ -10,7 +10,7 @@ import { ArrowRight, CheckCircle, FileText, Loader2, RefreshCw, XCircle } from "
 import Link from "next/link";
 
 const RecruitersManagementDashboard = () => {
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["all-recruiters"],
         queryFn: () => getAllRecruiters({ limit: "100" }),
     });
@@ -24,11 +24,16 @@ const RecruitersManagementDashboard = () => {
     return (
         <div className="space-y-8">
             {/* Header */}
-            <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Recruiters Management</h1>
-                <p className="text-lg text-muted-foreground">
-                    Manage recruiter applications and confirmed accounts in one place
-                </p>
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div className="space-y-2">
+                    <h1 className="text-3xl font-bold tracking-tight">Recruiters Management</h1>
+                    <p className="text-lg text-muted-foreground">
+                        Manage recruiter applications and confirmed accounts in one place
+                    </p>
+                </div>
+                <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isFetching}>
+                    <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+                </Button>
             </div>
 
             {/* Stats Overview */}
