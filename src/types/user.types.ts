@@ -273,6 +273,10 @@ export interface IJob {
     education?: string;
     applicationDeadline?: string;
     deadline?: string;
+    featuredJob?: boolean;
+    urgentHiring?: boolean;
+    allowVideoCv?: boolean;
+    tags?: string[];
     status: "PENDING" | "LIVE" | "CLOSED" | "INACTIVE";
     isDeleted: boolean;
     category?: IJobCategory;

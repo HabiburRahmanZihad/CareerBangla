@@ -2,8 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { IJob } from "@/types/user.types";
-import { formatDistanceToNow } from "date-fns";
-import { Briefcase, Clock, MapPin, Users } from "lucide-react";
+import { differenceInDays, formatDistanceToNow } from "date-fns";
+import { Briefcase, Clock, MapPin, Star, Users, Zap } from "lucide-react";
 import Link from "next/link";
 
 interface JobCardProps {
@@ -25,9 +25,33 @@ const jobTypeLabels: Record<string, string> = {
 };
 
 const JobCard = ({ job }: JobCardProps) => {
+    const deadline = job.deadline || job.applicationDeadline;
+    const daysLeft = deadline ? differenceInDays(new Date(deadline), new Date()) : null;
+    const isExpiringSoon = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7;
+
     return (
-        <Card className="hover:shadow-md transition-shadow">
+        <Card className={`hover:shadow-md transition-shadow ${job.featuredJob ? "border-amber-400 dark:border-amber-500" : ""}`}>
             <CardHeader className="pb-3">
+                {/* Priority badges row */}
+                {(job.featuredJob || job.urgentHiring || isExpiringSoon) && (
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                        {job.featuredJob && (
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                                <Star className="h-3 w-3 fill-current" /> Featured
+                            </span>
+                        )}
+                        {job.urgentHiring && (
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
+                                <Zap className="h-3 w-3 fill-current" /> Urgent Hiring
+                            </span>
+                        )}
+                        {isExpiringSoon && (
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
+                                <Clock className="h-3 w-3" /> {daysLeft === 0 ? "Expires today" : `${daysLeft}d left`}
+                            </span>
+                        )}
+                    </div>
+                )}
                 <div className="flex items-start justify-between gap-2">
                     <div className="space-y-1 flex-1">
                         <Link href={`/jobs/${job.id}`} className="text-lg font-semibold hover:text-primary transition-colors line-clamp-1">
