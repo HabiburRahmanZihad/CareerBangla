@@ -31,14 +31,14 @@ const JobsPage = async ({ searchParams }: JobsPageProps) => {
             salaryMax: params.salaryMax,
             datePosted: params.datePosted,
             sortBy: params.sortBy,
-        }),
-        getJobCategories(),
+        }).catch(() => ({ data: [], meta: undefined })),
+        getJobCategories().catch(() => ({ data: [] })),
     ]);
 
     return (
         <JobsPageContent
             jobs={jobsResponse.data || []}
-            meta={jobsResponse.meta}
+            meta={(jobsResponse as any).meta}
             categories={categoriesResponse.data || []}
             currentParams={params}
         />
