@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { loginAction } from "@/app/(commonLayout)/(authRouteGroup)/login/_action";
-import { verifyEmailAction } from "@/app/(commonLayout)/(authRouteGroup)/verify-email/_action";
+import { loginAction } from "@/app/(authLayout)/login/_action";
+import { verifyEmailAction } from "@/app/(authLayout)/verify-email/_action";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";

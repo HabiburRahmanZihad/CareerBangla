@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { loginAction } from "@/app/(commonLayout)/(authRouteGroup)/login/_action";
+import { loginAction } from "@/app/(authLayout)/login/_action";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { ILoginPayload } from "@/zod/auth.validation";

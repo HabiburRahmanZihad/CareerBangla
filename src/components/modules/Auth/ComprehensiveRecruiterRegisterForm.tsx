@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { recruiterRegisterAction } from "@/app/(commonLayout)/(authRouteGroup)/register/recruiter/_action";
+import { recruiterRegisterAction } from "@/app/(authLayout)/register/recruiter/_action";
 import AppField from "@/components/shared/form/AppField";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
