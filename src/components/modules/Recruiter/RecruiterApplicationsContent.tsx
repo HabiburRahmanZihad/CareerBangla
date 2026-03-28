@@ -27,13 +27,14 @@ const statusColors: Record<string, string> = {
     REJECTED: "bg-red-100 text-red-800",
 };
 
-const terminalStatuses = ["HIRED", "REJECTED"];
+const terminalStatuses = ["HIRED", "REJECTED", "INTERVIEW"];
 
-// Valid transitions matching backend
+// Recruiter can only move forward: PENDING → SHORTLISTED → INTERVIEW
+// HIRED is set by Admin only after final verification
 const validTransitions: Record<string, string[]> = {
-    PENDING: ["SHORTLISTED", "REJECTED"],
-    SHORTLISTED: ["INTERVIEW", "REJECTED"],
-    INTERVIEW: ["HIRED", "REJECTED"],
+    PENDING: ["SHORTLISTED"],
+    SHORTLISTED: ["INTERVIEW"],
+    INTERVIEW: [],
     HIRED: [],
     REJECTED: [],
 };
@@ -71,11 +72,6 @@ const RecruiterApplicationsContent = () => {
         date: string;
         note: string;
     } | null>(null);
-    const [hiredModal, setHiredModal] = useState<{
-        appId: string;
-        company: string;
-        designation: string;
-    } | null>(null);
     const [downloadingCv, setDownloadingCv] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [skillsFilter, setSkillsFilter] = useState("");
@@ -99,19 +95,16 @@ const RecruiterApplicationsContent = () => {
     });
 
     const { mutateAsync: changeStatus, isPending: isUpdating } = useMutation({
-        mutationFn: (payload: { id: string; status: string; interviewDate?: string; interviewNote?: string; hiredCompany?: string; hiredDesignation?: string }) =>
+        mutationFn: (payload: { id: string; status: string; interviewDate?: string; interviewNote?: string }) =>
             updateApplicationStatus(payload.id, {
                 status: payload.status,
                 interviewDate: payload.interviewDate,
                 interviewNote: payload.interviewNote,
-                hiredCompany: payload.hiredCompany,
-                hiredDesignation: payload.hiredDesignation,
             }),
         onSuccess: () => {
             toast.success("Application status updated");
             queryClient.invalidateQueries({ queryKey: ["job-applications", selectedJobId] });
             setInterviewModal(null);
-            setHiredModal(null);
         },
         onError: (err: any) => {
             toast.error(err?.response?.data?.message || "Failed to update status");
@@ -121,8 +114,6 @@ const RecruiterApplicationsContent = () => {
     const handleStatusChange = (appId: string, newStatus: string) => {
         if (newStatus === "INTERVIEW") {
             setInterviewModal({ appId, date: "", note: "" });
-        } else if (newStatus === "HIRED") {
-            setHiredModal({ appId, company: "", designation: "" });
         } else {
             changeStatus({ id: appId, status: newStatus });
         }
@@ -135,16 +126,6 @@ const RecruiterApplicationsContent = () => {
             status: "INTERVIEW",
             interviewDate: interviewModal.date || undefined,
             interviewNote: interviewModal.note || undefined,
-        });
-    };
-
-    const handleHiredSubmit = () => {
-        if (!hiredModal) return;
-        changeStatus({
-            id: hiredModal.appId,
-            status: "HIRED",
-            hiredCompany: hiredModal.company || undefined,
-            hiredDesignation: hiredModal.designation || undefined,
         });
     };
 
@@ -460,46 +441,6 @@ const RecruiterApplicationsContent = () => {
                 </div>
             )}
 
-            {/* Hire confirmation modal */}
-            {hiredModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <Card className="w-full max-w-md mx-4">
-                        <CardHeader>
-                            <CardTitle className="text-green-700">Mark Candidate as Hired</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-1.5">
-                                <Label htmlFor="hired-company">Company Name *</Label>
-                                <Input
-                                    id="hired-company"
-                                    placeholder="e.g. Tech Corp"
-                                    value={hiredModal.company}
-                                    onChange={(e) => setHiredModal({ ...hiredModal, company: e.target.value })}
-                                />
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label htmlFor="hired-designation">Designation *</Label>
-                                <Input
-                                    id="hired-designation"
-                                    placeholder="e.g. Senior Software Engineer"
-                                    value={hiredModal.designation}
-                                    onChange={(e) => setHiredModal({ ...hiredModal, designation: e.target.value })}
-                                />
-                            </div>
-                            <div className="flex justify-end gap-2">
-                                <Button variant="outline" onClick={() => setHiredModal(null)}>Cancel</Button>
-                                <Button
-                                    onClick={handleHiredSubmit}
-                                    disabled={isUpdating || !hiredModal.company || !hiredModal.designation}
-                                    className="bg-green-600 hover:bg-green-700"
-                                >
-                                    {isUpdating ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Marking...</> : "Confirm Hire"}
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
         </div>
     );
 };
