@@ -1,7 +1,7 @@
 import JobDetailsContent from "@/components/modules/Jobs/JobDetailsContent";
 import { getUserInfo } from "@/services/auth.services";
 import { getJobById } from "@/services/job.services";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 interface JobDetailsPageProps {
     params: Promise<{ id: string }>;
@@ -10,11 +10,13 @@ interface JobDetailsPageProps {
 const JobDetailsPage = async ({ params }: JobDetailsPageProps) => {
     const { id } = await params;
 
+    const userInfo = await getUserInfo().catch(() => null);
+    if (!userInfo) {
+        redirect(`/login?redirect=/jobs/${id}`);
+    }
+
     try {
-        const [jobResponse, userInfo] = await Promise.all([
-            getJobById(id),
-            getUserInfo().catch(() => null),
-        ]);
+        const jobResponse = await getJobById(id);
 
         if (!jobResponse.data) {
             notFound();
@@ -24,8 +26,8 @@ const JobDetailsPage = async ({ params }: JobDetailsPageProps) => {
             <div className="container mx-auto px-4 py-8">
                 <JobDetailsContent
                     job={jobResponse.data}
-                    userRole={userInfo?.role}
-                    isPremium={userInfo?.isPremium}
+                    userRole={userInfo.role}
+                    isPremium={userInfo.isPremium}
                 />
             </div>
         );
