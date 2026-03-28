@@ -26,6 +26,8 @@ export interface IAdminDashboardData {
     recruiterCount: number;
     adminCount: number;
     superAdminCount: number;
+    activeJobCount: number;
+    pendingRecruiters: number;
     totalRevenue: number;
     barChartData: BarChartData[];
     pieChartData: PieChartData[];
