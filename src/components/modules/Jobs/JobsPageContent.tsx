@@ -481,8 +481,12 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
             <div>
                 <FilterLabel>Category</FilterLabel>
                 <Select value={categoryId} onValueChange={setCategoryId}>
-                    <SelectTrigger className="h-9 text-sm">
-                        <SelectValue placeholder="All Categories" />
+                    <SelectTrigger className="h-9 text-sm w-full">
+                        <SelectValue>
+                            {categoryId === "all"
+                                ? "All Categories"
+                                : (categories.find(c => c.id === categoryId)?.title ?? "All Categories")}
+                        </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All Categories</SelectItem>
@@ -635,33 +639,38 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                     </p>
 
                     {/* Hero search – glassmorphism card */}
-                    <div className="max-w-2xl mx-auto flex gap-2 backdrop-blur-xl bg-white/60 dark:bg-white/8 border border-white/50 dark:border-white/15 rounded-2xl shadow-xl shadow-primary/5 p-2 mb-7">
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <input
-                                type="text"
-                                placeholder="Job title, skill, or company..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && applyFilters()}
-                                className="w-full pl-9 pr-3 py-2.5 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-                            />
+                    {/* Desktop: single row | Mobile: stacked */}
+                    <div className="max-w-2xl mx-auto mb-7">
+                        <div className="backdrop-blur-xl bg-white/60 dark:bg-white/8 border border-white/50 dark:border-white/15 rounded-2xl shadow-xl shadow-primary/5 p-2">
+                            <div className="flex flex-col sm:flex-row gap-2">
+                                <div className="flex-1 relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <input
+                                        type="text"
+                                        placeholder="Job title, skill, or company..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        onKeyDown={(e) => e.key === "Enter" && applyFilters()}
+                                        className="w-full pl-9 pr-3 py-2.5 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                                    />
+                                </div>
+                                <div className="hidden sm:block w-px bg-border/50 self-stretch" />
+                                <div className="relative sm:w-44">
+                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <input
+                                        type="text"
+                                        placeholder="Location..."
+                                        value={location}
+                                        onChange={(e) => setLocation(e.target.value)}
+                                        onKeyDown={(e) => e.key === "Enter" && applyFilters()}
+                                        className="w-full pl-9 pr-3 py-2.5 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                                    />
+                                </div>
+                                <Button type="button" onClick={applyFilters} className="rounded-xl px-5 shrink-0 gap-1.5 shadow-md w-full sm:w-auto">
+                                    <Search className="h-4 w-4" /> Search
+                                </Button>
+                            </div>
                         </div>
-                        <div className="w-px bg-border/50 self-stretch" />
-                        <div className="relative flex-[0_0_180px]">
-                            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <input
-                                type="text"
-                                placeholder="Location..."
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && applyFilters()}
-                                className="w-full pl-9 pr-3 py-2.5 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-                            />
-                        </div>
-                        <Button type="button" onClick={applyFilters} className="rounded-xl px-5 shrink-0 gap-1.5 shadow-md">
-                            <Search className="h-4 w-4" /> Search
-                        </Button>
                     </div>
 
                     {/* Trending searches – glass chips */}
@@ -759,17 +768,20 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                         )}
 
                         {/* Results bar */}
-                        <div className="flex items-center justify-between flex-wrap gap-3">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
                             <p className="text-sm text-muted-foreground">
                                 {total === 0
                                     ? "No results"
                                     : <><span className="font-bold text-foreground">{from}–{to}</span> of <span className="font-bold text-foreground">{total.toLocaleString()}</span> jobs</>
                                 }
                             </p>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                {/* Sort — children prop bypasses Radix portal label lookup on reload */}
                                 <Select value={sortBy} onValueChange={handleSortChange}>
-                                    <SelectTrigger className="w-40 h-8 text-xs">
-                                        <SelectValue />
+                                    <SelectTrigger className="w-36 h-8 text-xs">
+                                        <SelectValue>
+                                            {SORT_OPTIONS.find(o => o.value === sortBy)?.label ?? "Best Match"}
+                                        </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
                                         {SORT_OPTIONS.map((opt) => (
@@ -777,9 +789,11 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                                         ))}
                                     </SelectContent>
                                 </Select>
+
+                                {/* Per page */}
                                 <Select value={limit} onValueChange={handleLimitChange}>
-                                    <SelectTrigger className="w-25 h-8 text-xs">
-                                        <SelectValue />
+                                    <SelectTrigger className="w-24 h-8 text-xs">
+                                        <SelectValue>{limit} / page</SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="12">12 / page</SelectItem>
@@ -787,6 +801,8 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                                         <SelectItem value="48">48 / page</SelectItem>
                                     </SelectContent>
                                 </Select>
+
+                                {/* View toggle + Refresh — grouped in one pill */}
                                 <div className="flex rounded-lg border overflow-hidden bg-card">
                                     <button
                                         type="button"
@@ -803,6 +819,15 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                                         className={`p-1.5 transition-colors ${view === "grid" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
                                     >
                                         <Grid3X3 className="h-4 w-4" />
+                                    </button>
+                                    <div className="w-px bg-border self-stretch" />
+                                    <button
+                                        type="button"
+                                        title="Refresh results"
+                                        onClick={() => router.refresh()}
+                                        className="p-1.5 hover:bg-muted hover:text-primary transition-colors"
+                                    >
+                                        <RotateCcw className="h-4 w-4" />
                                     </button>
                                 </div>
                             </div>
