@@ -192,10 +192,6 @@ const ComprehensiveRecruiterRegisterForm = () => {
         onSubmit: async ({ value }) => {
             setServerError(null);
             try {
-                if (value.contactNumber && !/^01\d{9}$/.test(value.contactNumber)) {
-                    setServerError("Invalid phone number format (e.g. 01XXXXXXXXX)");
-                    return;
-                }
                 const result = (await mutateAsync(value)) as any;
                 if (result.success) {
                     setSuccess(true);
@@ -402,8 +398,7 @@ const ComprehensiveRecruiterRegisterForm = () => {
                                             {(field) => (
                                                 <AppField
                                                     field={field}
-                                                    label="Full Name"
-                                                    required
+                                                    label="Full Name *"
                                                     type="text"
                                                     placeholder="Your full name"
                                                 />
@@ -412,6 +407,7 @@ const ComprehensiveRecruiterRegisterForm = () => {
 
                                         <form.Field
                                             name="designation"
+                                            validators={{ onChange: recruiterRegisterZodSchema.shape.designation }}
                                         >
                                             {(field) => (
                                                 <AppField
@@ -431,8 +427,7 @@ const ComprehensiveRecruiterRegisterForm = () => {
                                         {(field) => (
                                             <AppField
                                                 field={field}
-                                                label="Email Address"
-                                                required
+                                                label="Email Address *"
                                                 type="email"
                                                 placeholder="you@company.com"
                                             />
@@ -441,6 +436,7 @@ const ComprehensiveRecruiterRegisterForm = () => {
 
                                     <form.Field
                                         name="contactNumber"
+                                        validators={{ onChange: recruiterRegisterZodSchema.shape.contactNumber }}
                                     >
                                         {(field) => (
                                             <AppField
@@ -463,8 +459,7 @@ const ComprehensiveRecruiterRegisterForm = () => {
                                                 <div className="space-y-2">
                                                     <AppField
                                                         field={field}
-                                                        label="Password"
-                                                        required
+                                                        label="Password *"
                                                         type={showPassword ? "text" : "password"}
                                                         placeholder="Create a strong password"
                                                         append={
@@ -521,8 +516,7 @@ const ComprehensiveRecruiterRegisterForm = () => {
                                         {(field) => (
                                             <AppField
                                                 field={field}
-                                                label="Company Name"
-                                                required
+                                                label="Company Name *"
                                                 type="text"
                                                 placeholder="Your company name"
                                             />
@@ -565,7 +559,10 @@ const ComprehensiveRecruiterRegisterForm = () => {
                                         </form.Field>
                                     </div>
 
-                                    <form.Field name="companyWebsite">
+                                    <form.Field
+                                        name="companyWebsite"
+                                        validators={{ onChange: recruiterRegisterZodSchema.shape.companyWebsite }}
+                                    >
                                         {(field) => (
                                             <AppField
                                                 field={field}
@@ -576,7 +573,10 @@ const ComprehensiveRecruiterRegisterForm = () => {
                                         )}
                                     </form.Field>
 
-                                    <form.Field name="companyAddress">
+                                    <form.Field
+                                        name="companyAddress"
+                                        validators={{ onChange: recruiterRegisterZodSchema.shape.companyAddress }}
+                                    >
                                         {(field) => (
                                             <AppField
                                                 field={field}
@@ -593,7 +593,10 @@ const ComprehensiveRecruiterRegisterForm = () => {
                             {activeStep === 2 && (
                                 <div className="space-y-4">
                                     {/* About Company */}
-                                    <form.Field name="description">
+                                    <form.Field
+                                        name="description"
+                                        validators={{ onChange: recruiterRegisterZodSchema.shape.description }}
+                                    >
                                         {(field) => (
                                             <div className="space-y-1.5">
                                                 <label className="text-sm font-medium text-foreground">About Company</label>
