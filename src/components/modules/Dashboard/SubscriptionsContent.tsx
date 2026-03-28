@@ -142,6 +142,7 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
                 planKey: selectedPlanKey,
                 couponCode: appliedCoupon?.code || undefined,
                 referralCode: referralCode || undefined,
+                gateway,
             }),
         onSuccess: (response: any) => {
             const url = response?.data?.paymentUrl || response?.data?.url || response?.data?.redirectUrl || response?.url;
