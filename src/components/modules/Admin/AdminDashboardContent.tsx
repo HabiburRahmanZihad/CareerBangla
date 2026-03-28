@@ -1,11 +1,12 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { getDashboardStats } from "@/services/stats.services";
 import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import {
     Activity,
     Bell,
@@ -22,7 +23,6 @@ import {
     Users,
 } from "lucide-react";
 import Link from "next/link";
-import { format } from "date-fns";
 import {
     Area,
     AreaChart,
@@ -36,6 +36,32 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
+
+// ── Tooltip type definitions ────────────────────────────────────────────────
+interface AreaTooltipProps {
+    active?: boolean;
+    payload?: Array<{
+        value: number;
+        name?: string;
+        dataKey?: string;
+        fill?: string;
+    }>;
+    label?: string | number;
+}
+
+interface PieTooltipProps {
+    active?: boolean;
+    payload?: Array<{
+        value: number;
+        name?: string;
+        dataKey?: string;
+        fill?: string;
+        payload?: {
+            fill?: string;
+        };
+    }>;
+    label?: string | number;
+}
 
 // ── Colour palette for application status ──────────────────────────────────
 const STATUS_COLORS: Record<string, string> = {
@@ -99,7 +125,7 @@ const StatCard = ({ title, value, sub, icon: Icon, iconClass, href, loading, bad
 );
 
 // ── Custom tooltip for area chart ───────────────────────────────────────────
-const AreaTooltip = ({ active, payload, label }: any) => {
+const AreaTooltip = ({ active, payload, label }: AreaTooltipProps) => {
     if (!active || !payload?.length) return null;
     return (
         <div className="bg-background border rounded-lg shadow-lg px-3 py-2 text-sm">
@@ -110,12 +136,12 @@ const AreaTooltip = ({ active, payload, label }: any) => {
 };
 
 // ── Custom tooltip for pie chart ────────────────────────────────────────────
-const PieTooltip = ({ active, payload }: any) => {
+const PieTooltip = ({ active, payload }: PieTooltipProps) => {
     if (!active || !payload?.length) return null;
     return (
         <div className="bg-background border rounded-lg shadow-lg px-3 py-2 text-sm">
             <p className="font-medium">{payload[0].name}</p>
-            <p style={{ color: payload[0].payload.fill }}>{payload[0].value} applications</p>
+            <p style={{ color: payload[0].payload?.fill ?? payload[0].fill }}>{payload[0].value} applications</p>
         </div>
     );
 };
@@ -204,7 +230,7 @@ const AdminDashboardContent = () => {
             </div>
 
             {/* ── Revenue banner ── */}
-            <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/20">
+            <Card className="bg-linear-to-r from-primary/10 via-primary/5 to-transparent border-primary/20">
                 <CardContent className="py-5 px-6">
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div>

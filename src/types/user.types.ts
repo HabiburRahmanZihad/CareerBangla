@@ -292,6 +292,9 @@ export interface IJobCategory {
     title: string;
     icon?: string;
     createdAt?: string;
+    _count?: {
+        jobs: number;
+    };
 }
 
 export interface INotification {

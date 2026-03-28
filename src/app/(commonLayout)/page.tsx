@@ -1,3 +1,4 @@
+import TopCategoriesSection from "@/components/modules/Home/TopCategoriesSection";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -116,6 +117,9 @@ export default function Home() {
                     </div>
                 </div>
             </section>
+
+            {/* Top Categories Section */}
+            <TopCategoriesSection />
 
             {/* CTA Section */}
             <section className="py-20 bg-primary/5">
