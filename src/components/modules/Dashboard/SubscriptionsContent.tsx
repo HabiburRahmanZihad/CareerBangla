@@ -798,7 +798,7 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
                                                     {" "}&middot;{" "}
                                                     {format(new Date(sub.createdAt), "PPP")}
                                                 </p>
-                                                {sub.currentPeriodStart && (
+                                                {sub.status === "PAID" && sub.currentPeriodStart && (
                                                     <p className="text-xs text-muted-foreground">
                                                         Activated: {format(new Date(sub.currentPeriodStart), "MMM d, yyyy")}
                                                         {sub.currentPeriodEnd ? ` - ${format(new Date(sub.currentPeriodEnd), "MMM d, yyyy")}` : " (Lifetime)"}
