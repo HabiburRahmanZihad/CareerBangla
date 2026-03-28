@@ -131,7 +131,7 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
         enabled: step === "history",
     });
 
-    const { data: plansData } = useQuery({
+    const { data: plansData, isLoading: plansLoading } = useQuery({
         queryKey: ["subscription-plans"],
         queryFn: () => getSubscriptionPlans(),
     });
@@ -261,6 +261,25 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
 
     // ── Step 1: Overview - Career Boost Plan ──
     if (step === "overview") {
+        if (plansLoading) {
+            return (
+                <div className="space-y-8">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-2">
+                            <Skeleton className="h-9 w-72" />
+                            <Skeleton className="h-5 w-96" />
+                        </div>
+                        <Skeleton className="h-9 w-32" />
+                    </div>
+                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                        {Array.from({ length: isRecruiter ? 3 : 1 }).map((_, i) => (
+                            <Skeleton key={i} className="h-72 rounded-xl" />
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className="space-y-8">
                 <div className="flex items-center justify-between">
