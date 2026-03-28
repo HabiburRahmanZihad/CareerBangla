@@ -4,7 +4,7 @@ import { getUserInfo } from "@/services/auth.services";
 import { redirect } from "next/navigation";
 
 interface ResetPasswordParams {
-    searchParams: Promise<{ email?: string }>;
+    searchParams: Promise<{ email?: string; phone?: string }>;
 }
 
 const ResetPasswordPage = async ({ searchParams }: ResetPasswordParams) => {
@@ -16,7 +16,7 @@ const ResetPasswordPage = async ({ searchParams }: ResetPasswordParams) => {
     }
 
     const params = await searchParams;
-    return <ResetPasswordForm email={params.email || ""} />;
+    return <ResetPasswordForm email={params.email || ""} phone={params.phone || ""} />;
 };
 
 export default ResetPasswordPage;
