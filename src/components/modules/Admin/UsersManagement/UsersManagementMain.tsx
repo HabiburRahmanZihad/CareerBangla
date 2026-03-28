@@ -35,7 +35,7 @@ const UsersManagementMain = () => {
     const [hiredFilter, setHiredFilter] = useState<string>("all-hired");
     const [viewMode, setViewMode] = useState<"list" | "grid">("list");
     const [currentPage, setCurrentPage] = useState(1);
-    const [selectedUser, setSelectedUser] = useState<IUserWithDetails | null>(null);
+    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
     const { data, isLoading, isFetching, refetch } = useQuery({
@@ -90,8 +90,9 @@ const UsersManagementMain = () => {
     const paginatedUsers = users.slice(startIdx, endIdx);
 
     // If user detail page is open
+    const selectedUser = selectedUserId ? (data?.data ?? []).find((u: IUserWithDetails) => u.id === selectedUserId) ?? null : null;
     if (selectedUser) {
-        return <UserDetailsPage user={selectedUser} onBack={() => setSelectedUser(null)} />;
+        return <UserDetailsPage user={selectedUser} onBack={() => setSelectedUserId(null)} />;
     }
 
     return (
@@ -257,7 +258,7 @@ const UsersManagementMain = () => {
                                         <Button
                                             size="sm"
                                             variant="outline"
-                                            onClick={() => setSelectedUser(user)}
+                                            onClick={() => setSelectedUserId(user.id)}
                                         >
                                             <Eye className="h-3.5 w-3.5 mr-1" />
                                             Details
@@ -310,7 +311,7 @@ const UsersManagementMain = () => {
                                         size="sm"
                                         variant="outline"
                                         className="flex-1 text-xs"
-                                        onClick={() => setSelectedUser(user)}
+                                        onClick={() => setSelectedUserId(user.id)}
                                     >
                                         <Eye className="h-3 w-3 mr-1" />
                                         View
