@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import envConfig from "@/lib/envConfig";
 import {
@@ -34,7 +33,7 @@ import {
     XCircle,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 interface SubscriptionsContentProps {
@@ -115,7 +114,7 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
     const [selectedPlanKey, setSelectedPlanKey] = useState("BOOST_LIFETIME");
     const [couponCode, setCouponCode] = useState("");
     const [referralCode, setReferralCode] = useState("");
-    const [gateway, setGateway] = useState<"STRIPE" | "SSLCOMMERZ">("SSLCOMMERZ");
+    const gateway = "SSLCOMMERZ" as const;
     const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountPercent: number | null; discountAmount: number | null } | null>(null);
     const [showPaymentResult, setShowPaymentResult] = useState<string | null>(paymentStatus);
 
@@ -143,7 +142,6 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
                 planKey: selectedPlanKey,
                 couponCode: appliedCoupon?.code || undefined,
                 referralCode: referralCode || undefined,
-                gateway,
             }),
         onSuccess: (response: any) => {
             const url = response?.data?.paymentUrl || response?.data?.url || response?.data?.redirectUrl || response?.url;
@@ -195,7 +193,11 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
         lifetime: true,
     };
 
-    const resolvedPlans = availablePlans.length > 0 ? availablePlans : [fallbackPlan];
+    const resolvedPlans = useMemo(
+        () => availablePlans.length > 0 ? availablePlans : [fallbackPlan],
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [availablePlans.map(p => p.planKey).join(","), isRecruiter]
+    );
     const selectedPlan = resolvedPlans.find((plan) => plan.planKey === selectedPlanKey) || resolvedPlans[0] || fallbackPlan;
 
     useEffect(() => {
@@ -491,7 +493,7 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
                     </CardContent>
                 </Card>
 
-                {/* Payment Gateway */}
+                {/* Payment Method */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
@@ -499,15 +501,13 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Select value={gateway} onValueChange={(val: any) => setGateway(val)}>
-                            <SelectTrigger className="w-full font-semibold">
-                                <SelectValue placeholder="Select Payment Gateway" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="SSLCOMMERZ">SSLCommerz (Local BDT Cards/bKash/Nagad)</SelectItem>
-                                <SelectItem value="STRIPE">Stripe (International Debit/Credit)</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                            <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
+                            <div>
+                                <p className="font-semibold text-sm">SSLCommerz</p>
+                                <p className="text-xs text-muted-foreground">Pay securely in BDT — Cards, bKash, Nagad, Rocket &amp; more</p>
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -541,7 +541,7 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
                             ) : purchasePending ? (
                                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
                             ) : (
-                                `Pay ৳${finalAmount} with ${gateway === "STRIPE" ? "Stripe" : "SSLCommerz"}`
+                                `Pay ৳${finalAmount} via SSLCommerz`
                             )}
                         </Button>
                     </CardFooter>

@@ -130,7 +130,7 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
 
     // Calculate jobs applied and shortlisted count
     const jobsApplied = user.applications?.length || 0;
-    const jobsShortlisted = user.applications?.filter(app => app.status === "SHORTLISTED" || app.status === "ACCEPTED" || app.status === "REVIEWED").length || 0;
+    const jobsShortlisted = user.applications?.filter(app => app.status === "SHORTLISTED" || app.status === "INTERVIEW" || app.status === "HIRED").length || 0;
 
     return (
         <div className="space-y-6">

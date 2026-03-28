@@ -108,7 +108,7 @@ const PendingJobDetailsContent = ({ job }: PendingJobDetailsContentProps) => {
                         </div>
                         <div>
                             <p className="text-muted-foreground">Category</p>
-                            <p>{job.category?.name || (job.category as any)?.title || "N/A"}</p>
+                            <p>{job.category?.title || "N/A"}</p>
                         </div>
                         <div>
                             <p className="text-muted-foreground">Vacancies</p>

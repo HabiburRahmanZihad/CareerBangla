@@ -122,7 +122,7 @@ const CategoriesManagementContent = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
                             {filteredCategories.map((cat) => (
                                 <div key={cat.id} className="flex items-start justify-between p-3 border rounded-lg min-h-20 hover:shadow-sm transition-shadow">
-                                    <span className="font-medium text-sm leading-snug wrap-break-word pr-2">{cat.name || cat.title || "Untitled Category"}</span>
+                                    <span className="font-medium text-sm leading-snug wrap-break-word pr-2">{cat.title || "Untitled Category"}</span>
                                     <Button
                                         variant="ghost"
                                         size="icon"
