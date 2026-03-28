@@ -124,13 +124,16 @@ const JobListCard = ({ job }: { job: IJob }) => {
     return (
         <Link href={`/jobs/${job.id}`} className="block group">
             <div className={`
-                relative flex gap-4 p-4 rounded-2xl border bg-card
+                relative flex gap-4 p-4 rounded-2xl border
+                backdrop-blur-sm bg-white/80 dark:bg-white/5
+                border-white/60 dark:border-white/10
                 transition-all duration-200 ease-out
-                hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/40
+                hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-0.5
+                hover:bg-white/95 dark:hover:bg-white/10 hover:border-primary/30
                 before:absolute before:left-0 before:top-4 before:bottom-4 before:w-0.75
                 before:rounded-full before:bg-primary before:opacity-0 before:transition-opacity
                 group-hover:before:opacity-100
-                ${job.featuredJob ? "border-amber-300/70 dark:border-amber-700/50 bg-amber-50/30 dark:bg-amber-950/10" : ""}
+                ${job.featuredJob ? "border-amber-300/70 dark:border-amber-700/50 bg-amber-50/40 dark:bg-amber-950/10" : ""}
             `}>
                 {/* Logo */}
                 <CompanyLogo name={companyName} logoUrl={logoUrl} />
@@ -227,10 +230,13 @@ const JobGridCard = ({ job }: { job: IJob }) => {
     return (
         <Link href={`/jobs/${job.id}`} className="block group h-full">
             <div className={`
-                relative h-full flex flex-col rounded-2xl border bg-card overflow-hidden
+                relative h-full flex flex-col rounded-2xl border overflow-hidden
+                backdrop-blur-sm bg-white/80 dark:bg-white/5
+                border-white/60 dark:border-white/10
                 transition-all duration-200 ease-out
-                hover:shadow-xl hover:-translate-y-1 hover:border-primary/40
-                ${job.featuredJob ? "border-amber-300/70 dark:border-amber-700/50" : ""}
+                hover:shadow-2xl hover:shadow-primary/8 hover:-translate-y-1
+                hover:bg-white/95 dark:hover:bg-white/10 hover:border-primary/30
+                ${job.featuredJob ? "border-amber-300/60 dark:border-amber-700/40 bg-amber-50/30 dark:bg-amber-950/10" : ""}
             `}>
                 {/* Top accent bar */}
                 <div className="h-1 w-full bg-linear-to-r from-primary/60 via-primary to-primary/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
@@ -607,8 +613,8 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                 />
 
                 <div className="relative container mx-auto px-4 py-14 text-center">
-                    {/* Badge */}
-                    <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-xs font-bold px-4 py-2 rounded-full mb-5 border border-primary/25 shadow-sm">
+                    {/* Badge – glass pill */}
+                    <div className="inline-flex items-center gap-2 backdrop-blur-md bg-white/30 dark:bg-white/10 text-primary text-xs font-bold px-4 py-2 rounded-full mb-5 border border-white/40 dark:border-white/15 shadow-sm ring-1 ring-primary/10">
                         <Sparkles className="h-3.5 w-3.5" />
                         {total > 0 ? `${total.toLocaleString()} Open Positions Available` : "Explore Opportunities"}
                     </div>
@@ -628,8 +634,8 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                         Browse curated opportunities from top companies across Bangladesh.
                     </p>
 
-                    {/* Inline hero search */}
-                    <div className="max-w-2xl mx-auto flex gap-2 bg-card border rounded-2xl shadow-lg p-2 mb-7">
+                    {/* Hero search – glassmorphism card */}
+                    <div className="max-w-2xl mx-auto flex gap-2 backdrop-blur-xl bg-white/60 dark:bg-white/8 border border-white/50 dark:border-white/15 rounded-2xl shadow-xl shadow-primary/5 p-2 mb-7">
                         <div className="flex-1 relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <input
@@ -641,7 +647,7 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                                 className="w-full pl-9 pr-3 py-2.5 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                             />
                         </div>
-                        <div className="w-px bg-border self-stretch" />
+                        <div className="w-px bg-border/50 self-stretch" />
                         <div className="relative flex-[0_0_180px]">
                             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <input
@@ -653,12 +659,12 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                                 className="w-full pl-9 pr-3 py-2.5 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                             />
                         </div>
-                        <Button type="button" onClick={applyFilters} className="rounded-xl px-5 shrink-0 gap-1.5">
+                        <Button type="button" onClick={applyFilters} className="rounded-xl px-5 shrink-0 gap-1.5 shadow-md">
                             <Search className="h-4 w-4" /> Search
                         </Button>
                     </div>
 
-                    {/* Trending searches */}
+                    {/* Trending searches – glass chips */}
                     <div className="flex items-center justify-center flex-wrap gap-2">
                         <span className="flex items-center gap-1 text-xs text-muted-foreground font-semibold">
                             <TrendingUp className="h-3.5 w-3.5 text-primary" /> Trending:
@@ -668,7 +674,7 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                                 key={term}
                                 type="button"
                                 onClick={() => { setSearchTerm(term); buildAndNavigate({ searchTerm: term }); }}
-                                className="text-xs px-3 py-1 rounded-full bg-background border hover:border-primary hover:text-primary hover:bg-primary/5 transition-all font-medium"
+                                className="text-xs px-3 py-1 rounded-full backdrop-blur-md bg-white/40 dark:bg-white/10 border border-white/50 dark:border-white/15 hover:border-primary/50 hover:text-primary hover:bg-primary/10 transition-all font-medium shadow-sm"
                             >
                                 {term}
                             </button>
@@ -676,16 +682,17 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                     </div>
                 </div>
 
-                {/* Stats strip */}
-                <div className="relative border-t bg-background/60 backdrop-blur-sm">
-                    <div className="container mx-auto px-4 py-3 flex items-center justify-center gap-8 flex-wrap">
+                {/* Stats strip – glass bar */}
+                <div className="relative border-t border-white/30 dark:border-white/10 backdrop-blur-md bg-white/40 dark:bg-white/5">
+                    <div className="container mx-auto px-4 py-3.5 flex items-center justify-center gap-8 flex-wrap">
                         {[
                             { icon: <Briefcase className="h-4 w-4 text-primary" />, label: "Open Jobs", value: total.toLocaleString() },
                             { icon: <Building2 className="h-4 w-4 text-emerald-500" />, label: "Companies", value: "50+" },
                             { icon: <MapPin className="h-4 w-4 text-blue-500" />, label: "Cities", value: "10+" },
                             { icon: <Users className="h-4 w-4 text-violet-500" />, label: "Applicants", value: "1K+" },
-                        ].map((stat) => (
+                        ].map((stat, i) => (
                             <div key={stat.label} className="flex items-center gap-2 text-sm">
+                                {i > 0 && <span className="w-px h-4 bg-border/40 mr-6 hidden sm:block" />}
                                 {stat.icon}
                                 <span className="font-bold text-foreground">{stat.value}</span>
                                 <span className="text-muted-foreground">{stat.label}</span>
@@ -716,7 +723,7 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
 
                 {/* Mobile filters panel */}
                 {mobileFiltersOpen && (
-                    <div className="lg:hidden mb-5 bg-card border rounded-2xl p-5 shadow-sm">
+                    <div className="lg:hidden mb-5 backdrop-blur-xl bg-white/80 dark:bg-white/5 border border-white/50 dark:border-white/10 rounded-2xl p-5 shadow-xl">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="font-bold text-sm flex items-center gap-2">
                                 <SlidersHorizontal className="h-4 w-4 text-primary" /> Filters
@@ -736,7 +743,7 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                     <div className="flex-1 min-w-0 space-y-4">
                         {/* Active filter chips */}
                         {activeFilters.length > 0 && (
-                            <div className="flex flex-wrap items-center gap-2 bg-card border rounded-xl px-4 py-2.5">
+                            <div className="flex flex-wrap items-center gap-2 backdrop-blur-sm bg-primary/5 border border-primary/15 rounded-xl px-4 py-2.5 shadow-sm">
                                 <span className="text-xs font-bold text-muted-foreground/60 uppercase tracking-wider">Filters:</span>
                                 {activeFilters.map((f) => (
                                     <FilterChip key={f.key} label={f.label} onRemove={() => removeFilter(f.key)} />
@@ -803,7 +810,7 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
 
                         {/* Job cards */}
                         {jobs.length === 0 ? (
-                            <div className="bg-card border rounded-2xl py-28 flex flex-col items-center gap-4 text-center">
+                            <div className="backdrop-blur-sm bg-white/80 dark:bg-white/5 border border-white/50 dark:border-white/10 rounded-2xl py-28 flex flex-col items-center gap-4 text-center shadow-sm">
                                 <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
                                     <Briefcase className="h-8 w-8 text-muted-foreground/40" />
                                 </div>
@@ -886,9 +893,9 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
 
                     {/* ── Right Filter Sidebar ── */}
                     <aside className="hidden lg:block w-64 xl:w-72 shrink-0">
-                        <div className="bg-card border rounded-2xl overflow-hidden shadow-sm sticky top-24">
+                        <div className="backdrop-blur-xl bg-white/70 dark:bg-white/5 border border-white/50 dark:border-white/10 rounded-2xl overflow-hidden shadow-xl shadow-black/5 sticky top-24">
                             {/* Sidebar header */}
-                            <div className="bg-linear-to-r from-primary/10 to-primary/5 px-5 py-4 border-b flex items-center justify-between">
+                            <div className="bg-linear-to-r from-primary/15 to-primary/5 px-5 py-4 border-b border-white/40 dark:border-white/10 flex items-center justify-between">
                                 <h2 className="font-bold text-sm flex items-center gap-2">
                                     <SlidersHorizontal className="h-4 w-4 text-primary" /> Refine Results
                                 </h2>
