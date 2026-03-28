@@ -35,10 +35,15 @@ const UserDropdown = ({ userInfo }: UserDropdownProps) => {
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant={"outline"} size={"icon"} className="rounded-full">
+                    <Button variant={"outline"} size={"icon"} className="rounded-full relative">
                         <span className="text-sm font-semibold">
                             {userInfo.name.charAt(0).toUpperCase()}
                         </span>
+                        {userInfo.isPremium && (
+                            <span className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center ${userInfo.role === "RECRUITER" ? "bg-blue-500" : "bg-amber-500"}`}>
+                                <Crown className="h-2.5 w-2.5 text-white" />
+                            </span>
+                        )}
                     </Button>
                 </DropdownMenuTrigger>
 
@@ -57,7 +62,13 @@ const UserDropdown = ({ userInfo }: UserDropdownProps) => {
                                             Hired
                                         </Badge>
                                     )}
-                                    {userInfo.isPremium && (
+                                    {userInfo.isPremium && userInfo.role === "RECRUITER" && (
+                                        <Badge className="bg-blue-600 hover:bg-blue-700 flex items-center gap-1 text-white">
+                                            <Crown className="h-3 w-3" />
+                                            Premium
+                                        </Badge>
+                                    )}
+                                    {userInfo.isPremium && userInfo.role !== "RECRUITER" && (
                                         <Badge className="bg-amber-500 hover:bg-amber-600 flex items-center gap-1">
                                             <Crown className="h-3 w-3" />
                                             Pro
