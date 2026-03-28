@@ -19,6 +19,16 @@ export interface BarChartData {
     count: number;
 }
 
+export interface IRecruiterDashboardData {
+    jobCount: number;
+    applicationCount: number;
+    activeJobCount: number;
+    uniqueApplicants: number;
+    applicationStatusDistribution: PieChartData[];
+    jobsByStatus: PieChartData[];
+    applicationsByMonth: BarChartData[];
+}
+
 export interface IAdminDashboardData {
     jobCount: number;
     applicationCount: number;
