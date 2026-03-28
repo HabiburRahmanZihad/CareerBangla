@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { downloadPdfFromElement } from "@/lib/pdfUtils";
-import { changeUserStatus, updateUser } from "@/services/admin.services";
+import { changeUserStatus, updateUser, updateUserHiredStatus } from "@/services/admin.services";
 import { IResume, IUserWithDetails } from "@/types/user.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Download, Edit2, Lock, Save, Unlock, X } from "lucide-react";
@@ -84,6 +84,20 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
             setBanConfirmOpen(false);
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update status"),
+    });
+
+    const [hiredConfirmOpen, setHiredConfirmOpen] = useState(false);
+    const [pendingHiredValue, setPendingHiredValue] = useState<boolean>(false);
+
+    const { mutateAsync: doUpdateHiredStatus, isPending: isUpdatingHired } = useMutation({
+        mutationFn: (isHired: boolean) => updateUserHiredStatus(user.id, isHired),
+        onSuccess: () => {
+            toast.success("Hired status updated successfully");
+            queryClient.invalidateQueries({ queryKey: ["users-with-details"] });
+            queryClient.invalidateQueries({ queryKey: ["user", user.id] });
+            setHiredConfirmOpen(false);
+        },
+        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update hired status"),
     });
 
     const handleSaveChanges = async () => {
@@ -420,6 +434,33 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
                                 </div>
                             </div>
 
+                            {/* Hired Status */}
+                            <div className="border-b pb-4 space-y-3">
+                                <h3 className="font-semibold">Hired Status</h3>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Badge variant={user.isHired ? "default" : "outline"} className={user.isHired ? "bg-green-600" : ""}>
+                                            {user.isHired ? "Hired" : "Not Hired"}
+                                        </Badge>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            {user.isHired
+                                                ? "User has been marked as hired."
+                                                : "User has not been hired yet."}
+                                        </p>
+                                    </div>
+                                    <Button
+                                        variant={user.isHired ? "outline" : "default"}
+                                        disabled={isUpdatingHired}
+                                        onClick={() => {
+                                            setPendingHiredValue(!user.isHired);
+                                            setHiredConfirmOpen(true);
+                                        }}
+                                    >
+                                        {user.isHired ? "Mark as Not Hired" : "Mark as Hired"}
+                                    </Button>
+                                </div>
+                            </div>
+
                             {/* Delete Resume Fields */}
                             {user.resume && (
                                 <div className="space-y-3">
@@ -458,6 +499,26 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
                         className={user.status === "ACTIVE" ? "bg-destructive hover:bg-destructive/90" : ""}
                     >
                         {user.status === "ACTIVE" ? "Ban User" : "Unban User"}
+                    </AlertDialogAction>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Hired Status Confirmation */}
+            <AlertDialog open={hiredConfirmOpen} onOpenChange={setHiredConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {pendingHiredValue ? "Mark User as Hired?" : "Mark User as Not Hired?"}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {pendingHiredValue
+                                ? "This will update the user's latest application status to HIRED."
+                                : "This will revert the user's hired applications back to PENDING."}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => doUpdateHiredStatus(pendingHiredValue)}>
+                        Confirm
                     </AlertDialogAction>
                 </AlertDialogContent>
             </AlertDialog>

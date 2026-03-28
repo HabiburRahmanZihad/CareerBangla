@@ -79,6 +79,11 @@ export async function createAdmin(data: Record<string, unknown>) {
     return serverHttpClient.post<void>("/users/create-admin", data);
 }
 
+export async function updateUserHiredStatus(userId: string, isHired: boolean) {
+    logger.update(`Updating user hired status → userId: ${userId}, isHired: ${isHired}`);
+    return serverHttpClient.patch(`/admins/users/${userId}/hired-status`, { isHired });
+}
+
 export async function updateJob(jobId: string, data: Record<string, unknown>) {
     logger.update(`Updating job → jobId: ${jobId}`);
     return serverHttpClient.patch<IJob>(`/admins/jobs/${jobId}`, data);
