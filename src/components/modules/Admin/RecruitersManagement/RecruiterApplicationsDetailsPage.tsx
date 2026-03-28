@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { approveRecruiter, rejectRecruiter, updateRecruiterData } from "@/services/recruiter.services";
 import { IRecruiterProfile } from "@/types/user.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CheckCircle, Edit2, Save, X, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Edit2, Save, User, X, XCircle } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -168,28 +168,36 @@ const RecruiterApplicationsDetailsPage = ({ recruiter, onBack }: RecruiterApplic
 
             {/* Profile Photo and Company Logo */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {recruiter.profilePhoto && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg">Profile Photo</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex justify-center">
+                {/* Profile Photo — always shown */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-lg">Profile Photo</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex justify-center">
+                        {(recruiter.profilePhoto || recruiter.user?.image) ? (
                             <Image
-                                src={recruiter.profilePhoto}
-                                alt="Profile"
+                                src={(recruiter.profilePhoto || recruiter.user?.image) as string}
+                                alt={recruiter.name}
                                 width={150}
                                 height={150}
                                 className="rounded-lg border object-cover"
                             />
-                        </CardContent>
-                    </Card>
-                )}
-                {recruiter.companyLogo && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg">Company Logo</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex justify-center">
+                        ) : (
+                            <div className="w-37.5 h-37.5 rounded-lg border bg-muted flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                                <User className="h-12 w-12" />
+                                <span className="text-xs">No photo</span>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Company Logo — always shown */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-lg">Company Logo</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex justify-center">
+                        {recruiter.companyLogo ? (
                             <Image
                                 src={recruiter.companyLogo}
                                 alt="Company Logo"
@@ -197,9 +205,14 @@ const RecruiterApplicationsDetailsPage = ({ recruiter, onBack }: RecruiterApplic
                                 height={150}
                                 className="rounded-lg border object-cover"
                             />
-                        </CardContent>
-                    </Card>
-                )}
+                        ) : (
+                            <div className="w-37.5 h-37.5 rounded-lg border bg-muted flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                                <User className="h-12 w-12" />
+                                <span className="text-xs">No logo</span>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Personal Information */}
