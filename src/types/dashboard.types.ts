@@ -29,6 +29,12 @@ export interface IRecruiterDashboardData {
     applicationsByMonth: BarChartData[];
 }
 
+export interface IUserDashboardData {
+    applicationCount: number;
+    applicationStatusDistribution: PieChartData[];
+    applicationsByMonth: BarChartData[];
+}
+
 export interface IAdminDashboardData {
     jobCount: number;
     applicationCount: number;
