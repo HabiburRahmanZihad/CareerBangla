@@ -34,7 +34,15 @@ export async function getSubscriptionPlans() {
     return serverHttpClient.get<{ plans: ISubscriptionPlanResponse[] }>("/subscriptions/plans");
 }
 
-export async function purchaseSubscription(data: { planKey?: string; couponCode?: string; referralCode?: string; gateway?: "SSLCOMMERZ" }) {
+export interface ICheckoutCustomerInfo {
+    name: string;
+    phone: string;
+    address: string;
+    city: string;
+    postcode: string;
+}
+
+export async function purchaseSubscription(data: { planKey?: string; couponCode?: string; referralCode?: string; gateway?: "SSLCOMMERZ"; customerInfo?: ICheckoutCustomerInfo }) {
     logger.create(`Purchasing subscription → plan: ${data.planKey || "BOOST_LIFETIME"}`);
     return serverHttpClient.post<{ paymentUrl: string }>("/subscriptions/purchase", { ...data, planKey: data.planKey || "BOOST_LIFETIME", gateway: data.gateway || "SSLCOMMERZ" });
 }
@@ -49,7 +57,26 @@ export async function getMySubscriptions() {
     return serverHttpClient.get<IMySubscription[]>("/subscriptions/my-subscriptions");
 }
 
+export interface IValidatedCoupon {
+    id: string;
+    code: string;
+    type: string;
+    targetRole: string;
+    description: string | null;
+    discountPercent: number | null;
+    discountAmount: number | null;
+    freeDays: number | null;
+    freeMonths: number | null;
+    isLifetime: boolean;
+    commissionAmount: number | null;
+}
+
 export async function validateCoupon(code: string) {
     logger.read(`Validating coupon → code: ${code}`);
-    return serverHttpClient.post<{ id: string; code: string; discountPercent: number | null; discountAmount: number | null }>("/coupons/validate", { code });
+    return serverHttpClient.post<IValidatedCoupon>("/coupons/validate", { code });
+}
+
+export async function applyCouponDirect(code: string) {
+    logger.create(`Applying coupon directly → code: ${code}`);
+    return serverHttpClient.post<{ message: string; type: string }>("/coupons/apply", { code });
 }

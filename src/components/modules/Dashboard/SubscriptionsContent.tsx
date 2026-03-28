@@ -9,10 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import envConfig from "@/lib/envConfig";
 import {
+    applyCouponDirect,
     getMySubscriptions,
     getSubscriptionPlans,
+    ICheckoutCustomerInfo,
     IMySubscription,
     ISubscriptionPlanResponse,
+    IValidatedCoupon,
     purchaseSubscription,
     validateCoupon,
 } from "@/services/subscription.services";
@@ -114,8 +117,19 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
     const [selectedPlanKey, setSelectedPlanKey] = useState("BOOST_LIFETIME");
     const [couponCode, setCouponCode] = useState("");
     const [referralCode, setReferralCode] = useState("");
+    const [billingInfo, setBillingInfo] = useState<ICheckoutCustomerInfo>({
+        name: userInfo?.name || "",
+        phone: userInfo?.phone || "",
+        address: "",
+        city: "",
+        postcode: "",
+    });
+    const [billingErrors, setBillingErrors] = useState<Partial<ICheckoutCustomerInfo>>({});
     const gateway = "SSLCOMMERZ" as const;
-    const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountPercent: number | null; discountAmount: number | null } | null>(null);
+    const [appliedCoupon, setAppliedCoupon] = useState<IValidatedCoupon | null>(null);
+
+    const FREE_COUPON_TYPES = ["FREE_DAYS", "LIFETIME_FREE", "RECRUITER_DAYS", "RECRUITER_MONTHS"];
+    const isFreeAccessCoupon = appliedCoupon ? FREE_COUPON_TYPES.includes(appliedCoupon.type) : false;
     const [showPaymentResult, setShowPaymentResult] = useState<string | null>(paymentStatus);
 
     useEffect(() => {
@@ -143,6 +157,7 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
                 couponCode: appliedCoupon?.code || undefined,
                 referralCode: referralCode || undefined,
                 gateway,
+                customerInfo: billingInfo,
             }),
         onSuccess: (response: any) => {
             const url = response?.data?.paymentUrl || response?.data?.url || response?.data?.redirectUrl || response?.url;
@@ -162,13 +177,28 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
         onSuccess: (response: any) => {
             const data = response?.data;
             if (data) {
-                setAppliedCoupon({ code: data.code, discountPercent: data.discountPercent, discountAmount: data.discountAmount });
+                setAppliedCoupon(data as IValidatedCoupon);
                 toast.success(`Coupon "${data.code}" applied!`);
             }
         },
         onError: (err: any) => {
             toast.error(err?.response?.data?.message || "Invalid coupon code");
             setAppliedCoupon(null);
+        },
+    });
+
+    const { mutateAsync: activateFreeCoupon, isPending: activatingFree } = useMutation({
+        mutationFn: (code: string) => applyCouponDirect(code),
+        onSuccess: (response: any) => {
+            const msg = response?.data?.message || "Coupon activated successfully!";
+            toast.success(msg);
+            setAppliedCoupon(null);
+            setCouponCode("");
+            setStep("history");
+            setShowPaymentResult("success");
+        },
+        onError: (err: any) => {
+            toast.error(err?.response?.data?.message || "Failed to activate coupon");
         },
     });
 
@@ -216,6 +246,7 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
     const getDiscountAmount = useCallback(() => {
         const selectedPlanAmount = selectedPlan?.amount ?? CAREER_BOOST_PRICE;
         if (!appliedCoupon) return 0;
+        if (isFreeAccessCoupon) return selectedPlanAmount; // 100% off — free
         if (appliedCoupon.discountPercent) {
             return Math.round(selectedPlanAmount * (appliedCoupon.discountPercent / 100));
         }
@@ -223,13 +254,47 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
             return Math.min(appliedCoupon.discountAmount, selectedPlanAmount);
         }
         return 0;
-    }, [appliedCoupon, selectedPlan?.amount]);
+    }, [appliedCoupon, isFreeAccessCoupon, selectedPlan?.amount]);
 
     const getFinalAmount = useCallback(() => {
         const selectedPlanAmount = selectedPlan?.amount ?? CAREER_BOOST_PRICE;
+        if (isFreeAccessCoupon) return 0;
         const discount = getDiscountAmount();
         return Math.max(selectedPlanAmount - discount, 1);
-    }, [getDiscountAmount, selectedPlan?.amount]);
+    }, [getDiscountAmount, isFreeAccessCoupon, selectedPlan?.amount]);
+
+    const getCouponBenefitLabel = (coupon: IValidatedCoupon): string => {
+        switch (coupon.type) {
+            case "PERCENT_DISCOUNT": return `${coupon.discountPercent}% discount`;
+            case "AMOUNT_DISCOUNT": return `৳${coupon.discountAmount} off`;
+            case "FREE_DAYS": return `${coupon.freeDays} free days of premium`;
+            case "RECRUITER_DAYS": return `${coupon.freeDays} free recruiter days`;
+            case "RECRUITER_MONTHS": return `${coupon.freeMonths} free month${(coupon.freeMonths ?? 0) > 1 ? "s" : ""} of recruiter premium`;
+            case "LIFETIME_FREE": return "lifetime free access";
+            case "REFERRAL": return `৳${coupon.discountAmount} off (referral)`;
+            default: return "discount applied";
+        }
+    };
+
+    const validateBilling = (): boolean => {
+        const errors: Partial<ICheckoutCustomerInfo> = {};
+        if (!billingInfo.name.trim()) errors.name = "Full name is required";
+        if (!billingInfo.phone.trim()) errors.phone = "Phone number is required";
+        else if (!/^01\d{9}$/.test(billingInfo.phone.trim())) errors.phone = "Enter a valid 11-digit BD phone number (e.g. 01XXXXXXXXX)";
+        if (!billingInfo.address.trim()) errors.address = "Address is required";
+        if (!billingInfo.city.trim()) errors.city = "City is required";
+        if (!billingInfo.postcode.trim()) errors.postcode = "Postcode is required";
+        setBillingErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handlePurchase = () => {
+        if (!validateBilling()) {
+            toast.error("Please fill in all billing information before proceeding");
+            return;
+        }
+        purchase();
+    };
 
     const handleApplyCoupon = () => {
         if (!couponCode.trim()) return;
@@ -464,6 +529,71 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
                     </CardContent>
                 </Card>
 
+                {/* Billing Information */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <CreditCard className="w-5 h-5 text-primary" /> Billing Information
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <Label>Full Name <span className="text-destructive">*</span></Label>
+                                <Input
+                                    placeholder="Your full name"
+                                    value={billingInfo.name}
+                                    onChange={(e) => { setBillingInfo(p => ({ ...p, name: e.target.value })); setBillingErrors(p => ({ ...p, name: undefined })); }}
+                                    className={billingErrors.name ? "border-destructive" : ""}
+                                />
+                                {billingErrors.name && <p className="text-xs text-destructive">{billingErrors.name}</p>}
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label>Phone Number <span className="text-destructive">*</span></Label>
+                                <Input
+                                    placeholder="01XXXXXXXXX"
+                                    value={billingInfo.phone}
+                                    onChange={(e) => { setBillingInfo(p => ({ ...p, phone: e.target.value })); setBillingErrors(p => ({ ...p, phone: undefined })); }}
+                                    className={billingErrors.phone ? "border-destructive" : ""}
+                                />
+                                {billingErrors.phone && <p className="text-xs text-destructive">{billingErrors.phone}</p>}
+                            </div>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label>Address <span className="text-destructive">*</span></Label>
+                            <Input
+                                placeholder="House/Flat, Road, Area"
+                                value={billingInfo.address}
+                                onChange={(e) => { setBillingInfo(p => ({ ...p, address: e.target.value })); setBillingErrors(p => ({ ...p, address: undefined })); }}
+                                className={billingErrors.address ? "border-destructive" : ""}
+                            />
+                            {billingErrors.address && <p className="text-xs text-destructive">{billingErrors.address}</p>}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <Label>City <span className="text-destructive">*</span></Label>
+                                <Input
+                                    placeholder="e.g. Dhaka"
+                                    value={billingInfo.city}
+                                    onChange={(e) => { setBillingInfo(p => ({ ...p, city: e.target.value })); setBillingErrors(p => ({ ...p, city: undefined })); }}
+                                    className={billingErrors.city ? "border-destructive" : ""}
+                                />
+                                {billingErrors.city && <p className="text-xs text-destructive">{billingErrors.city}</p>}
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label>Postcode <span className="text-destructive">*</span></Label>
+                                <Input
+                                    placeholder="e.g. 1207"
+                                    value={billingInfo.postcode}
+                                    onChange={(e) => { setBillingInfo(p => ({ ...p, postcode: e.target.value })); setBillingErrors(p => ({ ...p, postcode: undefined })); }}
+                                    className={billingErrors.postcode ? "border-destructive" : ""}
+                                />
+                                {billingErrors.postcode && <p className="text-xs text-destructive">{billingErrors.postcode}</p>}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
                 {/* Coupon & Referral */}
                 <Card>
                     <CardHeader>
@@ -478,9 +608,8 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
                                 <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
                                     <CheckCircle className="w-4 h-4 text-green-500" />
                                     <span className="text-sm font-medium text-green-700 dark:text-green-300 flex-1">
-                                        Coupon &quot;{appliedCoupon.code}&quot; applied!
-                                        {appliedCoupon.discountPercent && ` (${appliedCoupon.discountPercent}% off)`}
-                                        {appliedCoupon.discountAmount && ` (৳${appliedCoupon.discountAmount} off)`}
+                                        <span className="font-bold">{appliedCoupon.code}</span>
+                                        {" — "}{getCouponBenefitLabel(appliedCoupon)}
                                     </span>
                                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleRemoveCoupon}>
                                         <X className="w-4 h-4" />
@@ -513,57 +642,105 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
                     </CardContent>
                 </Card>
 
-                {/* Payment Method */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                            <CreditCard className="w-5 h-5 text-blue-500" /> Payment Method
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
-                            <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                            <div>
-                                <p className="font-semibold text-sm">SSLCommerz</p>
-                                <p className="text-xs text-muted-foreground">Pay securely in BDT — Cards, bKash, Nagad, Rocket &amp; more</p>
+                {/* Payment Method — hidden when free coupon applied */}
+                {!isFreeAccessCoupon && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg flex items-center gap-2">
+                                <CreditCard className="w-5 h-5 text-blue-500" /> Payment Method
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                                <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
+                                <div>
+                                    <p className="font-semibold text-sm">SSLCommerz</p>
+                                    <p className="text-xs text-muted-foreground">Pay securely in BDT — Cards, bKash, Nagad, Rocket &amp; more</p>
+                                </div>
                             </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Price Summary */}
-                <Card className="bg-muted/30">
+                <Card className={isFreeAccessCoupon ? "border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/30" : "bg-muted/30"}>
                     <CardContent className="pt-6 space-y-3">
+                        {/* Original price */}
                         <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">{selectedPlan.name.replace("6 Months", "3 Months")}</span>
-                            <span>&#2547;{selectedPlan.amount}</span>
+                            <span className={isFreeAccessCoupon ? "line-through text-muted-foreground" : ""}>
+                                &#2547;{selectedPlan.amount.toLocaleString()}
+                            </span>
                         </div>
-                        {discount > 0 && (
-                            <div className="flex justify-between text-sm text-green-600">
-                                <span>Discount{appliedCoupon?.code ? ` (${appliedCoupon.code})` : ""}</span>
-                                <span>-&#2547;{discount}</span>
+
+                        {/* Coupon discount row */}
+                        {appliedCoupon && discount > 0 && (
+                            <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
+                                <span className="flex items-center gap-1.5">
+                                    <Tag className="w-3.5 h-3.5" />
+                                    Coupon ({appliedCoupon.code})
+                                    {isFreeAccessCoupon && (
+                                        <span className="text-xs bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-1.5 py-0.5 rounded font-medium">
+                                            {getCouponBenefitLabel(appliedCoupon)}
+                                        </span>
+                                    )}
+                                </span>
+                                <span className="font-medium">
+                                    {isFreeAccessCoupon ? "−৳" + selectedPlan.amount.toLocaleString() : `−৳${discount.toLocaleString()}`}
+                                </span>
                             </div>
                         )}
+
+                        {/* Total */}
                         <div className="border-t pt-3 flex justify-between font-bold text-lg">
                             <span>Total</span>
-                            <span className="text-primary">&#2547;{finalAmount}</span>
+                            {isFreeAccessCoupon ? (
+                                <span className="text-green-600 dark:text-green-400 flex items-center gap-2">
+                                    <span className="line-through text-muted-foreground font-normal text-base">৳{selectedPlan.amount.toLocaleString()}</span>
+                                    FREE
+                                </span>
+                            ) : (
+                                <span className="text-primary">&#2547;{finalAmount.toLocaleString()}</span>
+                            )}
                         </div>
+
+                        {/* Savings callout */}
+                        {discount > 0 && !isFreeAccessCoupon && (
+                            <p className="text-xs text-green-600 dark:text-green-400 text-right">
+                                You save ৳{discount.toLocaleString()} with coupon {appliedCoupon?.code}
+                            </p>
+                        )}
                     </CardContent>
                     <CardFooter>
-                        <Button
-                            className="w-full h-12 text-md"
-                            size="lg"
-                            onClick={() => purchase()}
-                            disabled={purchasePending || (!isRecruiter && isLifetime)}
-                        >
-                            {!isRecruiter && isLifetime ? (
-                                "You already have Lifetime Career Boost"
-                            ) : purchasePending ? (
-                                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
-                            ) : (
-                                `Pay ৳${finalAmount} via SSLCommerz`
-                            )}
-                        </Button>
+                        {isFreeAccessCoupon ? (
+                            <Button
+                                className="w-full h-12 text-md bg-green-600 hover:bg-green-700"
+                                size="lg"
+                                onClick={() => appliedCoupon && activateFreeCoupon(appliedCoupon.code)}
+                                disabled={activatingFree}
+                            >
+                                {activatingFree ? (
+                                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Activating...</>
+                                ) : (
+                                    <><Sparkles className="w-4 h-4 mr-2" /> Activate — {getCouponBenefitLabel(appliedCoupon!)}</>
+                                )}
+                            </Button>
+                        ) : (
+                            <Button
+                                className="w-full h-12 text-md"
+                                size="lg"
+                                onClick={handlePurchase}
+                                disabled={purchasePending || (!isRecruiter && isLifetime)}
+                            >
+                                {!isRecruiter && isLifetime ? (
+                                    "You already have Lifetime Career Boost"
+                                ) : purchasePending ? (
+                                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
+                                ) : (
+                                    `Pay ৳${finalAmount.toLocaleString()} via SSLCommerz`
+                                )}
+                            </Button>
+                        )}
                     </CardFooter>
                 </Card>
             </div>
