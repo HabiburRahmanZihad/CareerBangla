@@ -49,7 +49,7 @@ export default function Home() {
     return (
         <div>
             {/* Hero Section */}
-            <section className="py-20 md:py-32 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+            <section className="py-20 md:py-32 bg-linear-to-br from-primary/5 via-background to-accent/5">
                 <div className="container mx-auto px-4 text-center">
                     <Badge variant="secondary" className="mb-4">
                         Bangladesh&apos;s Leading Job Portal
