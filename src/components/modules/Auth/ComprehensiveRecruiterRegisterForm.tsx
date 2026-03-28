@@ -104,7 +104,7 @@ const ComprehensiveRecruiterRegisterForm = () => {
             setServerError(null);
             try {
                 // Validate contact number if provided
-                if (value.contactNumber && !/^01[3-9]\d{8}$/.test(value.contactNumber)) {
+                if (value.contactNumber && !/^01\d{9}$/.test(value.contactNumber)) {
                     setServerError("Invalid phone number format");
                     return;
                 }
@@ -147,11 +147,11 @@ const ComprehensiveRecruiterRegisterForm = () => {
             if (type === "profile") {
                 setProfilePhotoFile(file);
                 setProfilePhotoPreview(preview);
-                form.setFieldValue("profilePhoto", preview);
+                form.setFieldValue("profilePhoto", file.name);
             } else {
                 setCompanyLogoFile(file);
                 setCompanyLogoPreview(preview);
-                form.setFieldValue("companyLogo", preview);
+                form.setFieldValue("companyLogo", file.name);
             }
         };
         reader.readAsDataURL(file);
