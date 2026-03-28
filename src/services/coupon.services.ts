@@ -4,13 +4,18 @@ import { serverHttpClient } from "@/lib/axios/serverHttpClient";
 import { logger } from "@/lib/logger";
 import { ICoupon } from "@/types/user.types";
 
-export async function getAllCoupons(params?: Record<string, unknown>) {
+export async function getAllCoupons() {
     logger.read("Fetching all coupons");
-    return serverHttpClient.get<ICoupon[]>("/coupons", { params });
+    return serverHttpClient.get<ICoupon[]>("/coupons");
+}
+
+export async function getCouponById(id: string) {
+    logger.read(`Fetching coupon → id: ${id}`);
+    return serverHttpClient.get<ICoupon>(`/coupons/${id}`);
 }
 
 export async function createCoupon(data: Record<string, unknown>) {
-    logger.create("Creating coupon", { code: data.code });
+    logger.create("Creating coupon");
     return serverHttpClient.post<ICoupon>("/coupons", data);
 }
 
@@ -19,7 +24,12 @@ export async function deleteCoupon(id: string) {
     return serverHttpClient.delete<void>(`/coupons/${id}`);
 }
 
-export async function redeemCoupon(data: { code: string }) {
-    logger.update(`Redeeming coupon → code: ${data.code}`);
-    return serverHttpClient.post<{ coins: number }>("/coupons/redeem", data);
+export async function validateCoupon(data: { code: string }) {
+    logger.read(`Validating coupon → code: ${data.code}`);
+    return serverHttpClient.post("/coupons/validate", data);
+}
+
+export async function applyCoupon(data: { code: string }) {
+    logger.update(`Applying coupon → code: ${data.code}`);
+    return serverHttpClient.post("/coupons/apply", data);
 }

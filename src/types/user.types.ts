@@ -322,12 +322,43 @@ export interface ISubscription {
     createdAt?: string;
 }
 
+export type CouponType =
+    | "FREE_DAYS"
+    | "LIFETIME_FREE"
+    | "PERCENT_DISCOUNT"
+    | "AMOUNT_DISCOUNT"
+    | "RECRUITER_DAYS"
+    | "RECRUITER_MONTHS"
+    | "REFERRAL";
+
+export type CouponTargetRole = "USER" | "RECRUITER" | "BOTH";
+export type CouponStatus = "ACTIVE" | "USED" | "EXPIRED";
+
+export interface ICouponUsage {
+    id: string;
+    couponId: string;
+    userId: string;
+    usedAt: string;
+}
+
 export interface ICoupon {
     id: string;
     code: string;
-    discount: number;
-    maxUses: number;
-    usedCount: number;
-    expiresAt: string;
-    isActive: boolean;
+    type: CouponType;
+    targetRole: CouponTargetRole;
+    description?: string;
+    discountPercent?: number;
+    discountAmount?: number;
+    isLifetime: boolean;
+    freeDays?: number;
+    freeMonths?: number;
+    commissionAmount?: number;
+    linkedRecruiterId?: string;
+    maxUsage: number;
+    usageCount: number;
+    status: CouponStatus;
+    expiresAt?: string;
+    createdAt: string;
+    updatedAt: string;
+    usages?: ICouponUsage[];
 }
