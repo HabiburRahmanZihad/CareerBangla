@@ -12,12 +12,14 @@ import {
     Briefcase,
     ChevronLeft,
     ChevronRight,
+    Clock,
     Grid3X3,
     LayoutList,
     MapPin,
     Search,
     SlidersHorizontal,
     Star,
+    Users,
     X,
     Zap,
 } from "lucide-react";
@@ -34,10 +36,27 @@ const JOB_TYPE_LABELS: Record<string, string> = {
     FREELANCE: "Freelance",
 };
 
+const DATE_POSTED_OPTIONS = [
+    { value: "all", label: "Any time" },
+    { value: "24h", label: "Last 24 hours" },
+    { value: "7d", label: "Last 7 days" },
+    { value: "14d", label: "Last 14 days" },
+    { value: "30d", label: "Last 30 days" },
+];
+
+const SORT_OPTIONS = [
+    { value: "default", label: "Best Match" },
+    { value: "newest", label: "Newest First" },
+    { value: "oldest", label: "Oldest First" },
+    { value: "salary_desc", label: "Salary: High → Low" },
+    { value: "salary_asc", label: "Salary: Low → High" },
+    { value: "most_applied", label: "Most Applied" },
+];
+
 const AVATAR_COLORS = [
     "bg-blue-500", "bg-emerald-500", "bg-violet-500", "bg-orange-500",
     "bg-pink-500", "bg-cyan-500", "bg-red-500", "bg-indigo-500",
-    "bg-teal-500", "bg-amber-500",
+    "bg-teal-500", "bg-amber-600",
 ];
 
 const getAvatarColor = (str: string) => {
@@ -47,11 +66,10 @@ const getAvatarColor = (str: string) => {
 };
 
 // ── Company Avatar ───────────────────────────────────────────────────────────
-const CompanyAvatar = ({ name, size = "md" }: { name: string; size?: "sm" | "md" | "lg" }) => {
+const CompanyAvatar = ({ name }: { name: string }) => {
     const color = getAvatarColor(name);
-    const sizeClass = size === "lg" ? "h-14 w-14 text-xl" : size === "sm" ? "h-9 w-9 text-sm" : "h-12 w-12 text-base";
     return (
-        <div className={`${color} ${sizeClass} rounded-xl flex items-center justify-center text-white font-bold shrink-0`}>
+        <div className={`${color} h-12 w-12 rounded-xl flex items-center justify-center text-white font-bold text-base shrink-0`}>
             {name.charAt(0).toUpperCase()}
         </div>
     );
@@ -72,6 +90,7 @@ const JobListCard = ({ job }: { job: IJob }) => {
     const deadline = job.deadline || job.applicationDeadline;
     const daysLeft = deadline ? differenceInDays(new Date(deadline), new Date()) : null;
     const isExpiringSoon = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7;
+    const appCount = job._count?.applications;
 
     return (
         <Link href={`/jobs/${job.id}`} className="block group">
@@ -80,8 +99,8 @@ const JobListCard = ({ job }: { job: IJob }) => {
 
                 <div className="flex-1 min-w-0">
                     {/* Title row */}
-                    <div className="flex items-center flex-wrap gap-1.5 mb-1">
-                        <span className="font-semibold text-base group-hover:text-primary transition-colors line-clamp-1">
+                    <div className="flex items-center flex-wrap gap-1.5 mb-1.5">
+                        <span className="font-semibold text-[15px] group-hover:text-primary transition-colors line-clamp-1">
                             {job.title}
                         </span>
                         {job.featuredJob && (
@@ -90,19 +109,22 @@ const JobListCard = ({ job }: { job: IJob }) => {
                             </span>
                         )}
                         {job.urgentHiring && (
-                            <span className="text-xs font-semibold text-red-500 dark:text-red-400 flex items-center gap-0.5">
+                            <span className="text-xs font-semibold text-red-500 flex items-center gap-0.5">
                                 <Zap className="h-3 w-3 fill-current" /> Urgent
                             </span>
                         )}
                         {isExpiringSoon && (
-                            <span className="text-xs font-semibold text-orange-500">
-                                · {daysLeft === 0 ? "Expires today" : `${daysLeft}d left`}
+                            <span className="text-xs font-semibold text-orange-500 flex items-center gap-0.5">
+                                <Clock className="h-3 w-3" />
+                                {daysLeft === 0 ? "Expires today" : `${daysLeft}d left`}
                             </span>
                         )}
                     </div>
 
-                    {/* Meta row */}
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground mb-2.5">
+                    {/* Company + Meta */}
+                    <p className="text-xs text-muted-foreground mb-2">{job.recruiter?.companyName || job.company}</p>
+
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mb-2.5">
                         {job.category?.title && (
                             <span className="flex items-center gap-1">
                                 <Briefcase className="h-3.5 w-3.5" />
@@ -114,17 +136,23 @@ const JobListCard = ({ job }: { job: IJob }) => {
                             {job.location}
                         </span>
                         {salary && (
-                            <span className="font-medium text-foreground">{salary}</span>
+                            <span className="font-semibold text-foreground">{salary}</span>
+                        )}
+                        {appCount !== undefined && (
+                            <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+                                <Users className="h-3.5 w-3.5" />
+                                {appCount} applied
+                            </span>
                         )}
                     </div>
 
                     {/* Badges */}
                     <div className="flex flex-wrap gap-1.5">
-                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-medium">
+                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-medium border border-blue-100 dark:border-blue-900">
                             {JOB_TYPE_LABELS[job.jobType] || job.jobType}
                         </span>
                         {job.urgentHiring && (
-                            <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 font-medium">
+                            <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 font-medium border border-amber-100 dark:border-amber-900">
                                 Urgent Hiring
                             </span>
                         )}
@@ -148,6 +176,7 @@ const JobGridCard = ({ job }: { job: IJob }) => {
     const deadline = job.deadline || job.applicationDeadline;
     const daysLeft = deadline ? differenceInDays(new Date(deadline), new Date()) : null;
     const isExpiringSoon = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7;
+    const appCount = job._count?.applications;
 
     return (
         <Link href={`/jobs/${job.id}`} className="block group">
@@ -157,9 +186,8 @@ const JobGridCard = ({ job }: { job: IJob }) => {
                     <Bookmark className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
 
-                {/* Badges */}
                 {(job.featuredJob || job.urgentHiring || isExpiringSoon) && (
-                    <div className="flex flex-wrap gap-1 mb-2">
+                    <div className="flex flex-wrap gap-1 mb-1.5">
                         {job.featuredJob && (
                             <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-0.5">
                                 <Star className="h-3 w-3 fill-current" /> Featured
@@ -171,17 +199,17 @@ const JobGridCard = ({ job }: { job: IJob }) => {
                             </span>
                         )}
                         {isExpiringSoon && (
-                            <span className="text-xs font-semibold text-orange-500">
-                                {daysLeft === 0 ? "Expires today" : `${daysLeft}d left`}
+                            <span className="text-xs font-semibold text-orange-500 flex items-center gap-0.5 ml-1">
+                                <Clock className="h-3 w-3" />{daysLeft === 0 ? "Today" : `${daysLeft}d`}
                             </span>
                         )}
                     </div>
                 )}
 
-                <p className="font-semibold text-base group-hover:text-primary transition-colors line-clamp-2 mb-1">
+                <p className="font-semibold text-[15px] group-hover:text-primary transition-colors line-clamp-2 mb-0.5">
                     {job.title}
                 </p>
-                <p className="text-sm text-muted-foreground mb-3">{job.recruiter?.companyName || job.company}</p>
+                <p className="text-xs text-muted-foreground mb-3">{job.recruiter?.companyName || job.company}</p>
 
                 <div className="flex flex-col gap-1 text-sm text-muted-foreground mb-3 mt-auto">
                     {job.category?.title && (
@@ -194,15 +222,20 @@ const JobGridCard = ({ job }: { job: IJob }) => {
                         <MapPin className="h-3.5 w-3.5 shrink-0" />
                         <span className="truncate">{job.location}</span>
                     </span>
-                    {salary && <p className="font-medium text-foreground">{salary}</p>}
+                    {salary && <p className="font-semibold text-foreground text-sm">{salary}</p>}
+                    {appCount !== undefined && (
+                        <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400 text-xs">
+                            <Users className="h-3 w-3" /> {appCount} applied
+                        </span>
+                    )}
                 </div>
 
                 <div className="flex flex-wrap gap-1.5 pt-3 border-t">
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-medium">
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-medium border border-blue-100 dark:border-blue-900">
                         {JOB_TYPE_LABELS[job.jobType] || job.jobType}
                     </span>
                     {job.urgentHiring && (
-                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 font-medium">
+                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 font-medium border border-amber-100 dark:border-amber-900">
                             Urgent
                         </span>
                     )}
@@ -214,9 +247,9 @@ const JobGridCard = ({ job }: { job: IJob }) => {
 
 // ── Filter chip ──────────────────────────────────────────────────────────────
 const FilterChip = ({ label, onRemove }: { label: string; onRemove: () => void }) => (
-    <span className="inline-flex items-center gap-1 pl-3 pr-2 py-1 rounded-full bg-muted text-sm font-medium">
+    <span className="inline-flex items-center gap-1 pl-3 pr-2 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20">
         {label}
-        <button type="button" title={`Remove ${label} filter`} onClick={onRemove} className="hover:text-destructive transition-colors">
+        <button type="button" title={`Remove ${label} filter`} onClick={onRemove} className="hover:text-destructive transition-colors ml-0.5">
             <X className="h-3.5 w-3.5" />
         </button>
     </span>
@@ -224,8 +257,8 @@ const FilterChip = ({ label, onRemove }: { label: string; onRemove: () => void }
 
 // ── Sidebar section ──────────────────────────────────────────────────────────
 const SidebarSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div>
-        <p className="text-sm font-semibold mb-3">{title}</p>
+    <div className="space-y-3">
+        <p className="text-sm font-semibold text-foreground">{title}</p>
         {children}
     </div>
 );
@@ -241,95 +274,93 @@ interface JobsPageContentProps {
 const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageContentProps) => {
     const router = useRouter();
 
-    // Local state for filter inputs
+    // Local filter state — initialised from URL params
     const [searchTerm, setSearchTerm] = useState(currentParams.searchTerm || "");
     const [location, setLocation] = useState(currentParams.location || "");
     const [jobType, setJobType] = useState(currentParams.jobType || "all");
     const [categoryId, setCategoryId] = useState(currentParams.categoryId || "all");
-    const [view, setView] = useState<"list" | "grid">("list");
+    const [salaryMin, setSalaryMin] = useState(currentParams.salaryMin || "");
+    const [salaryMax, setSalaryMax] = useState(currentParams.salaryMax || "");
+    const [datePosted, setDatePosted] = useState(currentParams.datePosted || "all");
+    const [sortBy, setSortBy] = useState(currentParams.sortBy || "default");
     const [limit, setLimit] = useState(currentParams.limit || "12");
+    const [view, setView] = useState<"list" | "grid">("list");
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-    // Build URL from filter state
-    const buildParams = (overrides: Record<string, string> = {}) => {
+    // Build and navigate to URL with all current filters
+    const buildAndNavigate = (overrides: Record<string, string | undefined> = {}) => {
+        const merged = {
+            searchTerm, location, jobType, categoryId,
+            salaryMin, salaryMax, datePosted, sortBy, limit,
+            ...overrides,
+        };
         const p = new URLSearchParams();
-        if (searchTerm && searchTerm !== overrides.searchTerm) p.set("searchTerm", searchTerm);
-        if (location && location !== overrides.location) p.set("location", location);
-        if (jobType && jobType !== "all" && jobType !== overrides.jobType) p.set("jobType", jobType);
-        if (categoryId && categoryId !== "all" && categoryId !== overrides.categoryId) p.set("categoryId", categoryId);
-        if (limit !== "12") p.set("limit", limit);
-        Object.entries(overrides).forEach(([k, v]) => {
-            if (v && v !== "all") p.set(k, v);
-            else p.delete(k);
-        });
-        return p.toString();
+        if (merged.searchTerm) p.set("searchTerm", merged.searchTerm);
+        if (merged.location) p.set("location", merged.location);
+        if (merged.jobType && merged.jobType !== "all") p.set("jobType", merged.jobType);
+        if (merged.categoryId && merged.categoryId !== "all") p.set("categoryId", merged.categoryId);
+        if (merged.salaryMin) p.set("salaryMin", merged.salaryMin);
+        if (merged.salaryMax) p.set("salaryMax", merged.salaryMax);
+        if (merged.datePosted && merged.datePosted !== "all") p.set("datePosted", merged.datePosted);
+        if (merged.sortBy && merged.sortBy !== "default") p.set("sortBy", merged.sortBy);
+        if (merged.limit && merged.limit !== "12") p.set("limit", merged.limit);
+        router.push(`/jobs?${p.toString()}`);
     };
 
     const applyFilters = () => {
-        const p = new URLSearchParams();
-        if (searchTerm) p.set("searchTerm", searchTerm);
-        if (location) p.set("location", location);
-        if (jobType && jobType !== "all") p.set("jobType", jobType);
-        if (categoryId && categoryId !== "all") p.set("categoryId", categoryId);
-        if (limit !== "12") p.set("limit", limit);
-        router.push(`/jobs?${p.toString()}`);
+        buildAndNavigate();
         setMobileFiltersOpen(false);
     };
 
     const removeFilter = (key: string) => {
-        const p = new URLSearchParams();
-        if (key !== "searchTerm" && searchTerm) p.set("searchTerm", searchTerm);
-        if (key !== "location" && location) p.set("location", location);
-        if (key !== "jobType" && jobType && jobType !== "all") p.set("jobType", jobType);
-        if (key !== "categoryId" && categoryId && categoryId !== "all") p.set("categoryId", categoryId);
-        if (limit !== "12") p.set("limit", limit);
-
+        const resets: Record<string, string> = {
+            searchTerm: "", location: "", jobType: "all", categoryId: "all",
+            salaryMin: "", salaryMax: "", datePosted: "all",
+        };
         if (key === "searchTerm") setSearchTerm("");
         if (key === "location") setLocation("");
         if (key === "jobType") setJobType("all");
         if (key === "categoryId") setCategoryId("all");
-
-        router.push(`/jobs?${p.toString()}`);
+        if (key === "salaryMin") setSalaryMin("");
+        if (key === "salaryMax") setSalaryMax("");
+        if (key === "datePosted") setDatePosted("all");
+        buildAndNavigate({ [key]: resets[key] });
     };
 
     const clearAll = () => {
-        setSearchTerm("");
-        setLocation("");
-        setJobType("all");
-        setCategoryId("all");
+        setSearchTerm(""); setLocation(""); setJobType("all"); setCategoryId("all");
+        setSalaryMin(""); setSalaryMax(""); setDatePosted("all"); setSortBy("default");
         router.push("/jobs");
     };
 
-    const handlePageChange = (page: number) => {
-        const p = new URLSearchParams();
-        if (currentParams.searchTerm) p.set("searchTerm", currentParams.searchTerm);
-        if (currentParams.location) p.set("location", currentParams.location);
-        if (currentParams.jobType) p.set("jobType", currentParams.jobType);
-        if (currentParams.categoryId) p.set("categoryId", currentParams.categoryId);
-        if (limit !== "12") p.set("limit", limit);
-        p.set("page", page.toString());
-        router.push(`/jobs?${p.toString()}`);
+    const handleSortChange = (val: string) => {
+        setSortBy(val);
+        buildAndNavigate({ sortBy: val });
     };
 
     const handleLimitChange = (val: string) => {
         setLimit(val);
-        const p = new URLSearchParams();
-        if (currentParams.searchTerm) p.set("searchTerm", currentParams.searchTerm);
-        if (currentParams.location) p.set("location", currentParams.location);
-        if (currentParams.jobType) p.set("jobType", currentParams.jobType);
-        if (currentParams.categoryId) p.set("categoryId", currentParams.categoryId);
-        p.set("limit", val);
-        router.push(`/jobs?${p.toString()}`);
+        buildAndNavigate({ limit: val });
     };
 
-    // Active chips
+    const handlePageChange = (page: number) => {
+        buildAndNavigate({ page: page.toString() });
+    };
+
+    // Active filter chips
     const activeFilters: { key: string; label: string }[] = [];
-    if (currentParams.searchTerm) activeFilters.push({ key: "searchTerm", label: currentParams.searchTerm });
+    if (currentParams.searchTerm) activeFilters.push({ key: "searchTerm", label: `"${currentParams.searchTerm}"` });
     if (currentParams.location) activeFilters.push({ key: "location", label: `📍 ${currentParams.location}` });
-    if (currentParams.jobType) activeFilters.push({ key: "jobType", label: JOB_TYPE_LABELS[currentParams.jobType] || currentParams.jobType });
-    if (currentParams.categoryId) {
+    if (currentParams.jobType && currentParams.jobType !== "all") activeFilters.push({ key: "jobType", label: JOB_TYPE_LABELS[currentParams.jobType] || currentParams.jobType });
+    if (currentParams.categoryId && currentParams.categoryId !== "all") {
         const cat = categories.find((c) => c.id === currentParams.categoryId);
         if (cat) activeFilters.push({ key: "categoryId", label: cat.title });
+    }
+    if (currentParams.salaryMin) activeFilters.push({ key: "salaryMin", label: `Min ৳${Number(currentParams.salaryMin).toLocaleString()}` });
+    if (currentParams.salaryMax) activeFilters.push({ key: "salaryMax", label: `Max ৳${Number(currentParams.salaryMax).toLocaleString()}` });
+    if (currentParams.datePosted && currentParams.datePosted !== "all") {
+        const dp = DATE_POSTED_OPTIONS.find((d) => d.value === currentParams.datePosted);
+        if (dp) activeFilters.push({ key: "datePosted", label: dp.label });
     }
 
     // Pagination
@@ -354,9 +385,9 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
         return pages;
     })();
 
-    // Sidebar content (reused for desktop + mobile)
     const SidebarContent = () => (
-        <div className="space-y-6">
+        <div className="space-y-5">
+            {/* Search */}
             <SidebarSection title="Search by Keywords">
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -372,6 +403,7 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
 
             <Separator />
 
+            {/* Location */}
             <SidebarSection title="Location">
                 <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -387,6 +419,7 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
 
             <Separator />
 
+            {/* Category */}
             <SidebarSection title="Category">
                 <Select value={categoryId} onValueChange={setCategoryId}>
                     <SelectTrigger>
@@ -395,9 +428,7 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                     <SelectContent>
                         <SelectItem value="all">All Categories</SelectItem>
                         {categories.map((cat) => (
-                            <SelectItem key={cat.id} value={cat.id}>
-                                {cat.title}
-                            </SelectItem>
+                            <SelectItem key={cat.id} value={cat.id}>{cat.title}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
@@ -405,10 +436,11 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
 
             <Separator />
 
+            {/* Job Type */}
             <SidebarSection title="Job Type">
                 <Select value={jobType} onValueChange={setJobType}>
                     <SelectTrigger>
-                        <SelectValue placeholder="Job type" />
+                        <SelectValue placeholder="All Types" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All Types</SelectItem>
@@ -421,26 +453,113 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                 </Select>
             </SidebarSection>
 
-            <Button type="button" onClick={applyFilters} className="w-full">
-                Find Jobs
+            <Separator />
+
+            {/* Salary Range */}
+            <SidebarSection title="Salary Range (৳)">
+                <div className="grid grid-cols-2 gap-2">
+                    <div>
+                        <p className="text-xs text-muted-foreground mb-1">Minimum</p>
+                        <Input
+                            type="number"
+                            placeholder="e.g. 20000"
+                            value={salaryMin}
+                            onChange={(e) => setSalaryMin(e.target.value)}
+                            min={0}
+                        />
+                    </div>
+                    <div>
+                        <p className="text-xs text-muted-foreground mb-1">Maximum</p>
+                        <Input
+                            type="number"
+                            placeholder="e.g. 80000"
+                            value={salaryMax}
+                            onChange={(e) => setSalaryMax(e.target.value)}
+                            min={0}
+                        />
+                    </div>
+                </div>
+            </SidebarSection>
+
+            <Separator />
+
+            {/* Date Posted */}
+            <SidebarSection title="Date Posted">
+                <div className="space-y-2">
+                    {DATE_POSTED_OPTIONS.map((opt) => (
+                        <label key={opt.value} className="flex items-center gap-2.5 cursor-pointer group">
+                            <div
+                                className={`h-4 w-4 rounded-full border-2 flex items-center justify-center transition-colors ${
+                                    datePosted === opt.value
+                                        ? "border-primary bg-primary"
+                                        : "border-muted-foreground group-hover:border-primary"
+                                }`}
+                                onClick={() => setDatePosted(opt.value)}
+                            >
+                                {datePosted === opt.value && (
+                                    <div className="h-1.5 w-1.5 rounded-full bg-white" />
+                                )}
+                            </div>
+                            <span
+                                className={`text-sm cursor-pointer ${datePosted === opt.value ? "font-medium text-foreground" : "text-muted-foreground"}`}
+                                onClick={() => setDatePosted(opt.value)}
+                            >
+                                {opt.label}
+                            </span>
+                        </label>
+                    ))}
+                </div>
+            </SidebarSection>
+
+            <Button type="button" onClick={applyFilters} className="w-full mt-1">
+                <Search className="h-4 w-4 mr-2" /> Find Jobs
             </Button>
+
+            {activeFilters.length > 0 && (
+                <button type="button" onClick={clearAll} className="w-full text-sm text-muted-foreground hover:text-destructive transition-colors text-center">
+                    Clear all filters
+                </button>
+            )}
         </div>
     );
 
     return (
         <div className="container mx-auto px-4 py-8">
+            {/* Page header */}
+            <div className="mb-6">
+                <h1 className="text-3xl font-bold mb-1">Browse Jobs</h1>
+                <p className="text-muted-foreground">
+                    {total > 0 ? `Find your next opportunity from ${total.toLocaleString()} available positions` : "Explore job opportunities"}
+                </p>
+            </div>
+
             {/* Mobile filter toggle */}
             <div className="lg:hidden mb-4">
                 <Button type="button" variant="outline" className="gap-2" onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}>
                     <SlidersHorizontal className="h-4 w-4" />
                     {mobileFiltersOpen ? "Hide Filters" : "Show Filters"}
+                    {activeFilters.length > 0 && (
+                        <span className="ml-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full">
+                            {activeFilters.length}
+                        </span>
+                    )}
                 </Button>
             </div>
 
             <div className="flex gap-6 items-start">
                 {/* ── Sidebar ── */}
-                <aside className={`w-72 shrink-0 ${mobileFiltersOpen ? "block w-full mb-6" : "hidden"} lg:block`}>
+                <aside className={`${mobileFiltersOpen ? "block w-full mb-6" : "hidden"} lg:block lg:w-72 shrink-0`}>
                     <div className="bg-card border rounded-xl p-6 sticky top-24">
+                        <div className="flex items-center justify-between mb-5">
+                            <h2 className="font-semibold text-base flex items-center gap-2">
+                                <SlidersHorizontal className="h-4 w-4" /> Filters
+                            </h2>
+                            {activeFilters.length > 0 && (
+                                <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-medium">
+                                    {activeFilters.length} active
+                                </span>
+                            )}
+                        </div>
                         <SidebarContent />
                     </div>
                 </aside>
@@ -450,7 +569,7 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                     {/* Active filter chips */}
                     {activeFilters.length > 0 && (
                         <div className="bg-card border rounded-xl px-4 py-3 flex flex-wrap items-center gap-2">
-                            <span className="text-sm text-muted-foreground font-medium mr-1">Your Selected</span>
+                            <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wide mr-1">Active Filters</span>
                             {activeFilters.map((f) => (
                                 <FilterChip key={f.key} label={f.label} onRemove={() => removeFilter(f.key)} />
                             ))}
@@ -469,19 +588,32 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                         <p className="text-sm text-muted-foreground">
                             {total === 0
                                 ? "No results found"
-                                : <>Showing <span className="font-semibold text-foreground">{from}–{to}</span> of <span className="font-semibold text-foreground">{total}</span> results</>
+                                : <><span className="font-semibold text-foreground">{from}–{to}</span> of <span className="font-semibold text-foreground">{total.toLocaleString()}</span> jobs</>
                             }
                         </p>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            {/* Sort */}
+                            <Select value={sortBy} onValueChange={handleSortChange}>
+                                <SelectTrigger className="w-[170px] h-9 text-sm">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {SORT_OPTIONS.map((opt) => (
+                                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            {/* Per page */}
                             <Select value={limit} onValueChange={handleLimitChange}>
                                 <SelectTrigger className="w-[120px] h-9 text-sm">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="12">12 Per Page</SelectItem>
-                                    <SelectItem value="24">24 Per Page</SelectItem>
-                                    <SelectItem value="48">48 Per Page</SelectItem>
+                                    <SelectItem value="12">12 / page</SelectItem>
+                                    <SelectItem value="24">24 / page</SelectItem>
+                                    <SelectItem value="48">48 / page</SelectItem>
                                 </SelectContent>
                             </Select>
 
@@ -489,17 +621,17 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                             <div className="flex rounded-lg border overflow-hidden">
                                 <button
                                     type="button"
+                                    title="List view"
                                     onClick={() => setView("list")}
                                     className={`p-2 transition-colors ${view === "list" ? "bg-primary text-primary-foreground" : "bg-card hover:bg-muted"}`}
-                                    title="List view"
                                 >
                                     <LayoutList className="h-4 w-4" />
                                 </button>
                                 <button
                                     type="button"
+                                    title="Grid view"
                                     onClick={() => setView("grid")}
                                     className={`p-2 transition-colors ${view === "grid" ? "bg-primary text-primary-foreground" : "bg-card hover:bg-muted"}`}
-                                    title="Grid view"
                                 >
                                     <Grid3X3 className="h-4 w-4" />
                                 </button>
@@ -509,11 +641,11 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
 
                     {/* Job cards */}
                     {jobs.length === 0 ? (
-                        <div className="bg-card border rounded-xl py-20 flex flex-col items-center gap-4 text-muted-foreground">
-                            <Briefcase className="h-12 w-12 opacity-20" />
-                            <p className="text-lg font-medium">No jobs found</p>
+                        <div className="bg-card border rounded-xl py-24 flex flex-col items-center gap-4 text-muted-foreground">
+                            <Briefcase className="h-14 w-14 opacity-20" />
+                            <p className="text-lg font-semibold">No jobs found</p>
                             <p className="text-sm">Try adjusting your filters or search terms.</p>
-                            <Button type="button" variant="outline" onClick={clearAll}>Clear Filters</Button>
+                            <Button type="button" variant="outline" onClick={clearAll}>Clear All Filters</Button>
                         </div>
                     ) : view === "list" ? (
                         <div className="space-y-3">
@@ -533,14 +665,14 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                                 title="Previous page"
                                 onClick={() => handlePageChange(currentPage - 1)}
                                 disabled={currentPage <= 1}
-                                className="p-2 rounded-lg border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                className="p-2 rounded-lg border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             >
                                 <ChevronLeft className="h-4 w-4" />
                             </button>
 
                             {pageNumbers.map((p, i) =>
                                 p === "…" ? (
-                                    <span key={`dots-${i}`} className="px-2 text-muted-foreground">…</span>
+                                    <span key={`dots-${i}`} className="px-2 text-muted-foreground select-none">…</span>
                                 ) : (
                                     <button
                                         type="button"
@@ -548,8 +680,8 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                                         onClick={() => handlePageChange(p as number)}
                                         className={`h-9 w-9 rounded-lg text-sm font-medium transition-colors ${
                                             p === currentPage
-                                                ? "bg-primary text-primary-foreground"
-                                                : "border hover:bg-muted"
+                                                ? "bg-primary text-primary-foreground shadow-sm"
+                                                : "border bg-card hover:bg-muted"
                                         }`}
                                     >
                                         {p}
@@ -562,7 +694,7 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                                 title="Next page"
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={currentPage >= totalPages}
-                                className="p-2 rounded-lg border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                className="p-2 rounded-lg border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             >
                                 <ChevronRight className="h-4 w-4" />
                             </button>
