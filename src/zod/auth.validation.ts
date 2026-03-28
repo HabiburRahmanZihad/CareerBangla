@@ -1,11 +1,12 @@
 import { z } from "zod";
 
-const BD_PHONE_REGEX = /^01[3-9]\d{8}$/;
+const BD_PHONE_REGEX = /^01\d{9}$/;
 
 const bdPhoneSchema = z
     .string()
     .min(1, "Phone number is required")
-    .regex(BD_PHONE_REGEX, "Enter a valid 11-digit phone number starting with 01 (e.g. 01818652760)");
+    .transform(v => v.trim())
+    .refine(v => BD_PHONE_REGEX.test(v), "Enter a valid 11-digit phone number starting with 01 (e.g. 01818652760)");
 
 export const loginZodSchema = z.object({
     identifier: z
