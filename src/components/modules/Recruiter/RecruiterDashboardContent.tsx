@@ -14,7 +14,7 @@ interface RecruiterDashboardContentProps {
 }
 
 const RecruiterDashboardContent = ({ userInfo }: RecruiterDashboardContentProps) => {
-    const isVerified = userInfo.recruiter?.isVerified ?? false;
+    const isVerified = userInfo.recruiter?.status === "APPROVED";
 
     const { data: jobsData, isLoading: jobsLoading } = useQuery({
         queryKey: ["my-jobs"],
