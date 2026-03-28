@@ -23,6 +23,7 @@ import {
     X,
     Zap,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -66,8 +67,15 @@ const getAvatarColor = (str: string) => {
 };
 
 // ── Company Avatar ───────────────────────────────────────────────────────────
-const CompanyAvatar = ({ name }: { name: string }) => {
+const CompanyAvatar = ({ name, logoUrl }: { name: string; logoUrl?: string | null }) => {
     const color = getAvatarColor(name);
+    if (logoUrl) {
+        return (
+            <div className="h-12 w-12 rounded-xl border bg-white shrink-0 overflow-hidden flex items-center justify-center">
+                <Image src={logoUrl} alt={name} width={48} height={48} className="object-contain w-full h-full" />
+            </div>
+        );
+    }
     return (
         <div className={`${color} h-12 w-12 rounded-xl flex items-center justify-center text-white font-bold text-base shrink-0`}>
             {name.charAt(0).toUpperCase()}
@@ -92,15 +100,16 @@ const JobListCard = ({ job }: { job: IJob }) => {
     const isExpiringSoon = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7;
     const appCount = job._count?.applications;
 
+    const logoUrl = job.recruiter?.companyLogo || job.recruiter?.profilePhoto || null;
+
     return (
         <Link href={`/jobs/${job.id}`} className="block group">
-            <div className={`flex items-start gap-4 p-5 rounded-xl border bg-card hover:shadow-md transition-all hover:-translate-y-0.5 ${job.featuredJob ? "border-amber-300 dark:border-amber-600" : ""}`}>
-                <CompanyAvatar name={job.recruiter?.companyName || job.company || "?"} />
+            <div className={`flex items-center gap-3 px-4 py-3 rounded-lg border bg-card hover:shadow-sm hover:border-primary/30 transition-all ${job.featuredJob ? "border-amber-300 dark:border-amber-600" : ""}`}>
+                <CompanyAvatar name={job.recruiter?.companyName || job.company || "?"} logoUrl={logoUrl} />
 
                 <div className="flex-1 min-w-0">
-                    {/* Title row */}
-                    <div className="flex items-center flex-wrap gap-1.5 mb-1.5">
-                        <span className="font-semibold text-[15px] group-hover:text-primary transition-colors line-clamp-1">
+                    <div className="flex items-center flex-wrap gap-x-2 gap-y-0.5">
+                        <span className="font-semibold text-sm group-hover:text-primary transition-colors line-clamp-1">
                             {job.title}
                         </span>
                         {job.featuredJob && (
@@ -116,55 +125,41 @@ const JobListCard = ({ job }: { job: IJob }) => {
                         {isExpiringSoon && (
                             <span className="text-xs font-semibold text-orange-500 flex items-center gap-0.5">
                                 <Clock className="h-3 w-3" />
-                                {daysLeft === 0 ? "Expires today" : `${daysLeft}d left`}
+                                {daysLeft === 0 ? "Today" : `${daysLeft}d left`}
                             </span>
                         )}
                     </div>
 
-                    {/* Company + Meta */}
-                    <p className="text-xs text-muted-foreground mb-2">{job.recruiter?.companyName || job.company}</p>
-
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mb-2.5">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
+                        <span className="text-xs text-muted-foreground">{job.recruiter?.companyName || job.company}</span>
                         {job.category?.title && (
-                            <span className="flex items-center gap-1">
-                                <Briefcase className="h-3.5 w-3.5" />
-                                {job.category.title}
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Briefcase className="h-3 w-3" />{job.category.title}
                             </span>
                         )}
-                        <span className="flex items-center gap-1">
-                            <MapPin className="h-3.5 w-3.5" />
-                            {job.location}
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3" />{job.location}
                         </span>
-                        {salary && (
-                            <span className="font-semibold text-foreground">{salary}</span>
-                        )}
+                        {salary && <span className="text-xs font-semibold text-foreground">{salary}</span>}
                         {appCount !== undefined && (
-                            <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
-                                <Users className="h-3.5 w-3.5" />
-                                {appCount} applied
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Badges */}
-                    <div className="flex flex-wrap gap-1.5">
-                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-medium border border-blue-100 dark:border-blue-900">
-                            {JOB_TYPE_LABELS[job.jobType] || job.jobType}
-                        </span>
-                        {job.urgentHiring && (
-                            <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 font-medium border border-amber-100 dark:border-amber-900">
-                                Urgent Hiring
-                            </span>
-                        )}
-                        {job.locationType && (
-                            <span className="text-xs px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
-                                {job.locationType.charAt(0) + job.locationType.slice(1).toLowerCase()}
+                            <span className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+                                <Users className="h-3 w-3" />{appCount} applied
                             </span>
                         )}
                     </div>
                 </div>
 
-                <Bookmark className="h-4 w-4 text-muted-foreground shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-medium border border-blue-100 dark:border-blue-900">
+                        {JOB_TYPE_LABELS[job.jobType] || job.jobType}
+                    </span>
+                    {job.locationType && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium hidden sm:inline">
+                            {job.locationType.charAt(0) + job.locationType.slice(1).toLowerCase()}
+                        </span>
+                    )}
+                    <Bookmark className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
+                </div>
             </div>
         </Link>
     );
@@ -177,12 +172,13 @@ const JobGridCard = ({ job }: { job: IJob }) => {
     const daysLeft = deadline ? differenceInDays(new Date(deadline), new Date()) : null;
     const isExpiringSoon = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7;
     const appCount = job._count?.applications;
+    const logoUrl = job.recruiter?.companyLogo || job.recruiter?.profilePhoto || null;
 
     return (
         <Link href={`/jobs/${job.id}`} className="block group">
             <div className={`p-5 rounded-xl border bg-card hover:shadow-md transition-all hover:-translate-y-0.5 h-full flex flex-col ${job.featuredJob ? "border-amber-300 dark:border-amber-600" : ""}`}>
                 <div className="flex items-start justify-between mb-3">
-                    <CompanyAvatar name={job.recruiter?.companyName || job.company || "?"} />
+                    <CompanyAvatar name={job.recruiter?.companyName || job.company || "?"} logoUrl={logoUrl} />
                     <Bookmark className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
 
@@ -652,7 +648,7 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                             {jobs.map((job) => <JobListCard key={job.id} job={job} />)}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             {jobs.map((job) => <JobGridCard key={job.id} job={job} />)}
                         </div>
                     )}
