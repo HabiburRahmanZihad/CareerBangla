@@ -3,12 +3,17 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import {
     Award, Briefcase, Calendar, Code2,
-    Crown, ExternalLink, FileText, GraduationCap,
-    Globe, Languages, MapPin, Mail, Phone,
+    Crown, ExternalLink, FileText,
+    Globe,
+    GraduationCap,
+    Languages,
+    Mail,
+    MapPin,
+    Phone,
     Rocket, Sparkles, TrendingUp, User, Users,
 } from "lucide-react";
 import Link from "next/link";
-import { completionColor, completionGradient, InfoItem, SectionCard, TimelineItem } from "./MyProfileShared";
+import { completionColor, InfoItem, SectionCard, TimelineItem } from "./MyProfileShared";
 
 interface JobSeekerSectionProps {
     resume: any;
@@ -32,7 +37,7 @@ export const JobSeekerSection = ({
             {/* Career Boost */}
             <SectionCard icon={Rocket} title="Career Boost Status">
                 {premiumActive ? (
-                    <div className="relative rounded-2xl p-[2px] bg-linear-to-br from-amber-400 via-yellow-300 to-amber-500 shadow-lg shadow-amber-500/20">
+                    <div className="relative rounded-2xl p-0.5 bg-linear-to-br from-amber-400 via-yellow-300 to-amber-500 shadow-lg shadow-amber-500/20">
                         <div className="rounded-[14px] bg-card p-5">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div className="flex items-center gap-4">
@@ -99,7 +104,7 @@ export const JobSeekerSection = ({
                     <div className="p-5 flex items-center gap-5">
                         {/* Circular conic-gradient ring */}
                         <Link href="/dashboard/my-resume" className="shrink-0">
-                            <div className="relative h-[88px] w-[88px]">
+                            <div className="relative h-22 w-22">
                                 {/* Track */}
                                 <div className="absolute inset-0 rounded-full bg-muted/60" />
                                 {/* Progress */}
@@ -107,7 +112,7 @@ export const JobSeekerSection = ({
                                     background: `conic-gradient(${completionColor(profileCompletion)} ${profileCompletion * 3.6}deg, transparent ${profileCompletion * 3.6}deg)`
                                 }} />
                                 {/* Center cutout */}
-                                <div className="absolute inset-[10px] rounded-full bg-card flex flex-col items-center justify-center shadow-sm">
+                                <div className="absolute inset-2.5 rounded-full bg-card flex flex-col items-center justify-center shadow-sm">
                                     <span className="text-xl font-black leading-none" style={{ color: completionColor(profileCompletion) }}>{profileCompletion}</span>
                                     <span className="text-[9px] font-bold text-muted-foreground/70">%</span>
                                 </div>
@@ -123,8 +128,8 @@ export const JobSeekerSection = ({
                                     {profileCompletion >= 80
                                         ? "Outstanding profile — recruiters will notice you"
                                         : profileCompletion >= 60
-                                        ? "You can apply for jobs now. Keep improving!"
-                                        : "Complete your resume to start applying for jobs"}
+                                            ? "You can apply for jobs now. Keep improving!"
+                                            : "Complete your resume to start applying for jobs"}
                                 </p>
                             </div>
                             {/* Progress bar */}
