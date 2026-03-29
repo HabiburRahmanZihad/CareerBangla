@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { IReferralStats } from "@/services/referral.services";
+import { IReferralStats, searchReferrals } from "@/services/referral.services";
 import { UserInfo } from "@/types/user.types";
 import { format } from "date-fns";
 import {
@@ -16,18 +16,29 @@ import {
     Clock,
     Copy,
     Gift,
+    Search,
     Share2,
     Sparkles,
     TrendingUp,
     Trophy,
-    Users
+    Users,
+    X
 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 interface ReferralContentProps {
     userInfo?: UserInfo;
     referralStats?: IReferralStats;
+}
+
+interface SearchResult {
+    id: string;
+    referredUserName: string;
+    referredUserEmail: string;
+    hasPaid: boolean;
+    paidAt: string | null;
+    createdAt: string;
 }
 
 const ReferralContent = ({ userInfo, referralStats }: ReferralContentProps) => {
@@ -44,6 +55,38 @@ const ReferralContent = ({ userInfo, referralStats }: ReferralContentProps) => {
 
     const [isCopiedCode, setIsCopiedCode] = useState(false);
     const [isCopiedLink, setIsCopiedLink] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [isPending, startTransition] = useTransition();
+
+    const handleSearch = useCallback(async (query: string) => {
+        setSearchQuery(query);
+
+        if (!query.trim()) {
+            setSearchResults([]);
+            return;
+        }
+
+        setIsSearching(true);
+        startTransition(async () => {
+            try {
+                const response = await searchReferrals(query);
+                setSearchResults(response.data?.results || []);
+            } catch (error) {
+                console.error("Search error:", error);
+                toast.error("Failed to search referrals");
+                setSearchResults([]);
+            } finally {
+                setIsSearching(false);
+            }
+        });
+    }, []);
+
+    const clearSearch = useCallback(() => {
+        setSearchQuery("");
+        setSearchResults([]);
+    }, []);
 
     const copyToClipboard = (text: string, type: 'code' | 'link') => {
         navigator.clipboard.writeText(text);
@@ -72,6 +115,9 @@ const ReferralContent = ({ userInfo, referralStats }: ReferralContentProps) => {
             copyToClipboard(referralLink, 'link');
         }
     };
+
+    // Determine which data to display
+    const displayReferrals = searchQuery.trim() ? searchResults : recentReferrals;
 
     return (
         <div className="mx-auto space-y-8 pb-10">
@@ -311,55 +357,110 @@ const ReferralContent = ({ userInfo, referralStats }: ReferralContentProps) => {
                 </div>
             </div>
 
-            {/* Recent Referrals List */}
-            {recentReferrals.length > 0 && (
-                <div className="space-y-5 pt-4">
-                    <h3 className="text-xl font-bold px-1 flex items-center gap-2 text-foreground">
-                        <Users className="w-5 h-5" /> Recent Activity
+            {/* Recent Referrals List / Search */}
+            <div className="space-y-5 pt-4">
+                <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-bold flex items-center gap-2 text-foreground">
+                        <Users className="w-5 h-5" /> {searchQuery.trim() ? "Search Results" : "Recent Activity"}
                     </h3>
-                    <Card className="border-border/50 overflow-hidden shadow-sm">
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader className="bg-muted/50">
-                                    <TableRow className="hover:bg-transparent border-border/50">
-                                        <TableHead className="font-semibold text-muted-foreground w-[40%]">Referred User</TableHead>
-                                        <TableHead className="font-semibold text-muted-foreground">Date Joined</TableHead>
-                                        <TableHead className="font-semibold text-muted-foreground text-right pr-6">Status</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {recentReferrals.map((ref) => (
-                                        <TableRow key={ref.id} className="hover:bg-muted/30 border-border/50 transition-colors">
-                                            <TableCell className="font-medium h-14">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                                                        {ref.referredUserName.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <span className="truncate max-w-37.5 sm:max-w-none">{ref.referredUserName}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-muted-foreground text-sm font-medium">
-                                                {format(new Date(ref.createdAt), "MMM d, yyyy")}
-                                            </TableCell>
-                                            <TableCell className="text-right pr-6">
-                                                {ref.hasPaid ? (
-                                                    <Badge className="bg-green-100 hover:bg-green-100 text-green-700 border-green-200 dark:bg-green-500/10 dark:hover:bg-green-500/20 dark:text-green-400 dark:border-green-500/20 py-0.5 px-2.5 font-medium rounded-full shadow-none inline-flex items-center gap-1.5 transition-colors">
-                                                        <CheckCircle className="w-3.5 h-3.5" /> Paid
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge variant="secondary" className="py-0.5 px-2.5 font-medium rounded-full text-muted-foreground bg-muted/80 hover:bg-muted inline-flex items-center gap-1.5 transition-colors shadow-none">
-                                                        <Clock className="w-3.5 h-3.5" /> Pending
-                                                    </Badge>
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    </Card>
+                    {searchQuery.trim() && (
+                        <span className="text-sm text-muted-foreground">
+                            {displayReferrals.length} result{displayReferrals.length !== 1 ? 's' : ''} found
+                        </span>
+                    )}
                 </div>
-            )}
+
+                <Card className="border-border/50 overflow-hidden shadow-sm">
+                    <CardContent className="p-6">
+                        {/* Search Input */}
+                        <div className="relative mb-6">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                            <Input
+                                placeholder="Search by name or email..."
+                                value={searchQuery}
+                                onChange={(e) => handleSearch(e.target.value)}
+                                className="pl-10 pr-10 h-11 bg-muted/50 border-muted-foreground/20 text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-1 transition-all"
+                            />
+                            {searchQuery.trim() && (
+                                <button
+                                    title="Clear search"
+                                    onClick={clearSearch}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-md transition-colors"
+                                >
+                                    <X className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                                </button>
+                            )}
+                            {isSearching && (
+                                <div className="absolute right-10 top-1/2 -translate-y-1/2">
+                                    <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Table */}
+                        <div className="overflow-x-auto">
+                            {displayReferrals.length > 0 ? (
+                                <Table>
+                                    <TableHeader className="bg-muted/50">
+                                        <TableRow className="hover:bg-transparent border-border/50">
+                                            <TableHead className="font-semibold text-muted-foreground w-[40%]">Referred User</TableHead>
+                                            <TableHead className="font-semibold text-muted-foreground">Date Joined</TableHead>
+                                            <TableHead className="font-semibold text-muted-foreground text-right pr-6">Status</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {displayReferrals.map((ref) => (
+                                            <TableRow key={ref.id} className="hover:bg-muted/30 border-border/50 transition-colors">
+                                                <TableCell className="font-medium h-14">
+                                                    <div className="flex flex-col gap-1">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
+                                                                {ref.referredUserName.charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <span className="truncate max-w-[150px] sm:max-w-none">{ref.referredUserName}</span>
+                                                        </div>
+                                                        <span className="text-xs text-muted-foreground">{ref.referredUserEmail}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-muted-foreground text-sm font-medium">
+                                                    {format(new Date(ref.createdAt), "MMM d, yyyy")}
+                                                </TableCell>
+                                                <TableCell className="text-right pr-6">
+                                                    {ref.hasPaid ? (
+                                                        <Badge className="bg-green-100 hover:bg-green-100 text-green-700 border-green-200 dark:bg-green-500/10 dark:hover:bg-green-500/20 dark:text-green-400 dark:border-green-500/20 py-0.5 px-2.5 font-medium rounded-full shadow-none inline-flex items-center gap-1.5 transition-colors">
+                                                            <CheckCircle className="w-3.5 h-3.5" /> Paid
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge variant="secondary" className="py-0.5 px-2.5 font-medium rounded-full text-muted-foreground bg-muted/80 hover:bg-muted inline-flex items-center gap-1.5 transition-colors shadow-none">
+                                                            <Clock className="w-3.5 h-3.5" /> Pending
+                                                        </Badge>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-12 text-center">
+                                    <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                                        <Users className="w-8 h-8 text-muted-foreground/50" />
+                                    </div>
+                                    <p className="text-muted-foreground font-medium">
+                                        {searchQuery.trim()
+                                            ? "No referrals found matching your search"
+                                            : "No referrals yet"}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground/70 mt-1">
+                                        {searchQuery.trim()
+                                            ? "Try adjusting your search terms"
+                                            : "Start inviting friends to see them here"}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 };
