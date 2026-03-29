@@ -361,7 +361,7 @@ const PostJobContent = () => {
     }, [draftStorageKey, form]);
 
     return (
-        <div className="space-y-5 max-w-4xl">
+        <div className="space-y-5">
 
             {/* ── Hero header ───────────────────────────────────────────────── */}
             <div className="relative rounded-2xl overflow-hidden bg-card border border-border/40">
