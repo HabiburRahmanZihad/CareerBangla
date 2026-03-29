@@ -33,7 +33,6 @@ export const SubscriptionOverview = ({
     hasActivePremium,
     resolvedPlans,
     selectedPlan,
-    selectedPlanKey,
     setSelectedPlanKey,
     setStep,
     disableOverviewPurchaseButton,
