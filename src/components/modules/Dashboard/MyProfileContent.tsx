@@ -190,11 +190,18 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                         <div className={`p-0.75 rounded-2xl bg-linear-to-br ${coverGradient} shadow-2xl`}>
                             <div className="relative h-24 w-24 sm:h-32 sm:w-32 rounded-xl overflow-hidden bg-card border-2 border-card">
                                 {avatarSrc ? (
-                                    <Image src={avatarSrc} alt={userInfo.name} fill className="object-cover" />
+                                    <Image
+                                        src={avatarSrc}
+                                        alt={userInfo.name}
+                                        fill
+                                        className="object-cover"
+                                        priority
+                                        unoptimized
+                                    />
                                 ) : (
                                     <div className={`h-full w-full flex items-center justify-center text-4xl sm:text-5xl font-black ${isAdmin ? "bg-red-100 dark:bg-red-950/50 text-red-600"
-                                            : isRecruiter ? "bg-blue-100 dark:bg-blue-950/50 text-blue-600"
-                                                : "bg-orange-100 dark:bg-orange-950/50 text-orange-600"
+                                        : isRecruiter ? "bg-blue-100 dark:bg-blue-950/50 text-blue-600"
+                                            : "bg-orange-100 dark:bg-orange-950/50 text-orange-600"
                                         }`}>
                                         {userInfo.name?.charAt(0)?.toUpperCase() || "U"}
                                     </div>
@@ -242,8 +249,8 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                         {/* Status pills */}
                         <div className="flex flex-wrap gap-1.5 pb-3.5 border-b border-border/20 mb-0.5">
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${userInfo.status === "ACTIVE"
-                                    ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                                    : "bg-red-500/10 text-red-600 dark:text-red-400"
+                                ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                                : "bg-red-500/10 text-red-600 dark:text-red-400"
                                 }`}>
                                 <span className={`h-1.5 w-1.5 rounded-full ${userInfo.status === "ACTIVE" ? "bg-green-500" : "bg-red-500"}`} />
                                 {userInfo.status === "ACTIVE" ? "Active" : (userInfo.status ?? "Unknown")}
