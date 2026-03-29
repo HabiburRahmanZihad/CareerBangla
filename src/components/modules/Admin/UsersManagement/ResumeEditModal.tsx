@@ -3,14 +3,14 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { downloadPdfFromElement } from "@/lib/pdfUtils";
 import { IAward, ICertification, IEducation, ILanguage, IProject, IReference, IResume, IWorkExperience } from "@/types/user.types";
-import { Award, BookOpen, Briefcase, Code2, Download, Edit2, FileText, Globe, Lightbulb, Link as LinkIcon, MessageSquare, PhoneIcon, Plus, Trophy, User, X } from "lucide-react";
+import { Award, BookOpen, Briefcase, Code2, Download, Edit2, FileText, GithubIcon, Globe, Lightbulb, Linkedin, Mail, MapPin, Phone, Plus, Rocket, Trophy, User, Users, Wrench, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -115,7 +115,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 bg-white border-0 rounded-2xl shadow-2xl">
+            <DialogContent className="max-w-[65vw]!  max-h-[90vh] overflow-y-auto p-0 bg-white border-0 rounded-2xl shadow-2xl [&>button]:hidden">
                 {/* ── Premium Header ────────────────────────────────────────────── */}
                 <div className="sticky top-0 z-50 bg-linear-to-r from-primary/10 to-orange-600/10 border-b border-border/40 px-6 py-4">
                     <div className="flex items-start justify-between gap-4">
@@ -128,9 +128,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                     {isEditing ? "Resume Editor" : "Resume View"}
                                 </DialogTitle>
                             </div>
-                            <DialogDescription className="text-sm ml-13">
-                                {isEditing ? "✏️ Edit resume information" : "📋 View resume details"}
-                            </DialogDescription>
+
                         </div>
                         <div className="flex gap-2 flex-wrap justify-end">
                             <Button
@@ -153,41 +151,35 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                     Edit
                                 </Button>
                             )}
-                            <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={() => handleOpenChange(false)}
-                                className="h-8 w-8 rounded-lg hover:bg-muted"
-                            >
-                                <X className="h-4 w-4" />
-                            </Button>
                         </div>
                     </div>
                 </div>
 
-                <div id="resume-pdf-content" className="space-y-6 px-1">
-                    <div className="flex gap-2 border-b pb-4 overflow-x-auto">
+                <div id="resume-pdf-content" className="space-y-6 px-6 py-6">
+                    {/* ── Premium Tab Navigation ────────────────────────────────────────────── */}
+                    <div className="flex gap-1 border-b border-border/40 overflow-x-auto pb-0 -mx-6 px-6 bg-muted/20">
                         {[
-                            { id: "basic", label: "Basic Info" },
-                            { id: "skills", label: "Skills" },
-                            { id: "experience", label: "Experience" },
-                            { id: "education", label: "Education" },
-                            { id: "certifications", label: "Certifications" },
-                            { id: "projects", label: "Projects" },
-                            { id: "languages", label: "Languages" },
-                            { id: "awards", label: "Awards" },
-                            { id: "references", label: "References" }
+                            { id: "basic", label: "Basic Info", Icon: FileText },
+                            { id: "skills", label: "Skills", Icon: Lightbulb },
+                            { id: "experience", label: "Experience", Icon: Briefcase },
+                            { id: "education", label: "Education", Icon: BookOpen },
+                            { id: "certifications", label: "Certifications", Icon: Award },
+                            { id: "projects", label: "Projects", Icon: Rocket },
+                            { id: "languages", label: "Languages", Icon: Globe },
+                            { id: "awards", label: "Awards", Icon: Trophy },
+                            { id: "references", label: "References", Icon: Users }
                         ].map(tab => (
                             <button
                                 disabled={isEditing}
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
-                                className={`px-3 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.id
-                                    ? "border-primary text-primary"
-                                    : "border-transparent text-muted-foreground hover:text-foreground"
+                                className={`px-4 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-all flex items-center gap-2 ${activeTab === tab.id
+                                    ? "border-primary text-primary bg-primary/5 rounded-t-lg"
+                                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-t-lg"
                                     } ${isEditing ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                             >
-                                {tab.label}
+                                <tab.Icon className="h-4 w-4" />
+                                <span>{tab.label}</span>
                             </button>
                         ))}
                     </div>
@@ -196,132 +188,189 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                         {/* Basic Info Tab */}
                         {activeTab === "basic" && (
                             <div className="space-y-5">
-                                <div className="grid grid-cols-2 gap-5">
-                                    <div className="space-y-2">
-                                        <Label>Full Name</Label>
-                                        <Input
-                                            disabled={!isEditing}
-                                            value={localResume.fullName || ""}
-                                            onChange={e => setLocalResume(prev => ({ ...prev, fullName: e.target.value }))}
-                                            placeholder="John Doe"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Professional Title</Label>
-                                        <Input
-                                            disabled={!isEditing}
-                                            value={localResume.professionalTitle || ""}
-                                            onChange={e => setLocalResume(prev => ({ ...prev, professionalTitle: e.target.value }))}
-                                            placeholder="Full Stack Developer"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Professional Summary</Label>
-                                    <Textarea
-                                        disabled={!isEditing}
-                                        value={localResume.professionalSummary || ""}
-                                        onChange={e => setLocalResume(prev => ({ ...prev, professionalSummary: e.target.value }))}
-                                        placeholder="Brief professional summary..."
-                                        rows={4}
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-5">
-                                    <div className="space-y-2">
-                                        <Label>Email</Label>
-                                        <Input
-                                            disabled={!isEditing}
-                                            value={localResume.email || ""}
-                                            onChange={e => setLocalResume(prev => ({ ...prev, email: e.target.value }))}
-                                            placeholder="john@example.com"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Phone</Label>
-                                        <Input
-                                            disabled={!isEditing}
-                                            value={localResume.contactNumber || ""}
-                                            onChange={e => setLocalResume(prev => ({ ...prev, contactNumber: e.target.value }))}
-                                            placeholder="+1234567890"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-5">
-                                    <div className="space-y-2">
-                                        <Label>Address</Label>
-                                        <Input
-                                            disabled={!isEditing}
-                                            value={localResume.address || ""}
-                                            onChange={e => setLocalResume(prev => ({ ...prev, address: e.target.value }))}
-                                            placeholder="City, Country"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Portfolio URL</Label>
-                                        <Input
-                                            disabled={!isEditing}
-                                            value={localResume.portfolioUrl || ""}
-                                            onChange={e => setLocalResume(prev => ({ ...prev, portfolioUrl: e.target.value }))}
-                                            placeholder="https://portfolio.com"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-5">
-                                    <div className="space-y-2">
-                                        <Label>LinkedIn Profile</Label>
-                                        <Input
-                                            disabled={!isEditing}
-                                            value={localResume.linkedinUrl || ""}
-                                            onChange={e => setLocalResume(prev => ({ ...prev, linkedinUrl: e.target.value }))}
-                                            placeholder="https://linkedin.com/in/john"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>GitHub Profile</Label>
-                                        <Input
-                                            disabled={!isEditing}
-                                            value={localResume.githubUrl || ""}
-                                            onChange={e => setLocalResume(prev => ({ ...prev, githubUrl: e.target.value }))}
-                                            placeholder="https://github.com/john"
-                                        />
-                                    </div>
-                                </div>
+                                {/* Profile Section */}
+                                <Card className="border-border/40 bg-linear-to-br from-primary/5 to-transparent">
+                                    <CardHeader className="border-b border-border/40">
+                                        <CardTitle className="flex items-center gap-2">
+                                            <User className="h-5 w-5 text-primary" />
+                                            Personal Information
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="pt-6 space-y-5">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                            <div className="space-y-2">
+                                                <Label className="font-semibold flex items-center gap-2">
+                                                    <User className="h-4 w-4 text-primary" /> Full Name
+                                                </Label>
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    value={localResume.fullName || ""}
+                                                    onChange={e => setLocalResume(prev => ({ ...prev, fullName: e.target.value }))}
+                                                    placeholder="John Doe"
+                                                    className="rounded-lg border-border/40"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="font-semibold flex items-center gap-2">
+                                                    <Briefcase className="h-4 w-4 text-primary" /> Professional Title
+                                                </Label>
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    value={localResume.professionalTitle || ""}
+                                                    onChange={e => setLocalResume(prev => ({ ...prev, professionalTitle: e.target.value }))}
+                                                    placeholder="Full Stack Developer"
+                                                    className="rounded-lg border-border/40"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="font-semibold flex items-center gap-2">
+                                                <FileText className="h-4 w-4 text-primary" /> Professional Summary
+                                            </Label>
+                                            <Textarea
+                                                disabled={!isEditing}
+                                                value={localResume.professionalSummary || ""}
+                                                onChange={e => setLocalResume(prev => ({ ...prev, professionalSummary: e.target.value }))}
+                                                placeholder="Brief professional summary..."
+                                                rows={4}
+                                                className="rounded-lg border-border/40 resize-none"
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                            <div className="space-y-2">
+                                                <Label className="font-semibold flex items-center gap-2">
+                                                    <Mail className="h-4 w-4 text-primary" /> Email
+                                                </Label>
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    value={localResume.email || ""}
+                                                    onChange={e => setLocalResume(prev => ({ ...prev, email: e.target.value }))}
+                                                    placeholder="john@example.com"
+                                                    className="rounded-lg border-border/40"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="font-semibold flex items-center gap-2">
+                                                    <Phone className="h-4 w-4 text-primary" /> Phone
+                                                </Label>
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    value={localResume.contactNumber || ""}
+                                                    onChange={e => setLocalResume(prev => ({ ...prev, contactNumber: e.target.value }))}
+                                                    placeholder="+1234567890"
+                                                    className="rounded-lg border-border/40"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                            <div className="space-y-2">
+                                                <Label className="font-semibold flex items-center gap-2">
+                                                    <MapPin className="h-4 w-4 text-primary" /> Address
+                                                </Label>
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    value={localResume.address || ""}
+                                                    onChange={e => setLocalResume(prev => ({ ...prev, address: e.target.value }))}
+                                                    placeholder="City, Country"
+                                                    className="rounded-lg border-border/40"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="font-semibold flex items-center gap-2">
+                                                    <Globe className="h-4 w-4 text-primary" /> Portfolio URL
+                                                </Label>
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    value={localResume.portfolioUrl || ""}
+                                                    onChange={e => setLocalResume(prev => ({ ...prev, portfolioUrl: e.target.value }))}
+                                                    placeholder="https://portfolio.com"
+                                                    className="rounded-lg border-border/40"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                            <div className="space-y-2">
+                                                <Label className="font-semibold flex items-center gap-2">
+                                                    <Linkedin className="h-4 w-4 text-primary" /> LinkedIn Profile
+                                                </Label>
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    value={localResume.linkedinUrl || ""}
+                                                    onChange={e => setLocalResume(prev => ({ ...prev, linkedinUrl: e.target.value }))}
+                                                    placeholder="https://linkedin.com/in/john"
+                                                    className="rounded-lg border-border/40"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="font-semibold flex items-center gap-2">
+                                                    <GithubIcon className="h-4 w-4 text-primary" /> GitHub Profile
+                                                </Label>
+                                                <Input
+                                                    disabled={!isEditing}
+                                                    value={localResume.githubUrl || ""}
+                                                    onChange={e => setLocalResume(prev => ({ ...prev, githubUrl: e.target.value }))}
+                                                    placeholder="https://github.com/john"
+                                                    className="rounded-lg border-border/40"
+                                                />
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             </div>
                         )}
 
                         {/* Skills Tab */}
                         {activeTab === "skills" && (
                             <div className="space-y-5">
-                                <div className="space-y-2">
-                                    <Label>Technical Skills (comma-separated)</Label>
-                                    <Textarea
-                                        disabled={!isEditing}
-                                        value={getSkillsString("technicalSkills")}
-                                        onChange={e => updateSkillsArray("technicalSkills", e.target.value)}
-                                        placeholder="JavaScript, React, Node.js, Python..."
-                                        rows={3}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Soft Skills (comma-separated)</Label>
-                                    <Textarea
-                                        disabled={!isEditing}
-                                        value={getSkillsString("softSkills")}
-                                        onChange={e => updateSkillsArray("softSkills", e.target.value)}
-                                        placeholder="Leadership, Communication, Problem-solving..."
-                                        rows={3}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Tools & Technologies (comma-separated)</Label>
-                                    <Textarea
-                                        disabled={!isEditing}
-                                        value={getSkillsString("toolsAndTechnologies")}
-                                        onChange={e => updateSkillsArray("toolsAndTechnologies", e.target.value)}
-                                        placeholder="Git, Docker, AWS, PostgreSQL..."
-                                        rows={3}
-                                    />
-                                </div>
+                                <Card className="border-border/40 bg-linear-to-br from-green-600/5 to-transparent">
+                                    <CardHeader className="border-b border-border/40">
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Code2 className="h-5 w-5 text-green-600" />
+                                            Technical & Soft Skills
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="pt-6 space-y-5">
+                                        <div className="space-y-2">
+                                            <Label className="font-semibold flex items-center gap-2">
+                                                <Code2 className="h-4 w-4 text-green-600" /> Technical Skills (comma-separated)
+                                            </Label>
+                                            <Textarea
+                                                disabled={!isEditing}
+                                                value={getSkillsString("technicalSkills")}
+                                                onChange={e => updateSkillsArray("technicalSkills", e.target.value)}
+                                                placeholder="JavaScript, React, Node.js, Python..."
+                                                rows={2}
+                                                className="rounded-lg border-border/40 resize-none"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="font-semibold flex items-center gap-2">
+                                                <Lightbulb className="h-4 w-4 text-green-600" /> Soft Skills (comma-separated)
+                                            </Label>
+                                            <Textarea
+                                                disabled={!isEditing}
+                                                value={getSkillsString("softSkills")}
+                                                onChange={e => updateSkillsArray("softSkills", e.target.value)}
+                                                placeholder="Leadership, Communication, Problem-solving..."
+                                                rows={2}
+                                                className="rounded-lg border-border/40 resize-none"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="font-semibold flex items-center gap-2">
+                                                <Wrench className="h-4 w-4 text-green-600" /> Tools & Technologies (comma-separated)
+                                            </Label>
+                                            <Textarea
+                                                disabled={!isEditing}
+                                                value={getSkillsString("toolsAndTechnologies")}
+                                                onChange={e => updateSkillsArray("toolsAndTechnologies", e.target.value)}
+                                                placeholder="Git, Docker, AWS, PostgreSQL..."
+                                                rows={2}
+                                                className="rounded-lg border-border/40 resize-none"
+                                            />
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             </div>
                         )}
 
@@ -884,22 +933,6 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                     </div>
                 </div>
 
-                <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-between gap-2">
-                    {isEditing ? (
-                        <>
-                            <Button variant="outline" onClick={handleCancel}>
-                                Cancel
-                            </Button>
-                            <Button onClick={handleSave} disabled={isSaving || isLoading}>
-                                {isSaving ? "Saving..." : "Save Changes"}
-                            </Button>
-                        </>
-                    ) : (
-                        <Button variant="outline" onClick={() => handleOpenChange(false)}>
-                            Close
-                        </Button>
-                    )}
-                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
