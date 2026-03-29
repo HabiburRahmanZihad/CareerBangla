@@ -27,7 +27,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { JobSeekerSection } from "./MyProfileJobSeeker";
 import { InfoItem, SectionCard } from "./MyProfileShared";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -186,8 +185,8 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                                         <Image src={avatarSrc} alt={userInfo.name} fill className="object-cover" />
                                     ) : (
                                         <div className={`h-full w-full flex items-center justify-center text-3xl font-extrabold ${isAdmin ? "bg-red-50 dark:bg-red-950/30 text-red-600"
-                                                : isRecruiter ? "bg-blue-50 dark:bg-blue-950/30 text-blue-600"
-                                                    : "bg-primary/10 text-primary"
+                                            : isRecruiter ? "bg-blue-50 dark:bg-blue-950/30 text-blue-600"
+                                                : "bg-primary/10 text-primary"
                                             }`}>
                                             {userInfo.name?.charAt(0)?.toUpperCase() || "U"}
                                         </div>
@@ -225,8 +224,8 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                                 )}
                                 {isRecruiter && recruiter?.status && recruiter.status !== "APPROVED" && (
                                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold border ${recruiter.status === "PENDING"
-                                            ? "bg-yellow-50 border-yellow-200 text-yellow-700 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-400"
-                                            : "bg-red-50 border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400"
+                                        ? "bg-yellow-50 border-yellow-200 text-yellow-700 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-400"
+                                        : "bg-red-50 border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400"
                                         }`}>
                                         {recruiter.status === "PENDING" ? "Pending Approval" : "Rejected"}
                                     </span>
@@ -287,8 +286,8 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                         {/* Status pills */}
                         <div className="flex flex-wrap gap-1.5 pb-4 mb-2 border-b border-border/20">
                             <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${userInfo.status === "ACTIVE"
-                                    ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                                    : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                                ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                                 }`}>
                                 {userInfo.status === "ACTIVE"
                                     ? <CheckCircle2 className="h-3 w-3" />
@@ -375,18 +374,6 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                 {/* ══ MAIN CONTENT ════════════════════════════════════════════ */}
                 <div className="sm:col-span-2 lg:col-span-2 space-y-4">
 
-                    {/* ── JOB SEEKER ── */}
-                    {isJobSeeker && (
-                        <JobSeekerSection
-                            resume={resume}
-                            resumeLoading={resumeLoading}
-                            premiumActive={premiumActive}
-                            isLifetime={isLifetime}
-                            premiumUntil={premiumUntil}
-                            profileCompletion={profileCompletion}
-                        />
-                    )}
-
                     {/* ── RECRUITER ── */}
                     {isRecruiter && (
                         <>
@@ -409,8 +396,8 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                                     {/* Approval status banner */}
                                     {recruiter.status && recruiter.status !== "APPROVED" && (
                                         <div className={`rounded-2xl border p-4 flex items-start gap-3 ${recruiter.status === "PENDING"
-                                                ? "bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800"
-                                                : "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800"
+                                            ? "bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800"
+                                            : "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800"
                                             }`}>
                                             <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${recruiter.status === "PENDING" ? "bg-yellow-100 dark:bg-yellow-900/40" : "bg-red-100 dark:bg-red-900/40"
                                                 }`}>
