@@ -89,14 +89,7 @@ const UsersManagementMain = () => {
     const totalUsers = users.length;
     const activeUsers = users.filter(u => u.status === "ACTIVE").length;
     const premiumUsers = users.filter(u => u.isPremium).length;
-    const resumeUsers = users.filter(u => u.resume).length;
     const hiredUsers = users.filter(u => u.isHired).length;
-    const thisWeekUsers = users.filter(u => {
-        const now = new Date();
-        const created = new Date(u.createdAt || '');
-        const dayDiff = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
-        return dayDiff <= 7;
-    }).length;
 
     return (
         <div className="space-y-6">

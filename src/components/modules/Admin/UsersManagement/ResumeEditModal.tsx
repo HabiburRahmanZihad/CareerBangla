@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { downloadPdfFromElement } from "@/lib/pdfUtils";
 import { IAward, ICertification, IEducation, ILanguage, IProject, IReference, IResume, IWorkExperience } from "@/types/user.types";
-import { Download, Edit2, Plus, X } from "lucide-react";
+import { Award, BookOpen, Briefcase, Code2, Download, Edit2, FileText, Globe, Lightbulb, Link as LinkIcon, MessageSquare, PhoneIcon, Plus, Trophy, User, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -115,33 +115,53 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-6">
-                <div className="flex items-start justify-between gap-4 mb-6">
-                    <div>
-                        <DialogTitle>Resume {isEditing ? "Editor" : "View"}</DialogTitle>
-                        <DialogDescription>
-                            {isEditing ? "Edit resume information" : "View resume details"}
-                        </DialogDescription>
-                    </div>
-                    <div className="flex gap-2">
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={handleDownloadPDF}
-                            disabled={isDownloading || !localResume.fullName}
-                        >
-                            <Download className="h-4 w-4 mr-2" />
-                            {isDownloading ? "Downloading..." : "Download"}
-                        </Button>
-                        {!isEditing && (
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 bg-white border-0 rounded-2xl shadow-2xl">
+                {/* ── Premium Header ────────────────────────────────────────────── */}
+                <div className="sticky top-0 z-50 bg-linear-to-r from-primary/10 to-orange-600/10 border-b border-border/40 px-6 py-4">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-1">
+                                <div className="h-10 w-10 rounded-lg bg-linear-to-br from-primary to-orange-600 flex items-center justify-center">
+                                    <FileText className="h-5 w-5 text-white" />
+                                </div>
+                                <DialogTitle className="text-2xl font-black bg-linear-to-r from-primary to-orange-600 bg-clip-text text-transparent">
+                                    {isEditing ? "Resume Editor" : "Resume View"}
+                                </DialogTitle>
+                            </div>
+                            <DialogDescription className="text-sm ml-13">
+                                {isEditing ? "✏️ Edit resume information" : "📋 View resume details"}
+                            </DialogDescription>
+                        </div>
+                        <div className="flex gap-2 flex-wrap justify-end">
                             <Button
                                 size="sm"
-                                onClick={() => setIsEditing(true)}
+                                variant="outline"
+                                onClick={handleDownloadPDF}
+                                disabled={isDownloading || !localResume.fullName}
+                                className="rounded-lg border-border/40 hover:bg-muted/50"
                             >
-                                <Edit2 className="h-4 w-4 mr-2" />
-                                Edit
+                                <Download className="h-4 w-4 mr-2" />
+                                {isDownloading ? "Downloading..." : "Download"}
                             </Button>
-                        )}
+                            {!isEditing && (
+                                <Button
+                                    size="sm"
+                                    onClick={() => setIsEditing(true)}
+                                    className="rounded-lg bg-primary hover:bg-orange-700"
+                                >
+                                    <Edit2 className="h-4 w-4 mr-2" />
+                                    Edit
+                                </Button>
+                            )}
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => handleOpenChange(false)}
+                                className="h-8 w-8 rounded-lg hover:bg-muted"
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </div>
                 </div>
 
