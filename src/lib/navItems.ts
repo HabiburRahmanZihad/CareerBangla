@@ -26,6 +26,11 @@ export const recruiterNavItems: NavSection[] = [
         title: "Job Management",
         items: [
             {
+                title: "Post a Job",
+                href: "/recruiter/dashboard/post-job",
+                icon: "PlusCircle",
+            },
+            {
                 title: "Pending Jobs",
                 href: "/recruiter/dashboard/my-jobs/pending",
                 icon: "Clock",
@@ -41,12 +46,7 @@ export const recruiterNavItems: NavSection[] = [
                 icon: "XCircle",
             },
             {
-                title: "Post a Job",
-                href: "/recruiter/dashboard/post-job",
-                icon: "PlusCircle",
-            },
-            {
-                title: "Applications",
+                title: "Job Applications",
                 href: "/recruiter/dashboard/applications",
                 icon: "FileText",
             },
