@@ -169,8 +169,8 @@ const NotifCard = ({
     return (
         <div
             className={`relative group rounded-2xl border overflow-hidden transition-all duration-200 ${notif.isRead
-                    ? "border-border/40 bg-card hover:border-border/70"
-                    : `border-border/50 ${cfg.unreadBg} hover:border-border/80 shadow-sm`
+                ? "border-border/40 bg-card hover:border-border/70"
+                : `border-border/50 ${cfg.unreadBg} hover:border-border/80 shadow-sm`
                 }`}
             onClick={() => { if (!notif.isRead) onMarkRead(notif.id); }}
             style={{ cursor: notif.isRead ? "default" : "pointer" }}
@@ -393,8 +393,8 @@ const NotificationsContent = () => {
                                 type="button"
                                 onClick={() => setFilter(key)}
                                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${isActive
-                                        ? "bg-primary text-primary-foreground shadow-sm"
-                                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                                    ? "bg-primary text-primary-foreground shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                                     }`}
                             >
                                 {label}
