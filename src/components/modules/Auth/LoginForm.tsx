@@ -210,10 +210,10 @@ const LoginForm = ({ redirectPath, oauthError, forceLogoutMode = false }: LoginF
             {/* Card header */}
             <div className="px-8 pt-8 pb-6 border-b border-border/40">
               <div className="flex items-center gap-3 mb-1">
+                <h2 className="text-xl font-bold">Sign in</h2>
                 <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
                   <LogIn className="h-4 w-4 text-primary" />
                 </div>
-                <h2 className="text-xl font-bold">Sign in</h2>
               </div>
               <p className="text-sm text-muted-foreground mt-2">
                 Enter your credentials to access your account.
