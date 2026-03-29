@@ -112,7 +112,7 @@ const DashboardSidebarContent = ({ dashboardHome, navItems, userInfo }: Dashboar
                 >
                     {/* Avatar */}
                     <div className="relative shrink-0">
-                        <div className={`p-[2px] rounded-xl bg-linear-to-br ${grad} shadow-sm`}>
+                        <div className={`p-0.5 rounded-xl bg-linear-to-br ${grad} shadow-sm`}>
                             <div className="h-8 w-8 rounded-[10px] border border-card bg-card flex items-center justify-center overflow-hidden">
                                 {avatarSrc ? (
                                     <Image src={avatarSrc} alt={userInfo.name} width={32} height={32} className="object-cover w-full h-full" />
