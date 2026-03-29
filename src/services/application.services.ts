@@ -4,6 +4,11 @@ import { serverHttpClient } from "@/lib/axios/serverHttpClient";
 import { logger } from "@/lib/logger";
 import { IApplication } from "@/types/user.types";
 
+export async function checkIfApplied(jobId: string) {
+    logger.read(`Checking if applied → jobId: ${jobId}`);
+    return serverHttpClient.get<{ hasApplied: boolean; application: { id: string; status: string; createdAt: string } | null }>(`/applications/check/${jobId}`);
+}
+
 export async function applyToJob(data: { jobId: string; coverLetter?: string }) {
     logger.create(`Applying to job → jobId: ${data.jobId}`);
     return serverHttpClient.post<IApplication>("/applications/apply", data);
