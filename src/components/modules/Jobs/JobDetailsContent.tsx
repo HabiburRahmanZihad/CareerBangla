@@ -15,6 +15,7 @@ import {
     MapPin, Send, Sparkles, TrendingUp,
     Users, Zap,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -137,15 +138,17 @@ const RelatedJobCard = ({ job }: { job: IJob }) => {
                 {/* Company row */}
                 <div className="flex items-center gap-2.5">
                     {job.recruiter?.companyLogo || job.recruiter?.profilePhoto ? (
-                        <div className="h-9 w-9 rounded-xl border border-border/40 bg-card flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                            <img
+                        <div className="h-11 w-11 rounded-xl border border-border/40 bg-card flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                            <Image
                                 src={job.recruiter.companyLogo || job.recruiter.profilePhoto || ""}
                                 alt={job.company}
+                                width={44}
+                                height={44}
                                 className="w-full h-full object-contain p-0.5"
                             />
                         </div>
                     ) : (
-                        <div className={`h-9 w-9 rounded-xl bg-linear-to-br ${grad} flex items-center justify-center font-black text-sm text-white shrink-0 shadow-sm`}>
+                        <div className={`h-11 w-11 rounded-xl bg-linear-to-br ${grad} flex items-center justify-center font-black text-sm text-white shrink-0 shadow-sm`}>
                             {job.company?.[0]?.toUpperCase() ?? "C"}
                         </div>
                     )}
@@ -303,15 +306,17 @@ const JobDetailsContent = ({ job, userRole, isPremium }: JobDetailsContentProps)
                         {/* Company avatar — gradient ring */}
                         <div className={`p-[3px] rounded-2xl bg-linear-to-br ${grad} shadow-xl shrink-0`}>
                             {job.recruiter?.companyLogo || job.recruiter?.profilePhoto ? (
-                                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-[14px] border-2 border-card bg-card flex items-center justify-center overflow-hidden shadow-sm">
-                                    <img
+                                <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-[14px] border-2 border-card bg-card flex items-center justify-center overflow-hidden shadow-sm">
+                                    <Image
                                         src={job.recruiter.companyLogo || job.recruiter.profilePhoto || ""}
                                         alt={job.company || "Company"}
+                                        width={96}
+                                        height={96}
                                         className="w-full h-full object-contain p-1"
                                     />
                                 </div>
                             ) : (
-                                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-[14px] border-2 border-card bg-card flex items-center justify-center font-black text-2xl sm:text-3xl text-primary">
+                                <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-[14px] border-2 border-card bg-card flex items-center justify-center font-black text-2xl sm:text-3xl text-primary">
                                     {companyInitial}
                                 </div>
                             )}
@@ -597,15 +602,17 @@ const JobDetailsContent = ({ job, userRole, isPremium }: JobDetailsContentProps)
                             <div className="p-5 space-y-4">
                                 <div className="flex items-center gap-3">
                                     {job.recruiter?.companyLogo || job.recruiter?.profilePhoto ? (
-                                        <div className="h-11 w-11 rounded-xl border border-border/40 bg-card flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                                            <img
+                                        <div className="h-14 w-14 rounded-xl border border-border/40 bg-card flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                                            <Image
                                                 src={job.recruiter.companyLogo || job.recruiter.profilePhoto || ""}
                                                 alt={job.recruiter.companyName ?? job.company}
+                                                width={56}
+                                                height={56}
                                                 className="w-full h-full object-contain p-1"
                                             />
                                         </div>
                                     ) : (
-                                        <div className={`h-11 w-11 rounded-xl bg-linear-to-br ${avatarGradient(job.recruiter.companyName ?? job.company ?? "C")} flex items-center justify-center font-black text-lg text-white shrink-0 shadow-sm`}>
+                                        <div className={`h-14 w-14 rounded-xl bg-linear-to-br ${avatarGradient(job.recruiter.companyName ?? job.company ?? "C")} flex items-center justify-center font-black text-xl text-white shrink-0 shadow-sm`}>
                                             {(job.recruiter.companyName ?? job.company)?.[0]?.toUpperCase() ?? "C"}
                                         </div>
                                     )}

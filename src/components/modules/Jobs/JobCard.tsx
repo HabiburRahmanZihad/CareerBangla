@@ -62,13 +62,15 @@ const CompanyLogo = ({
 }: {
     name: string;
     logoUrl?: string | null;
-    size?: "sm" | "md";
+    size?: "sm" | "md" | "lg";
 }) => {
     const gradient = getAvatarGradient(name);
     const dim =
         size === "sm"
             ? "h-9 w-9 sm:h-10 sm:w-10 text-sm"
-            : "h-10 w-10 sm:h-12 sm:w-12 text-sm sm:text-base";
+            : size === "lg"
+                ? "h-14 w-14 sm:h-16 sm:w-16 text-lg"
+                : "h-10 w-10 sm:h-12 sm:w-12 text-sm sm:text-base";
     if (logoUrl) {
         return (
             <div
@@ -77,9 +79,9 @@ const CompanyLogo = ({
                 <Image
                     src={logoUrl}
                     alt={name}
-                    width={48}
-                    height={48}
-                    className="object-contain w-full h-full p-0.5"
+                    width={size === "lg" ? 64 : 48}
+                    height={size === "lg" ? 64 : 48}
+                    className="object-contain w-full h-full p-1"
                 />
             </div>
         );
@@ -229,7 +231,7 @@ export const JobGridCard = ({ job }: { job: IJob }) => {
 
                 <div className="p-5 flex flex-col flex-1">
                     <div className="flex items-start justify-between mb-3">
-                        <CompanyLogo name={companyName} logoUrl={logoUrl} />
+                        <CompanyLogo name={companyName} logoUrl={logoUrl} size="lg" />
                         <div className="flex flex-col items-end gap-1">
                             <Bookmark className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-60 transition-all" />
                             {job.featuredJob && (
