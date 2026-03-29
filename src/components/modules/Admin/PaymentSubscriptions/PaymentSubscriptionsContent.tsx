@@ -14,7 +14,7 @@ import {
     Eye, RefreshCw, Search, TrendingUp,
 } from "lucide-react";
 import { useState } from "react";
-import { PaymentDetailModal } from "./PaymentDetailModal";
+import { showPaymentDetailModal } from "./PaymentDetailModal";
 
 interface Subscription {
     id: string;
@@ -86,7 +86,6 @@ export default function PaymentSubscriptionsContent() {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("");
-    const [selectedId, setSelectedId] = useState<string | null>(null);
 
     const { data, isLoading, isFetching, refetch, error } = useQuery({
         queryKey: ["payments", page, search, status],
@@ -279,7 +278,7 @@ export default function PaymentSubscriptionsContent() {
                                             <td className="px-5 py-3.5">
                                                 <button
                                                     type="button"
-                                                    onClick={() => setSelectedId(item.id)}
+                                                    onClick={() => showPaymentDetailModal(item.id)}
                                                     className="h-8 w-8 rounded-lg bg-muted/50 hover:bg-primary/10 hover:text-primary flex items-center justify-center transition-colors group-hover:border group-hover:border-primary/20"
                                                     title="View details"
                                                 >
@@ -298,7 +297,7 @@ export default function PaymentSubscriptionsContent() {
                                 <button
                                     type="button"
                                     key={item.id}
-                                    onClick={() => setSelectedId(item.id)}
+                                    onClick={() => showPaymentDetailModal(item.id)}
                                     className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-muted/30 transition-colors text-left"
                                 >
                                     <UserAvatar name={item.user.name} size={9} />
@@ -385,14 +384,6 @@ export default function PaymentSubscriptionsContent() {
                 </div>
             )}
 
-            {/* ── Detail modal ─────────────────────────────────────────────── */}
-            {selectedId && (
-                <PaymentDetailModal
-                    subscriptionId={selectedId}
-                    isOpen={!!selectedId}
-                    onClose={() => setSelectedId(null)}
-                />
-            )}
         </div>
     );
 }

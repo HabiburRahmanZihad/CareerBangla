@@ -4,22 +4,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+import { swalInput } from "@/lib/swal";
 import { approveJob, rejectJob } from "@/services/job.services";
 import { IJob } from "@/types/user.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Check, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { toast } from "sonner";
 
 type PendingJobDetailsContentProps = {
@@ -39,8 +30,6 @@ type PendingJobDetailsContentProps = {
 const PendingJobDetailsContent = ({ job }: PendingJobDetailsContentProps) => {
     const router = useRouter();
     const queryClient = useQueryClient();
-    const [rejectionReason, setRejectionReason] = useState("");
-    const [openRejectDialog, setOpenRejectDialog] = useState(false);
 
     const { mutateAsync: approveMutate, isPending: isApproving } = useMutation({
         mutationFn: () => approveJob(job.id),
@@ -56,7 +45,7 @@ const PendingJobDetailsContent = ({ job }: PendingJobDetailsContentProps) => {
     });
 
     const { mutateAsync: rejectMutate, isPending: isRejecting } = useMutation({
-        mutationFn: () => rejectJob(job.id, rejectionReason.trim()),
+        mutationFn: (reason: string) => rejectJob(job.id, reason.trim()),
         onSuccess: async () => {
             toast.success("Job rejected successfully");
             await queryClient.invalidateQueries({ queryKey: ["pending-jobs"] });
@@ -165,41 +154,33 @@ const PendingJobDetailsContent = ({ job }: PendingJobDetailsContentProps) => {
                         <Button onClick={() => approveMutate()} disabled={isApproving || isRejecting}>
                             {isApproving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Approving...</> : <><Check className="h-4 w-4 mr-2" /> Approve</>}
                         </Button>
-                        <Button variant="destructive" onClick={() => setOpenRejectDialog(true)} disabled={isApproving || isRejecting}>
+                        <Button
+                            variant="destructive"
+                            onClick={async () => {
+                                const result = await swalInput({
+                                    title: "Reject Job Post",
+                                    text: "This reason will be sent to the recruiter via notification and email.",
+                                    placeholder: "Write rejection reason...",
+                                    confirmText: "Reject",
+                                    icon: "warning",
+                                });
+                                if (result.isConfirmed) {
+                                    if (result.value?.trim()) {
+                                        await rejectMutate(result.value);
+                                    } else {
+                                        toast.error("Please provide a rejection reason");
+                                    }
+                                }
+                            }}
+                            disabled={isApproving || isRejecting}
+                        >
                             <X className="h-4 w-4 mr-2" /> Reject
                         </Button>
                     </div>
                 </CardContent>
             </Card>
-
-            <Dialog open={openRejectDialog} onOpenChange={setOpenRejectDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Reject Job Post</DialogTitle>
-                        <DialogDescription>
-                            Rejection reason is required. This reason will be sent to the recruiter via notification and email.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <Textarea
-                        placeholder="Write rejection reason"
-                        value={rejectionReason}
-                        onChange={(e) => setRejectionReason(e.target.value)}
-                        className="min-h-28"
-                    />
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setOpenRejectDialog(false)} disabled={isRejecting}>Cancel</Button>
-                        <Button
-                            variant="destructive"
-                            onClick={() => rejectMutate()}
-                            disabled={isRejecting || !rejectionReason.trim()}
-                        >
-                            {isRejecting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Rejecting...</> : "Reject Job"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </div>
     );
-};
+};;
 
 export default PendingJobDetailsContent;

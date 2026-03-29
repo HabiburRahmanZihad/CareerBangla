@@ -1,12 +1,7 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
 import { httpClient } from "@/lib/axios/httpClient";
-import { useQuery } from "@tanstack/react-query";
-import { Copy } from "lucide-react";
+import { swalDetailModal } from "@/lib/swal";
 import { toast } from "sonner";
 
 interface PaymentSubscriptionDetail {
@@ -44,158 +39,127 @@ interface PaymentSubscriptionDetail {
     };
 }
 
-interface PaymentDetailModalProps {
-    subscriptionId: string;
-    isOpen: boolean;
-    onClose: () => void;
+const CopyButton = (value: string) => `
+    <button onclick="navigator.clipboard.writeText('${value}').then(() => alert('✓ Copied!'))" 
+            style="color: #3b82f6; cursor: pointer; border: none; background: none; text-decoration: underline; font-weight: 500; padding: 0; font-size: 13px;">
+        📋 Copy
+    </button>
+`;
+
+const DetailRow = (label: string, value: string | null, copyable: boolean = false) => `
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.1);">
+        <span style="color: #666; font-weight: 500; font-size: 14px;">${label}</span>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 14px;">${value || "N/A"}</span>
+            ${copyable && value ? CopyButton(value) : ""}
+        </div>
+    </div>
+`;
+
+const StatusBadge = (status: string) => `
+    <span style="display: inline-block; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: bold; 
+                 ${status === "PAID" ? "background: #10b981; color: white;" : "background: #f3f4f6; color: #374151;"}">
+        ${status}
+    </span>
+`;
+
+const Section = (title: string, content: string) => `
+    <div style="margin-bottom: 20px;">
+        <h4 style="font-weight: 600; margin-bottom: 12px; font-size: 15px; color: #1f2937;">${title}</h4>
+        <div style="background: #f9fafb; padding: 14px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+            ${content}
+        </div>
+    </div>
+`;
+
+export async function showPaymentDetailModal(subscriptionId: string) {
+    try {
+        const res = await httpClient.get<PaymentSubscriptionDetail>(
+            `/subscriptions/admin/payment-details/${subscriptionId}`
+        );
+        const detail = res.data;
+
+        if (!detail) {
+            toast.error("Failed to load payment details");
+            return;
+        }
+
+        const transactionInfo = Section(
+            "Transaction Info",
+            `
+                ${DetailRow("Transaction ID", detail.transactionId, true)}
+                ${DetailRow("Bank TXN ID", detail.bankTransactionId, true)}
+                ${DetailRow("Validation ID", detail.validationId, true)}
+                ${DetailRow("Plan", detail.plan.replace(/_/g, " "))}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+                    <span style="color: #666; font-weight: 500; font-size: 14px;">Status</span>
+                    ${StatusBadge(detail.status)}
+                </div>
+            `
+        );
+
+        const amountInfo = Section(
+            "Amount Details",
+            `
+                ${DetailRow("Original Amount", detail.paymentDetails.originalAmount ? `৳${detail.paymentDetails.originalAmount}` : null)}
+                ${DetailRow("Discount", detail.paymentDetails.discountAmount ? `৳${detail.paymentDetails.discountAmount}` : null)}
+                ${DetailRow("Final Amount", `৳${detail.amount}`)}
+            `
+        );
+
+        const paymentHolder = Section(
+            "Payment Holder",
+            `
+                ${DetailRow("Name", detail.paymentHolder.name)}
+                ${DetailRow("Email", detail.paymentHolder.email)}
+                ${DetailRow("Phone", detail.paymentHolder.phone)}
+                ${DetailRow("Role", detail.paymentHolder.role)}
+                ${DetailRow("Status", detail.paymentHolder.status)}
+                ${DetailRow("Country", detail.paymentHolder.country)}
+                ${DetailRow("Premium", detail.paymentHolder.isPremium ? "Yes" : "No")}
+            `
+        );
+
+        const customerInfo = Section(
+            "Customer Info",
+            `
+                ${DetailRow("Name", detail.customerInfo.name)}
+                ${DetailRow("Phone", detail.customerInfo.phone)}
+                ${DetailRow("Address", detail.customerInfo.address)}
+                ${DetailRow("City", detail.customerInfo.city)}
+                ${DetailRow("Postcode", detail.customerInfo.postcode)}
+            `
+        );
+
+        const dates = Section(
+            "Dates",
+            `
+                ${DetailRow("Created", new Date(detail.createdAt).toLocaleString())}
+                ${DetailRow("Updated", new Date(detail.updatedAt).toLocaleString())}
+            `
+        );
+
+        const html = `
+            <div style="text-align: left; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                ${transactionInfo}
+                ${amountInfo}
+                ${paymentHolder}
+                ${customerInfo}
+                ${dates}
+            </div>
+        `;
+
+        await swalDetailModal({
+            title: "Payment Subscription Details",
+            html,
+            width: "700px",
+        });
+    } catch (error: any) {
+        toast.error(error?.response?.data?.message || "Failed to load payment details");
+    }
 }
 
-const DetailCell = ({ label, value, copyable = false }: { label: string; value: string | null; copyable?: boolean }) => {
-    const handleCopy = () => {
-        if (value) {
-            navigator.clipboard.writeText(value);
-            toast.success(`${label} copied`);
-        }
-    };
-
-    return (
-        <div className="flex justify-between py-2 border-b text-sm last:border-b-0">
-            <span className="text-muted-foreground font-medium">{label}</span>
-            <div className="flex items-center gap-2">
-                <span>{value || "N/A"}</span>
-                {copyable && value && (
-                    <button onClick={handleCopy} className="hover:text-primary" title="Copy">
-                        <Copy className="h-4 w-4" />
-                    </button>
-                )}
-            </div>
-        </div>
-    );
-};
-
-export function PaymentDetailModal({ subscriptionId, isOpen, onClose }: PaymentDetailModalProps) {
-    const { data, isLoading } = useQuery({
-        queryKey: ["payment-detail", subscriptionId],
-        queryFn: async () => {
-            const res = await httpClient.get<PaymentSubscriptionDetail>(
-                `/subscriptions/admin/payment-details/${subscriptionId}`
-            );
-            return res.data;
-        },
-        enabled: isOpen,
-    });
-
-    const detail = data;
-
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle>Payment Subscription Details</DialogTitle>
-                </DialogHeader>
-
-                {isLoading ? (
-                    <div className="space-y-4">
-                        {Array(3)
-                            .fill(null)
-                            .map((_, i) => (
-                                <Skeleton key={i} className="h-12 w-full" />
-                            ))}
-                    </div>
-                ) : !detail ? (
-                    <div className="text-center py-8 text-muted-foreground">Failed to load</div>
-                ) : (
-                    <div className="space-y-6">
-                        <div>
-                            <h3 className="font-semibold mb-3">Transaction Info</h3>
-                            <div className="bg-muted/50 p-4 rounded-lg space-y-1">
-                                <DetailCell label="Transaction ID" value={detail.transactionId} copyable />
-                                <DetailCell label="Bank TXN ID" value={detail.bankTransactionId} copyable />
-                                <DetailCell label="Validation ID" value={detail.validationId} copyable />
-                                <DetailCell label="Plan" value={detail.plan.replace(/_/g, " ")} />
-                                <div className="flex justify-between py-2 text-sm">
-                                    <span className="text-muted-foreground font-medium">Status</span>
-                                    <Badge variant={detail.status === "PAID" ? "default" : "secondary"}>
-                                        {detail.status}
-                                    </Badge>
-                                </div>
-                            </div>
-                        </div>
-
-                        <Separator />
-
-                        <div>
-                            <h3 className="font-semibold mb-3">Amount Details</h3>
-                            <div className="bg-muted/50 p-4 rounded-lg space-y-1">
-                                <DetailCell
-                                    label="Original Amount"
-                                    value={
-                                        detail.paymentDetails.originalAmount
-                                            ? `৳${detail.paymentDetails.originalAmount}`
-                                            : null
-                                    }
-                                />
-                                <DetailCell
-                                    label="Discount"
-                                    value={
-                                        detail.paymentDetails.discountAmount
-                                            ? `৳${detail.paymentDetails.discountAmount}`
-                                            : null
-                                    }
-                                />
-                                <DetailCell label="Final Amount" value={`৳${detail.amount}`} />
-                            </div>
-                        </div>
-
-                        <Separator />
-
-                        <div>
-                            <h3 className="font-semibold mb-3">Payment Holder</h3>
-                            <div className="bg-muted/50 p-4 rounded-lg space-y-1">
-                                <DetailCell label="Name" value={detail.paymentHolder.name} />
-                                <DetailCell label="Email" value={detail.paymentHolder.email} />
-                                <DetailCell label="Phone" value={detail.paymentHolder.phone} />
-                                <DetailCell label="Role" value={detail.paymentHolder.role} />
-                                <DetailCell label="Status" value={detail.paymentHolder.status} />
-                                <DetailCell label="Country" value={detail.paymentHolder.country} />
-                                <DetailCell
-                                    label="Premium"
-                                    value={detail.paymentHolder.isPremium ? "Yes" : "No"}
-                                />
-                            </div>
-                        </div>
-
-                        <Separator />
-
-                        <div>
-                            <h3 className="font-semibold mb-3">Customer Info</h3>
-                            <div className="bg-muted/50 p-4 rounded-lg space-y-1">
-                                <DetailCell label="Name" value={detail.customerInfo.name} />
-                                <DetailCell label="Phone" value={detail.customerInfo.phone} />
-                                <DetailCell label="Address" value={detail.customerInfo.address} />
-                                <DetailCell label="City" value={detail.customerInfo.city} />
-                                <DetailCell label="Postcode" value={detail.customerInfo.postcode} />
-                            </div>
-                        </div>
-
-                        <Separator />
-
-                        <div>
-                            <h3 className="font-semibold mb-3">Dates</h3>
-                            <div className="bg-muted/50 p-4 rounded-lg space-y-1">
-                                <DetailCell
-                                    label="Created"
-                                    value={new Date(detail.createdAt).toLocaleString()}
-                                />
-                                <DetailCell
-                                    label="Updated"
-                                    value={new Date(detail.updatedAt).toLocaleString()}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </DialogContent>
-        </Dialog>
-    );
+// Export as dummy component for backward compatibility if imported as component
+export function PaymentDetailModal() {
+    return null;
 }
