@@ -3,120 +3,38 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { downloadCvForRecruiter, getUserDirectory } from "@/services/application.services";
 import { searchCandidates } from "@/services/resume.services";
-import { IResume } from "@/types/user.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Download, GraduationCap, LayoutGrid, List, Loader2, Lock, Mail, Phone, Search, User } from "lucide-react";
-import Image from "next/image";
+import {
+    AlertCircle,
+    CheckCircle,
+    ChevronLeft,
+    ChevronRight,
+    GraduationCap,
+    LayoutGrid,
+    List,
+    Lock,
+    Search,
+    Users,
+    X,
+    Zap,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { CandidateCard } from "./CandidateCard";
+import { CandidateListRow } from "./CandidateListRow";
+import {
+    CandidateListItem,
+    USERS_PER_PAGE,
+    extractDataArray,
+    toPdfBlob,
+} from "./searchCandidatesUtils";
 
-const USERS_PER_PAGE = 20;
-
-type CandidateListItem = {
-    id: string;
-    name?: string;
-    email?: string;
-    image?: string;
-    resume?: IResume | null;
-};
-
-const extractDataArray = <T,>(value: unknown): T[] => {
-    if (Array.isArray(value)) {
-        return value as T[];
-    }
-
-    if (value && typeof value === "object" && "data" in value) {
-        const maybeData = (value as { data?: unknown }).data;
-        if (Array.isArray(maybeData)) {
-            return maybeData as T[];
-        }
-    }
-
-    return [];
-};
-
-const parseStringList = (value: unknown): string[] => {
-    if (Array.isArray(value)) {
-        return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
-    }
-
-    if (typeof value === "string") {
-        return value
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean);
-    }
-
-    return [];
-};
-
-const getSkills = (resume?: IResume | null): string[] => {
-    if (!resume) {
-        return [];
-    }
-
-    const allSkills = [
-        ...parseStringList(resume.skills),
-        ...parseStringList(resume.technicalSkills),
-        ...parseStringList(resume.toolsAndTechnologies),
-        ...parseStringList(resume.softSkills),
-    ];
-
-    return Array.from(new Set(allSkills));
-};
-
-const getEducationSummary = (resume?: IResume | null): string => {
-    const educationList = Array.isArray(resume?.education) ? resume.education : [];
-    if (educationList.length === 0) {
-        return "Education not provided";
-    }
-
-    const topEducation = educationList[0];
-    const degree = topEducation?.degree || "";
-    const fieldOfStudy = topEducation?.fieldOfStudy || "";
-    const institutionName = topEducation?.institutionName || "";
-
-    const degreeLabel = [degree, fieldOfStudy].filter(Boolean).join(" in ");
-
-    if (degreeLabel && institutionName) {
-        return `${degreeLabel} - ${institutionName}`;
-    }
-
-    return degreeLabel || institutionName || "Education not provided";
-};
-
-const toPdfBlob = (payload: unknown): Blob => {
-    if (payload instanceof Blob) {
-        return payload;
-    }
-
-    if (payload instanceof ArrayBuffer) {
-        return new Blob([payload], { type: "application/pdf" });
-    }
-
-    if (ArrayBuffer.isView(payload)) {
-        const view = payload as ArrayBufferView;
-        const byteOffset = view.byteOffset || 0;
-        const byteLength = view.byteLength || 0;
-        const bytes = new Uint8Array(view.buffer, byteOffset, byteLength);
-        return new Blob([bytes as unknown as BlobPart], { type: "application/pdf" });
-    }
-
-    if (payload && typeof payload === "object" && "type" in payload && "data" in payload) {
-        const maybeBuffer = payload as { type?: unknown; data?: unknown };
-        if (maybeBuffer.type === "Buffer" && Array.isArray(maybeBuffer.data)) {
-            return new Blob([new Uint8Array(maybeBuffer.data)], { type: "application/pdf" });
-        }
-    }
-
-    return new Blob([payload as BlobPart], { type: "application/pdf" });
-};
-
+// ── Main Search Component ───────────────────────────────────────────────────
 const SearchCandidatesContent = () => {
     const [viewMode, setViewMode] = useState<"premium" | "directory">("directory");
     const [layoutMode, setLayoutMode] = useState<"grid" | "list">("grid");
@@ -173,9 +91,23 @@ const SearchCandidatesContent = () => {
         setCurrentPage(1);
     };
 
+    const handleClearFilters = () => {
+        setSearchTerm("");
+        setSkills("");
+        setEducation("");
+        setSearchParams({});
+        setCurrentPage(1);
+    };
+
     const handleDownloadCv = async (candidateId: string) => {
         setDownloadingUserId(candidateId);
         await downloadCv(candidateId);
+    };
+
+    const handleViewModeChange = (mode: "premium" | "directory") => {
+        setViewMode(mode);
+        setSearchParams({});
+        setCurrentPage(1);
     };
 
     const isLoading = viewMode === "premium" ? premiumLoading : directoryLoading;
@@ -189,6 +121,7 @@ const SearchCandidatesContent = () => {
             ?? (directoryData as any)?.data?.isPremiumRecruiter
         )
         : false;
+    const hasActiveFilters = Object.keys(searchParams).length > 0;
     const totalPages = Math.max(1, Math.ceil(candidatesList.length / USERS_PER_PAGE));
     const paginatedCandidates = candidatesList.slice((currentPage - 1) * USERS_PER_PAGE, currentPage * USERS_PER_PAGE);
 
@@ -200,103 +133,192 @@ const SearchCandidatesContent = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold mb-2">Search Candidates</h1>
-                <p className="text-muted-foreground">Find and connect with potential candidates</p>
+        <div className="space-y-6 pb-8">
+            {/* Header Section */}
+            <div className="space-y-4">
+                <div>
+                    <h1 className="text-3xl md:text-4xl font-bold bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent mb-2">
+                        Find Your Perfect Candidate
+                    </h1>
+                    <p className="text-muted-foreground text-base md:text-lg">
+                        {viewMode === "premium"
+                            ? "Access our premium candidate database with advanced search filters"
+                            : "Browse our complete user directory to discover top talent"}
+                    </p>
+                </div>
+
+                {/* Search Stats and Info */}
+                {hasActiveFilters && candidatesList.length > 0 && (
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <div className="flex items-center gap-2">
+                            <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
+                            <span className="font-medium text-blue-900 dark:text-blue-200">
+                                Found {candidatesList.length} {candidatesList.length === 1 ? "candidate" : "candidates"}
+                            </span>
+                        </div>
+                        <div className="hidden sm:block text-blue-300 dark:text-blue-700">•</div>
+                        <span className="text-sm text-blue-800 dark:text-blue-300">Showing results for your search criteria</span>
+                    </div>
+                )}
             </div>
 
-            {/* View Mode Toggle */}
-            <div className="flex gap-2">
-                <Button
-                    variant={viewMode === "directory" ? "default" : "outline"}
-                    onClick={() => {
-                        setViewMode("directory");
-                        setSearchParams({});
-                        setCurrentPage(1);
-                    }}
+            {/* View Mode Toggle - Premium Styled */}
+            <div className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-lg w-fit">
+                <button
+                    onClick={() => handleViewModeChange("directory")}
+                    className={`px-4 py-2.5 rounded-md font-medium transition-all flex items-center gap-2 text-sm ${viewMode === "directory"
+                        ? "bg-white dark:bg-slate-800 text-primary shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                        }`}
                 >
-                    User Directory
-                </Button>
-                <Button
-                    variant={viewMode === "premium" ? "default" : "outline"}
-                    onClick={() => {
-                        setViewMode("premium");
-                        setSearchParams({});
-                        setCurrentPage(1);
-                    }}
+                    <Users className="w-4 h-4" />
+                    <span className="hidden sm:inline">User Directory</span>
+                    <span className="sm:hidden">Directory</span>
+                </button>
+                <button
+                    onClick={() => handleViewModeChange("premium")}
+                    className={`px-4 py-2.5 rounded-md font-medium transition-all flex items-center gap-2 text-sm ${viewMode === "premium"
+                        ? "bg-white dark:bg-slate-800 text-primary shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                        }`}
                 >
-                    Premium Search
-                </Button>
+                    <Zap className="w-4 h-4" />
+                    <span>Premium</span>
+                    {viewMode === "premium" && <Badge variant="secondary" className="ml-1 text-xs py-0">Pro</Badge>}
+                </button>
             </div>
 
-            {/* Search Filters */}
-            <Card>
+            {/* Search Filters - Enhanced */}
+            <Card className="border-0 shadow-sm bg-linear-to-br from-card to-card/50">
                 <CardContent className="pt-6">
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <Input
-                            placeholder="Search by name or email..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                            className="flex-1"
-                        />
-                        <Input
-                            placeholder="Skills (comma separated)"
-                            value={skills}
-                            onChange={(e) => setSkills(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                            className="flex-1"
-                        />
-                        <Input
-                            placeholder="Education (e.g. Bachelor's)"
-                            value={education}
-                            onChange={(e) => setEducation(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                            className="flex-1"
-                        />
-                        <Button onClick={handleSearch}>
-                            <Search className="mr-2 h-4 w-4" />
-                            Search
-                        </Button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {/* Search by Name/Email */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-muted-foreground">Name or Email</label>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                <Input
+                                    placeholder="e.g., John Doe"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                                    className="pl-10 h-10"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Skills */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-muted-foreground">Skills</label>
+                            <div className="relative">
+                                <Zap className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                <Input
+                                    placeholder="e.g., React, Node.js"
+                                    value={skills}
+                                    onChange={(e) => setSkills(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                                    className="pl-10 h-10"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Education */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-muted-foreground">Education</label>
+                            <div className="relative">
+                                <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                <Input
+                                    placeholder="e.g., Bachelor's"
+                                    value={education}
+                                    onChange={(e) => setEducation(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                                    className="pl-10 h-10"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-transparent">Action</label>
+                            <div className="flex gap-2 h-10">
+                                <Button onClick={handleSearch} className="flex-1 gap-2 font-medium">
+                                    <Search className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Search</span>
+                                </Button>
+                                {hasActiveFilters && (
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleClearFilters}
+                                        className="gap-2 font-medium"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
 
             {/* Info Banner */}
             {viewMode === "directory" && !isPremium && (
-                <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/30">
-                    <CardContent className="pt-6 flex items-center gap-3 text-sm text-yellow-800 dark:text-yellow-200">
-                        <Lock className="w-4 h-4 shrink-0" />
-                        <p>CV download requires Career Boost premium subscription</p>
+                <Card className="border-amber-200/50 bg-linear-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
+                    <CardContent className="pt-6 flex flex-col sm:flex-row sm:items-center gap-3">
+                        <Lock className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400" />
+                        <div className="flex-1">
+                            <p className="text-sm font-medium text-amber-900 dark:text-amber-200 mb-1">Premium Feature</p>
+                            <p className="text-xs text-amber-800 dark:text-amber-300">
+                                To download CVs and access advanced search, upgrade to Career Boost premium subscription
+                            </p>
+                        </div>
+                        <Button size="sm" className="gap-2 shrink-0">
+                            <Zap className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Upgrade</span>
+                        </Button>
                     </CardContent>
                 </Card>
             )}
 
-            {/* Layout and pagination controls */}
+            {/* Results Controls */}
             {!isLoading && candidatesList.length > 0 && (
-                <Card>
-                    <CardContent className="py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="text-sm text-muted-foreground">
-                            Showing {(currentPage - 1) * USERS_PER_PAGE + 1}-{Math.min(currentPage * USERS_PER_PAGE, candidatesList.length)} of {candidatesList.length} users
-                        </p>
-                        <div className="flex items-center gap-2">
-                            <Button
-                                type="button"
-                                size="sm"
-                                variant={layoutMode === "grid" ? "default" : "outline"}
-                                onClick={() => setLayoutMode("grid")}
-                            >
-                                <LayoutGrid className="w-4 h-4 mr-1" /> Grid
-                            </Button>
-                            <Button
-                                type="button"
-                                size="sm"
-                                variant={layoutMode === "list" ? "default" : "outline"}
-                                onClick={() => setLayoutMode("list")}
-                            >
-                                <List className="w-4 h-4 mr-1" /> List
-                            </Button>
+                <Card className="border-0 shadow-sm">
+                    <CardContent className="py-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-foreground">
+                                    {(currentPage - 1) * USERS_PER_PAGE + 1}-{Math.min(currentPage * USERS_PER_PAGE, candidatesList.length)} of{" "}
+                                    {candidatesList.length}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                    {candidatesList.length} {candidatesList.length === 1 ? "candidate" : "candidates"} available
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-lg">
+                                    <button
+                                        type="button"
+                                        onClick={() => setLayoutMode("grid")}
+                                        className={`p-2 rounded-md transition-all ${layoutMode === "grid"
+                                            ? "bg-white dark:bg-slate-800 text-primary shadow-sm"
+                                            : "text-muted-foreground hover:text-foreground"
+                                            }`}
+                                        title="Grid view"
+                                    >
+                                        <LayoutGrid className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setLayoutMode("list")}
+                                        className={`p-2 rounded-md transition-all ${layoutMode === "list"
+                                            ? "bg-white dark:bg-slate-800 text-primary shadow-sm"
+                                            : "text-muted-foreground hover:text-foreground"
+                                            }`}
+                                        title="List view"
+                                    >
+                                        <List className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -304,142 +326,116 @@ const SearchCandidatesContent = () => {
 
             {/* Loading State */}
             {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                        <Skeleton key={i} className="h-48 rounded-lg" />
+                <div className={layoutMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" : "space-y-3"}>
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <Skeleton key={i} className={layoutMode === "grid" ? "h-64 rounded-lg" : "h-24 rounded-lg"} />
                     ))}
                 </div>
             ) : Object.keys(searchParams).length === 0 && viewMode === "premium" ? (
-                <Card>
-                    <CardContent className="py-12 text-center text-muted-foreground">
-                        Enter search criteria to find premium candidates
+                <Card className="border-0 shadow-sm">
+                    <CardContent className="py-16 text-center">
+                        <div className="space-y-4">
+                            <div className="flex justify-center">
+                                <div className="bg-primary/10 p-4 rounded-full">
+                                    <Search className="w-8 h-8 text-primary" />
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-lg mb-2">Start Your Search</h3>
+                                <p className="text-muted-foreground">Enter search criteria above to find premium candidates</p>
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
             ) : candidatesList.length === 0 ? (
-                <Card>
-                    <CardContent className="py-12 text-center text-muted-foreground">
-                        {viewMode === "directory" ? "No users found matching your criteria" : "No candidates found matching your criteria"}
+                <Card className="border-0 shadow-sm">
+                    <CardContent className="py-16 text-center">
+                        <div className="space-y-4">
+                            <div className="flex justify-center">
+                                <div className="bg-muted p-4 rounded-full">
+                                    <AlertCircle className="w-8 h-8 text-muted-foreground" />
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-lg mb-2">No Results Found</h3>
+                                <p className="text-muted-foreground">
+                                    {viewMode === "directory"
+                                        ? "Try adjusting your search criteria"
+                                        : "Try different search parameters"}
+                                </p>
+                            </div>
+                            {hasActiveFilters && (
+                                <Button variant="outline" onClick={handleClearFilters} className="gap-2">
+                                    <X className="w-4 h-4" />
+                                    Clear Filters
+                                </Button>
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
             ) : (
                 <>
-                    <div className={layoutMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" : "space-y-4"}>
-                        {paginatedCandidates.map((candidate) => {
-                            const profileImage = candidate.resume?.profilePhoto || candidate.image;
-                            const candidateSkills = getSkills(candidate.resume);
-                            const educationSummary = getEducationSummary(candidate.resume);
+                    {/* Candidates Grid/List */}
+                    {layoutMode === "grid" ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {paginatedCandidates.map((candidate) => (
+                                <CandidateCard
+                                    key={candidate.id}
+                                    candidate={candidate}
+                                    viewMode={viewMode}
+                                    isPremium={isPremium}
+                                    isDownloading={downloadingUserId === candidate.id}
+                                    onDownload={() => handleDownloadCv(candidate.id)}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {paginatedCandidates.map((candidate, idx) => (
+                                <CandidateListRow
+                                    key={candidate.id}
+                                    candidate={candidate}
+                                    index={idx + 1}
+                                    viewMode={viewMode}
+                                    isPremium={isPremium}
+                                    isDownloading={downloadingUserId === candidate.id}
+                                    onDownload={() => handleDownloadCv(candidate.id)}
+                                />
+                            ))}
+                        </div>
+                    )}
 
-                            return <Card key={candidate.id} className="hover:shadow-md transition-shadow">
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted shrink-0">
-                                            {profileImage ? (
-                                                <Image
-                                                    src={profileImage}
-                                                    alt={candidate.name || "Candidate"}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center">
-                                                    <User className="h-5 w-5 text-muted-foreground" />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <CardTitle className="text-base">{candidate.name || "Candidate"}</CardTitle>
-                                            <p className="text-sm text-muted-foreground">{candidate.resume?.professionalTitle || "Designation not provided"}</p>
-                                        </div>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="pt-0 space-y-3">
-                                    <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground flex items-center gap-2">
-                                        <GraduationCap className="w-3.5 h-3.5 shrink-0" />
-                                        <span>{educationSummary}</span>
-                                    </div>
-
-                                    {/* Email and Phone - visible for premium users in directory or always in premium search */}
-                                    {(viewMode === "premium" || isPremium) && (
-                                        <div className="text-xs space-y-1">
-                                            {candidate.email && (
-                                                <div className="flex items-center gap-2 text-muted-foreground">
-                                                    <Mail className="w-3 h-3" /> {candidate.email}
-                                                </div>
-                                            )}
-                                            {candidate.resume?.contactNumber && (
-                                                <div className="flex items-center gap-2 text-muted-foreground">
-                                                    <Phone className="w-3 h-3" /> {candidate.resume.contactNumber}
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {/* Skills */}
-                                    {candidateSkills.length > 0 ? (
-                                        <div className="flex flex-wrap gap-1">
-                                            {candidateSkills.slice(0, 6).map((skill) => (
-                                                <Badge key={skill} variant="secondary" className="text-xs">{skill}</Badge>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className="text-xs text-muted-foreground">Skills not provided</p>
-                                    )}
-
-                                    {/* Action Buttons */}
-                                    <div className="flex gap-2 pt-2">
-                                        {(viewMode === "premium" || isPremium) && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="flex-1 text-xs"
-                                                disabled={downloadingUserId === candidate.id}
-                                                onClick={() => handleDownloadCv(candidate.id)}
-                                            >
-                                                {downloadingUserId === candidate.id ? (
-                                                    <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Downloading...</>
-                                                ) : (
-                                                    <><Download className="w-3.5 h-3.5 mr-1" /> Download CV</>
-                                                )}
-                                            </Button>
-                                        )}
-                                        {viewMode === "directory" && !isPremium && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="flex-1 text-xs opacity-50 cursor-not-allowed"
-                                                disabled
-                                            >
-                                                <Lock className="w-3.5 h-3.5 mr-1" /> View CV
-                                            </Button>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>;
-                        })}
-                    </div>
+                    {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className="flex items-center justify-end gap-2">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={currentPage === 1}
-                                onClick={() => handlePageChange(currentPage - 1)}
-                            >
-                                <ChevronLeft className="w-4 h-4 mr-1" /> Prev
-                            </Button>
-                            <span className="text-sm text-muted-foreground px-1">
-                                Page {currentPage} of {totalPages}
-                            </span>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={currentPage === totalPages}
-                                onClick={() => handlePageChange(currentPage + 1)}
-                            >
-                                Next <ChevronRight className="w-4 h-4 ml-1" />
-                            </Button>
+                        <div className="flex items-center justify-between gap-4 pt-4">
+                            <div className="text-sm text-muted-foreground">
+                                Page <span className="font-semibold text-foreground">{currentPage}</span> of{" "}
+                                <span className="font-semibold text-foreground">{totalPages}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={currentPage === 1}
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    className="gap-1"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Previous</span>
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={currentPage === totalPages}
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    className="gap-1"
+                                >
+                                    <span className="hidden sm:inline">Next</span>
+                                    <ChevronRight className="w-4 h-4" />
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </>
