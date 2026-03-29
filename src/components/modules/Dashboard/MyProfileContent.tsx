@@ -15,32 +15,25 @@ import { getMyResume } from "@/services/resume.services";
 import { IApplication, UserInfo } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-    Briefcase, Building2, Camera, CheckCircle2, Clock,
-    FileText, GithubIcon, Globe,
-    LinkedinIcon, Loader2, Mail, MapPin,
-    Pencil, Phone, Shield, ShieldCheck,
-    Sparkles, Trash2, User, Users,
-    X, XCircle
+    Camera, CheckCircle2, Edit2, ExternalLink, GithubIcon,
+    Globe, LinkedinIcon, Loader2, Mail,
+    Shield, ShieldCheck, Trash2, User
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { InfoItem, SectionCard } from "./MyProfileShared";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
 interface MyProfileContentProps { userInfo: UserInfo; }
 
-// ── Role config ───────────────────────────────────────────────────────────────
 const ROLE_CFG: Record<string, { label: string; bg: string; text: string }> = {
-    JOB_SEEKER: { label: "Job Seeker", bg: "bg-primary/10", text: "text-primary" },
-    RECRUITER: { label: "Recruiter", bg: "bg-blue-500/10", text: "text-blue-600 dark:text-blue-400" },
-    ADMIN: { label: "Admin", bg: "bg-red-500/10", text: "text-red-600 dark:text-red-400" },
-    SUPER_ADMIN: { label: "Super Admin", bg: "bg-purple-500/10", text: "text-purple-600 dark:text-purple-400" },
+    JOB_SEEKER: { label: "Job Seeker", bg: "bg-orange-100 dark:bg-orange-950/30", text: "text-orange-700 dark:text-orange-400" },
+    RECRUITER: { label: "Recruiter", bg: "bg-orange-100 dark:bg-orange-900/30", text: "text-orange-700 dark:text-orange-400" },
+    ADMIN: { label: "Admin", bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-400" },
+    SUPER_ADMIN: { label: "Super Admin", bg: "bg-orange-100 dark:bg-orange-900/30", text: "text-orange-700 dark:text-orange-400" },
 };
 
-// ── Main Component ────────────────────────────────────────────────────────────
 const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
     const router = useRouter();
     const queryClient = useQueryClient();
@@ -60,13 +53,13 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
     const isAdmin = userInfo.role === "ADMIN" || userInfo.role === "SUPER_ADMIN";
     const isJobSeeker = !isRecruiter && !isAdmin;
 
-    const { data: resumeData, isLoading: resumeLoading } = useQuery({
+    const { data: resumeData } = useQuery({
         queryKey: ["my-resume"],
         queryFn: getMyResume,
         enabled: isJobSeeker,
     });
 
-    const { data: recruiterData, isLoading: recruiterLoading } = useQuery({
+    const { data: recruiterData } = useQuery({
         queryKey: ["my-recruiter-profile"],
         queryFn: getMyRecruiterProfile,
         enabled: isRecruiter,
@@ -76,11 +69,7 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
     const recruiter = recruiterData?.data;
     const profileCompletion = resume?.profileCompletion ?? 0;
 
-    const isPremium = userInfo.isPremium;
-    const premiumUntil = userInfo.premiumUntil;
-    const isLifetime = !!(isPremium && !premiumUntil);
-    const premiumExpired = premiumUntil ? new Date(premiumUntil) < new Date() : false;
-    const premiumActive = !!(isPremium && !premiumExpired);
+
     const isHired = userInfo.applications?.some((app: IApplication) => app.status === "HIRED");
 
     const avatarSrc = isRecruiter
@@ -96,10 +85,8 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
             : "";
 
     const coverGradient = isAdmin
-        ? "from-red-600 via-red-500 to-orange-500"
-        : isRecruiter
-            ? "from-blue-600 via-blue-500 to-cyan-500"
-            : "from-primary via-primary/90 to-primary/75";
+        ? "from-red-600 via-red-500 to-red-400"
+        : "from-orange-500 via-orange-600 to-orange-700";
 
     // ── Photo upload ─────────────────────────────────────────────────────────
     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,422 +136,418 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
     };
 
     return (
-        <div className="space-y-6 w-full pb-10 px-0 sm:px-2 md:px-4">
+        <div className="w-full pb-10 space-y-6">
+            {/* ═══════════════════════════════════════════════════════════════════ */}
+            {/* HERO SECTION */}
+            {/* ═══════════════════════════════════════════════════════════════════ */}
+            <div className="rounded-3xl border border-white/20 bg-linear-to-br bg-card overflow-hidden shadow-2xl">
+                {/* Cover Background */}
+                <div className={`relative h-48 sm:h-56 lg:h-64 bg-linear-to-br ${coverGradient} overflow-hidden`}>
+                    {/* Animated linear orbs */}
+                    <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+                    <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-white/5 blur-3xl" />
 
-            {/* ── Hero card ────────────────────────────────────────────────── */}
-            <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
-                {/* Cover gradient */}
-                <div className={`relative h-44 sm:h-52 bg-linear-to-br ${coverGradient}`}>
-                    <div className="pointer-events-none absolute inset-0 opacity-20"
-                        style={{ backgroundImage: "radial-gradient(circle,white 1px,transparent 1px)", backgroundSize: "20px 20px" }} />
-                    {/* Floating orbs */}
-                    <div className="pointer-events-none absolute -top-8 -right-8 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
-                    <div className="pointer-events-none absolute bottom-4 -left-6 h-20 w-20 rounded-full bg-white/10 blur-2xl" />
-                    {isJobSeeker && (
-                        <button type="button" onClick={() => photoInputRef.current?.click()}
-                            disabled={isUploadingPhoto}
-                            className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/25 backdrop-blur-sm hover:bg-black/35 transition text-white text-xs font-semibold border border-white/20 shadow-sm">
-                            {isUploadingPhoto
-                                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                : <Camera className="h-3.5 w-3.5" />}
-                            {isUploadingPhoto ? "Uploading…" : "Change Photo"}
-                        </button>
-                    )}
-                    <input ref={photoInputRef} type="file" accept="image/*"
-                        className="hidden" aria-label="Upload profile photo" onChange={handlePhotoUpload} />
+                    {/* Photo Upload Button */}
+                    <button
+                        type="button"
+                        onClick={() => photoInputRef.current?.click()}
+                        disabled={isUploadingPhoto}
+                        className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 rounded-full bg-black/30 backdrop-blur-md hover:bg-black/40 text-white text-sm font-semibold border border-white/30 shadow-lg transition"
+                    >
+                        {isUploadingPhoto ? (
+                            <><Loader2 className="h-4 w-4 animate-spin" /> Uploading...</>
+                        ) : (
+                            <><Camera className="h-4 w-4" /> Change Photo</>
+                        )}
+                    </button>
+                    <input
+                        title="Upload Photo"
+                        ref={photoInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handlePhotoUpload}
+                    />
                 </div>
 
-                {/* Avatar + info row */}
-                <div className="px-5 sm:px-7 pb-0">
-                    <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-11 sm:-mt-13">
-                        {/* Avatar with gradient ring */}
-                        <div className="relative shrink-0">
-                            <div className={`h-22 w-22 sm:h-26 sm:w-26 rounded-2xl p-0.75 bg-linear-to-br ${coverGradient} shadow-lg`}>
-                                <div className="h-full w-full rounded-[11px] sm:rounded-[13px] overflow-hidden bg-muted">
-                                    {avatarSrc ? (
-                                        <Image src={avatarSrc} alt={userInfo.name} fill className="object-cover" />
-                                    ) : (
-                                        <div className={`h-full w-full flex items-center justify-center text-3xl font-extrabold ${isAdmin ? "bg-red-50 dark:bg-red-950/30 text-red-600"
-                                            : isRecruiter ? "bg-blue-50 dark:bg-blue-950/30 text-blue-600"
-                                                : "bg-primary/10 text-primary"
-                                            }`}>
-                                            {userInfo.name?.charAt(0)?.toUpperCase() || "U"}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            {isRecruiter && recruiter?.companyLogo && (
-                                <div className="absolute -bottom-1 -right-1 h-9 w-9 rounded-xl border-2 border-background overflow-hidden bg-white shadow">
-                                    <Image src={recruiter.companyLogo} alt="logo" fill className="object-contain p-0.5" />
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Name + badges */}
-                        <div className="flex-1 min-w-0 sm:pb-4 pt-2 space-y-1.5">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <h2 className="text-xl sm:text-2xl font-black tracking-tight">{userInfo.name}</h2>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${roleCfg.bg} ${roleCfg.text}`}>
-                                    {roleCfg.label}
-                                </span>
-                                {userInfo.emailVerified && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold">
-                                        <ShieldCheck className="h-3 w-3" /> Verified
-                                    </span>
-                                )}
-                                {premiumActive && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold">
-                                        <Sparkles className="h-3 w-3" /> Career Boost
-                                    </span>
-                                )}
-                                {isHired && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold">
-                                        <CheckCircle2 className="h-3 w-3" /> Hired
-                                    </span>
-                                )}
-                                {isRecruiter && recruiter?.status && recruiter.status !== "APPROVED" && (
-                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold border ${recruiter.status === "PENDING"
-                                        ? "bg-yellow-50 border-yellow-200 text-yellow-700 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-400"
-                                        : "bg-red-50 border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400"
+                {/* Profile Info */}
+                <div className="relative px-6 sm:px-8 pb-8">
+                    {/* Avatar */}
+                    <div className="relative -mt-20 sm:-mt-24 mb-6 w-fit">
+                        <div className={`relative h-32 w-32 sm:h-40 sm:w-40 rounded-2xl p-1 bg-linear-to-br ${coverGradient} shadow-2xl`}>
+                            <div className="h-full w-full rounded-xl overflow-hidden bg-muted border-4 border-card">
+                                {avatarSrc ? (
+                                    <Image
+                                        src={avatarSrc}
+                                        alt={userInfo.name}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    <div className={`h-full w-full flex items-center justify-center text-5xl sm:text-6xl font-black ${isAdmin ? "bg-red-100 dark:bg-red-950/50 text-red-600"
+                                        : "bg-orange-100 dark:bg-orange-950/50 text-orange-600"
                                         }`}>
-                                        {recruiter.status === "PENDING" ? "Pending Approval" : "Rejected"}
-                                    </span>
-                                )}
-                            </div>
-                            {subtitle && <p className="text-sm text-muted-foreground font-medium">{subtitle}</p>}
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                                <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5 shrink-0" />{userInfo.email}</span>
-                                {(isRecruiter ? recruiter?.contactNumber : (resume?.contactNumber || userInfo.phone)) && (
-                                    <span className="flex items-center gap-1">
-                                        <Phone className="h-3.5 w-3.5 shrink-0" />
-                                        {isRecruiter ? recruiter?.contactNumber : (resume?.contactNumber || userInfo.phone)}
-                                    </span>
-                                )}
-                                {(isRecruiter ? recruiter?.companyAddress : resume?.address) && (
-                                    <span className="flex items-center gap-1">
-                                        <MapPin className="h-3.5 w-3.5 shrink-0" />
-                                        {isRecruiter ? recruiter?.companyAddress : resume?.address}
-                                    </span>
-                                )}
-                                {isRecruiter && recruiter?.companyWebsite && (
-                                    <a href={recruiter.companyWebsite} target="_blank" rel="noopener noreferrer"
-                                        className="flex items-center gap-1 text-primary hover:underline">
-                                        <Globe className="h-3.5 w-3.5 shrink-0" />
-                                        {recruiter.companyWebsite.replace(/^https?:\/\//, "")}
-                                    </a>
+                                        {userInfo.name?.charAt(0)?.toUpperCase() || "U"}
+                                    </div>
                                 )}
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Stats strip — job seekers only */}
-                {isJobSeeker && (
-                    <div className="border-t border-border/30 grid grid-cols-3 divide-x divide-border/30 mt-4">
-                        {[
-                            { label: "Applied", value: userInfo.applications?.length ?? 0 },
-                            { label: "Hired", value: isHired ? "Yes ✓" : "—" },
-                            { label: "Score", value: `${profileCompletion}%` },
-                        ].map(({ label, value }) => (
-                            <div key={label} className="py-3.5 flex flex-col items-center gap-0.5 hover:bg-muted/20 transition-colors cursor-default">
-                                <span className="text-lg font-black">{value}</span>
-                                <span className="text-[10px] font-semibold text-muted-foreground tracking-wide">{label}</span>
+                        {userInfo.emailVerified && (
+                            <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-green-500 border-4 border-card flex items-center justify-center shadow-lg">
+                                <CheckCircle2 className="h-4 w-4 text-white" />
                             </div>
-                        ))}
+                        )}
                     </div>
-                )}
-            </div>
 
-            {/* ── Two-column layout ─────────────────────────────────────────── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-
-                {/* ══ LEFT SIDEBAR ═══════════════════════════════════════════ */}
-                <div className="lg:col-span-1 space-y-4">
-
-                    {/* Account Details */}
-                    <SectionCard icon={Shield} title="Account Details">
-                        {/* Status pills */}
-                        <div className="flex flex-wrap gap-1.5 pb-4 mb-2 border-b border-border/20">
-                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${userInfo.status === "ACTIVE"
-                                ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                                : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-                                }`}>
-                                {userInfo.status === "ACTIVE"
-                                    ? <CheckCircle2 className="h-3 w-3" />
-                                    : <XCircle className="h-3 w-3" />}
-                                {userInfo.status?.toLowerCase() || "active"}
-                            </span>
-                            {userInfo.emailVerified && (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
-                                    <ShieldCheck className="h-3 w-3" /> Verified
-                                </span>
-                            )}
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${roleCfg.bg} ${roleCfg.text}`}>
+                    {/* Name & Details */}
+                    <div className="space-y-3">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">{userInfo.name}</h1>
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${roleCfg.bg} ${roleCfg.text}`}>
                                 {roleCfg.label}
                             </span>
                         </div>
 
-                        <InfoItem icon={User} label="Full Name" value={userInfo.name} />
-                        <InfoItem icon={Mail} label="Email Address" value={userInfo.email} />
-
-                        {/* Phone — editable inline */}
-                        <div className="flex items-start gap-2.5 py-2.5 border-b border-border/20 last:border-0">
-                            <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                                <Phone className="h-3 w-3 text-primary/80" />
+                        {/* Contact Info */}
+                        <div className="space-y-2 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/50">
+                                    <Mail className="h-4 w-4" />
+                                    <span>{userInfo.email}</span>
+                                </div>
                             </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Phone Number</p>
+                            {subtitle && (
+                                <p className="text-base font-medium text-foreground">{subtitle}</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* ═══════════════════════════════════════════════════════════════════ */}
+            {/* MAIN CONTENT GRID */}
+            {/* ═══════════════════════════════════════════════════════════════════ */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                {/* ─────────────────────────── LEFT COLUMN ────────────────────── */}
+                <div className="space-y-6">
+
+                    {/* Personal Info Card */}
+                    <div className="rounded-2xl border border-border/50 bg-card overflow-hidden hover:border-border/80 transition-colors">
+                        <div className="px-6 py-4 border-b border-border/30 bg-linear-to-r from-orange-50 to-orange-50/30 dark:from-orange-950/20 dark:to-transparent">
+                            <p className="font-semibold text-foreground flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                Personal Information
+                            </p>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            {/* Account Status */}
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Account Status</p>
+                                <div className="flex items-center gap-2">
+                                    {userInfo.status === "ACTIVE" ? (
+                                        <>
+                                            <div className="h-2 w-2 rounded-full bg-green-500" />
+                                            <span className="text-sm font-medium text-green-700 dark:text-green-400">Active</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="h-2 w-2 rounded-full bg-red-500" />
+                                            <span className="text-sm font-medium text-red-700 dark:text-red-400">Inactive</span>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Full Name */}
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Full Name</p>
+                                <p className="text-sm font-medium">{userInfo.name}</p>
+                            </div>
+
+                            {/* Email */}
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Email Address</p>
+                                <div className="flex items-center justify-between">
+                                    <p className="text-sm font-medium break-all">{userInfo.email}</p>
+                                    {userInfo.emailVerified && (
+                                        <ShieldCheck className="h-4 w-4 text-green-600 shrink-0 ml-2" />
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Phone */}
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Phone Number</p>
                                 {isEditingPhone ? (
-                                    <div className="flex items-center gap-1.5 mt-1">
-                                        <Input autoFocus type="tel" value={phoneValue}
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            autoFocus
+                                            type="tel"
+                                            value={phoneValue}
                                             onChange={(e) => setPhoneValue(e.target.value)}
                                             placeholder="01XXXXXXXXX"
-                                            className="h-7 text-xs rounded-lg px-2" />
-                                        <button type="button" title="Save phone number"
-                                            onClick={handlePhoneSave} disabled={isSavingPhone}
-                                            className="h-7 px-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-1 hover:opacity-90 transition disabled:opacity-50 shrink-0">
-                                            {isSavingPhone ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
+                                            className="h-8 text-sm rounded-lg"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handlePhoneSave}
+                                            disabled={isSavingPhone}
+                                            className="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 disabled:opacity-50"
+                                        >
+                                            {isSavingPhone ? "Saving..." : "Save"}
                                         </button>
-                                        <button type="button" title="Cancel editing"
-                                            onClick={() => { setIsEditingPhone(false); setPhoneValue(userInfo.phone || ""); }}
-                                            className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted transition shrink-0">
-                                            <X className="h-3.5 w-3.5" />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsEditingPhone(false);
+                                                setPhoneValue(userInfo.phone || "");
+                                            }}
+                                            className="h-8 w-8 rounded-lg hover:bg-muted"
+                                        >
+                                            ✕
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="flex items-center justify-between gap-2 mt-0.5">
+                                    <div className="flex items-center justify-between">
                                         <p className="text-sm font-medium">
-                                            {phoneValue || <span className="text-muted-foreground/50 italic text-xs">Not set</span>}
+                                            {phoneValue || <span className="text-muted-foreground italic">Not set</span>}
                                         </p>
-                                        <button type="button" title="Edit phone number"
+                                        <button
+                                            title="Edit"
+                                            type="button"
                                             onClick={() => setIsEditingPhone(true)}
-                                            className="h-6 w-6 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition shrink-0">
-                                            <Pencil className="h-3 w-3" />
+                                            className="h-8 w-8 rounded-lg hover:bg-muted flex items-center justify-center"
+                                        >
+                                            <Edit2 className="h-4 w-4 text-muted-foreground" />
                                         </button>
                                     </div>
                                 )}
                             </div>
                         </div>
+                    </div>
 
-                        {userInfo.referralCode && (
-                            <InfoItem icon={Users} label="Referral Code" value={userInfo.referralCode} />
-                        )}
-                    </SectionCard>
-
-                    {/* Social Links — Job Seeker */}
+                    {/* Social Links Card */}
                     {isJobSeeker && (resume?.linkedinUrl || resume?.githubUrl || resume?.portfolioUrl) && (
-                        <SectionCard icon={Globe} title="Social Links">
-                            <div className="grid grid-cols-3 gap-2">
-                                {[
-                                    { url: resume?.linkedinUrl, label: "LinkedIn", icon: LinkedinIcon, cls: "bg-[#0A66C2]/10 text-[#0A66C2] border-[#0A66C2]/20 hover:bg-[#0A66C2]/20" },
-                                    { url: resume?.githubUrl, label: "GitHub", icon: GithubIcon, cls: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700" },
-                                    { url: resume?.portfolioUrl, label: "Portfolio", icon: Globe, cls: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800 hover:bg-green-200 dark:hover:bg-green-900/50" },
-                                ].filter(l => l.url).map(({ url, label, icon: Icon, cls }) => (
-                                    <a key={label} href={url!} target="_blank" rel="noopener noreferrer"
-                                        className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-colors ${cls}`}>
-                                        <Icon className="h-5 w-5" />
-                                        <span className="text-[10px] font-bold">{label}</span>
-                                    </a>
-                                ))}
+                        <div className="rounded-2xl border border-border/50 bg-card overflow-hidden hover:border-border/80 transition-colors">
+                            <div className="px-6 py-4 border-b border-border/30 bg-linear-to-r from-emerald-50 to-emerald-50/30 dark:from-emerald-950/20 dark:to-transparent">
+                                <p className="font-semibold text-foreground flex items-center gap-2">
+                                    <Globe className="h-4 w-4" />
+                                    Social Links
+                                </p>
                             </div>
-                        </SectionCard>
+                            <div className="p-6">
+                                <div className="grid grid-cols-1 gap-3">
+                                    {resume?.linkedinUrl && (
+                                        <a
+                                            href={resume.linkedinUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-3 p-3 rounded-lg border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/20 hover:bg-orange-100 dark:hover:bg-orange-950/40 transition group"
+                                        >
+                                            <LinkedinIcon className="h-5 w-5 text-orange-600 dark:text-orange-400 shrink-0" />
+                                            <span className="flex-1 text-sm font-medium">LinkedIn</span>
+                                            <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+                                        </a>
+                                    )}
+                                    {resume?.githubUrl && (
+                                        <a
+                                            href={resume.githubUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-3 p-3 rounded-lg border border-muted dark:border-border bg-muted/50 dark:bg-muted/30 hover:bg-muted dark:hover:bg-muted/50 transition group"
+                                        >
+                                            <GithubIcon className="h-5 w-5 text-foreground/60 shrink-0" />
+                                            <span className="flex-1 text-sm font-medium">GitHub</span>
+                                            <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+                                        </a>
+                                    )}
+                                    {resume?.portfolioUrl && (
+                                        <a
+                                            href={resume.portfolioUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-3 p-3 rounded-lg border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/20 hover:bg-orange-100 dark:hover:bg-orange-950/40 transition group"
+                                        >
+                                            <Globe className="h-5 w-5 text-orange-600 dark:text-orange-400 shrink-0" />
+                                            <span className="flex-1 text-sm font-medium">Portfolio</span>
+                                            <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     )}
                 </div>
 
-                {/* ══ MAIN CONTENT ════════════════════════════════════════════ */}
-                <div className="sm:col-span-2 lg:col-span-2 space-y-4">
+                {/* ─────────────────────────── RIGHT COLUMN (2/3) ────────────── */}
+                <div className="lg:col-span-2 space-y-6">
 
-                    {/* ── RECRUITER ── */}
-                    {isRecruiter && (
-                        <>
-                            {recruiterLoading ? (
-                                <div className="space-y-4">
-                                    {[0, 1].map(i => (
-                                        <div key={i} className="rounded-2xl border border-border/40 bg-card overflow-hidden animate-pulse">
-                                            <div className="px-5 py-3.5 border-b border-border/30 flex gap-3">
-                                                <div className="h-4 w-4 rounded bg-muted" />
-                                                <div className="h-4 w-40 bg-muted rounded-lg self-center" />
-                                            </div>
-                                            <div className="p-5 grid grid-cols-2 gap-2">
-                                                {[1, 2, 3, 4].map(j => <div key={j} className="h-14 rounded-xl bg-muted" />)}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : recruiter ? (
-                                <>
-                                    {/* Approval status banner */}
-                                    {recruiter.status && recruiter.status !== "APPROVED" && (
-                                        <div className={`rounded-2xl border p-4 flex items-start gap-3 ${recruiter.status === "PENDING"
-                                            ? "bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800"
-                                            : "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800"
-                                            }`}>
-                                            <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${recruiter.status === "PENDING" ? "bg-yellow-100 dark:bg-yellow-900/40" : "bg-red-100 dark:bg-red-900/40"
-                                                }`}>
-                                                {recruiter.status === "PENDING"
-                                                    ? <Clock className="h-4 w-4 text-yellow-600" />
-                                                    : <XCircle className="h-4 w-4 text-red-600" />}
-                                            </div>
-                                            <div>
-                                                <p className={`text-sm font-semibold ${recruiter.status === "PENDING" ? "text-yellow-800 dark:text-yellow-300" : "text-red-800 dark:text-red-300"}`}>
-                                                    {recruiter.status === "PENDING" ? "Account Pending Approval" : "Account Rejected"}
-                                                </p>
-                                                <p className={`text-xs mt-0.5 ${recruiter.status === "PENDING" ? "text-yellow-700 dark:text-yellow-400" : "text-red-700 dark:text-red-400"}`}>
-                                                    {recruiter.status === "PENDING"
-                                                        ? "Your account is awaiting admin approval. You will be notified once approved."
-                                                        : "Your account was rejected. Please contact support for more information."}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <SectionCard icon={Building2} title="Company Information">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-0">
-                                            <InfoItem icon={Building2} label="Company Name" value={recruiter.companyName} />
-                                            <InfoItem icon={Globe} label="Website" value={recruiter.companyWebsite} href={recruiter.companyWebsite} />
-                                            <InfoItem icon={MapPin} label="Address" value={recruiter.companyAddress} />
-                                            <InfoItem icon={Users} label="Company Size" value={recruiter.companySize} />
-                                            <InfoItem icon={Briefcase} label="Industry" value={recruiter.industry} />
-                                        </div>
-                                    </SectionCard>
-
-                                    <SectionCard icon={Shield} title="Recruiter Details">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-0">
-                                            <InfoItem icon={User} label="Full Name" value={recruiter.name} />
-                                            <InfoItem icon={Briefcase} label="Designation" value={recruiter.designation} />
-                                            <InfoItem icon={Mail} label="Email" value={recruiter.email} />
-                                            <InfoItem icon={Phone} label="Contact" value={recruiter.contactNumber} />
-                                        </div>
-                                    </SectionCard>
-
-                                    {recruiter.description && (
-                                        <SectionCard icon={FileText} title="About Company">
-                                            <p className="text-sm text-muted-foreground leading-relaxed">{recruiter.description}</p>
-                                        </SectionCard>
-                                    )}
-
-                                    {recruiter.companyLogo && (
-                                        <SectionCard icon={Building2} title="Company Branding">
-                                            <div className="flex items-center gap-4">
-                                                <div className="relative h-20 w-20 rounded-xl border border-border/50 overflow-hidden bg-muted/30 shrink-0">
-                                                    <Image src={recruiter.companyLogo} alt={recruiter.companyName || "Logo"}
-                                                        fill className="object-contain p-2" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold">{recruiter.companyName}</p>
-                                                    {recruiter.industry && <p className="text-xs text-muted-foreground mt-0.5">{recruiter.industry}</p>}
-                                                    {recruiter.companySize && <p className="text-xs text-muted-foreground">{recruiter.companySize}</p>}
-                                                </div>
-                                            </div>
-                                        </SectionCard>
-                                    )}
-
-                                    {/* Quick Actions */}
-                                    <div className="rounded-2xl border border-border/40 bg-card overflow-hidden relative hover:border-border/60 transition-colors duration-200">
-                                        <div className="absolute left-0 inset-y-0 w-0.75 bg-linear-to-b from-primary to-primary/10" />
-                                        <div className="px-5 py-3.5 border-b border-border/30 bg-muted/10">
-                                            <p className="text-sm font-semibold tracking-tight">Quick Actions</p>
-                                        </div>
-                                        <div className="p-5">
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <Link href="/recruiter/dashboard/my-jobs">
-                                                    <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border/40 hover:border-border/70 hover:bg-muted/20 transition-colors cursor-pointer">
-                                                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                                            <Briefcase className="h-5 w-5 text-primary" />
-                                                        </div>
-                                                        <span className="text-xs font-bold">My Jobs</span>
-                                                    </div>
-                                                </Link>
-                                                <Link href="/recruiter/dashboard/post-job">
-                                                    <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-primary/30 hover:border-primary/60 hover:bg-primary/5 transition-colors cursor-pointer">
-                                                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                                            <Sparkles className="h-5 w-5 text-primary" />
-                                                        </div>
-                                                        <span className="text-xs font-bold">Post a Job</span>
-                                                    </div>
-                                                </Link>
+                    {/* Profile Completion Card */}
+                    {isJobSeeker && (
+                        <div className="rounded-2xl border border-border/50 bg-card overflow-hidden hover:border-border/80 transition-colors">
+                            <div className="px-6 py-4 border-b border-border/30 bg-linear-to-r from-orange-50 to-orange-50/30 dark:from-orange-950/20 dark:to-transparent">
+                                <p className="font-semibold text-foreground">Profile Completion</p>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                <div className="flex items-end gap-4">
+                                    {/* Circular Progress */}
+                                    <div className="relative h-32 w-32 shrink-0">
+                                        <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120">
+                                            {/* Background circle */}
+                                            <circle
+                                                cx="60"
+                                                cy="60"
+                                                r="54"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="8"
+                                                className="text-muted"
+                                            />
+                                            {/* Progress circle */}
+                                            <circle
+                                                cx="60"
+                                                cy="60"
+                                                r="54"
+                                                fill="none"
+                                                stroke="url(#progress)"
+                                                strokeWidth="8"
+                                                strokeDasharray={Math.PI * 2 * 54}
+                                                strokeDashoffset={Math.PI * 2 * 54 * (1 - profileCompletion / 100)}
+                                                className="transition-all duration-500"
+                                            />
+                                            <defs>
+                                                <linearGradient id="progress" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                    <stop offset="0%" stopColor="#f97316" />
+                                                    <stop offset="100%" stopColor="#ea580c" />
+                                                </linearGradient>
+                                            </defs>
+                                        </svg>
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <div className="text-center">
+                                                <p className="text-3xl font-black text-foreground">{profileCompletion}%</p>
+                                                <p className="text-xs font-bold text-muted-foreground">Complete</p>
                                             </div>
                                         </div>
                                     </div>
-                                </>
-                            ) : (
-                                <div className="rounded-2xl border border-dashed border-border py-16 flex flex-col items-center gap-3 text-muted-foreground">
-                                    <Building2 className="h-10 w-10 opacity-30" />
-                                    <p className="text-sm">No recruiter profile data found.</p>
-                                </div>
-                            )}
-                        </>
-                    )}
 
-                    {/* ── ADMIN / SUPER ADMIN ── */}
-                    {isAdmin && (
-                        <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
-                            <div className="px-5 py-4 border-b border-border/40 bg-red-50 dark:bg-red-950/20">
-                                <p className="text-sm font-bold flex items-center gap-2 text-red-700 dark:text-red-400">
-                                    <ShieldCheck className="h-4 w-4" /> Admin Privileges
-                                </p>
-                            </div>
-                            <div className="p-5 space-y-4">
-                                <p className="text-sm text-muted-foreground leading-relaxed">
-                                    You have <span className="font-semibold text-foreground">
-                                        {userInfo.role === "SUPER_ADMIN" ? "Super Admin" : "Admin"}
-                                    </span> privileges. Manage users, jobs, recruiters, and platform settings from the admin dashboard.
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                    <Link href="/admin/dashboard">
-                                        <Button size="sm" className="gap-1.5 rounded-xl text-xs">
-                                            <Shield className="h-3.5 w-3.5" /> Admin Dashboard
-                                        </Button>
-                                    </Link>
-                                    <Link href="/admin/dashboard/users">
-                                        <Button variant="outline" size="sm" className="gap-1.5 rounded-xl text-xs">
-                                            <Users className="h-3.5 w-3.5" /> Manage Users
-                                        </Button>
-                                    </Link>
+                                    {/* Stats */}
+                                    <div className="flex-1 space-y-2">
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="rounded-lg bg-muted/50 p-3">
+                                                <p className="text-xs font-bold text-muted-foreground">Applied</p>
+                                                <p className="text-2xl font-black mt-1">{userInfo.applications?.length ?? 0}</p>
+                                            </div>
+                                            <div className="rounded-lg bg-muted/50 p-3">
+                                                <p className="text-xs font-bold text-muted-foreground">Status</p>
+                                                <p className="text-2xl font-black mt-1 text-green-600">{isHired ? "✓" : "—"}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Progress Bar */}
+                                <div className="space-y-2">
+                                    <p className="text-xs font-bold text-muted-foreground">Overall Progress</p>
+                                    <div className="h-2 rounded-full bg-muted overflow-hidden">
+                                        <div
+                                            className="h-full bg-linear-to-r from-orange-500 to-orange-600 rounded-full transition-all duration-500"
+                                            style={{ width: `${profileCompletion}%` }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* ── Danger Zone (not for SUPER_ADMIN) ── */}
-                    {userInfo.role !== "SUPER_ADMIN" && (
-                        <div className="rounded-2xl border border-destructive/30 bg-card overflow-hidden">
-                            <div className="px-5 py-4 border-b border-destructive/20 bg-destructive/5">
-                                <p className="text-sm font-bold text-destructive flex items-center gap-2">
-                                    <Trash2 className="h-4 w-4" /> Danger Zone
-                                </p>
+                    {/* Account Security Card */}
+                    <div className="rounded-2xl border border-destructive/30 bg-destructive/5 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-destructive/20 bg-destructive/10">
+                            <p className="font-semibold text-destructive flex items-center gap-2">
+                                <Shield className="h-4 w-4" />
+                                Account Settings
+                            </p>
+                        </div>
+                        <div className="p-6 space-y-3">
+                            <p className="text-sm text-muted-foreground">
+                                Permanently delete your account and all associated data. <span className="font-semibold text-destructive">This action cannot be undone.</span>
+                            </p>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="destructive" size="sm" disabled={isDeleting} className="gap-2">
+                                        {isDeleting ? (
+                                            <><Loader2 className="h-4 w-4 animate-spin" /> Deleting...</>
+                                        ) : (
+                                            <><Trash2 className="h-4 w-4" /> Delete Account</>
+                                        )}
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent className="rounded-2xl">
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This will permanently delete your account, profile, resume, and all data.
+                                            This action <strong>cannot be undone</strong>.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel className="rounded-lg">Cancel</AlertDialogCancel>
+                                        <AlertDialogAction
+                                            onClick={() => deleteAccount()}
+                                            className="bg-destructive text-white hover:bg-destructive/90 rounded-lg"
+                                        >
+                                            Yes, delete my account
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
+                    </div>
+
+                    {/* Recruiter Section */}
+                    {isRecruiter && (
+                        <div className="rounded-2xl border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/20 overflow-hidden">
+                            <div className="px-6 py-4 border-b border-orange-200 dark:border-orange-800 bg-orange-100 dark:bg-orange-900/30">
+                                <p className="font-semibold text-orange-900 dark:text-orange-100">Recruiter Profile</p>
                             </div>
-                            <div className="p-5">
-                                <p className="text-sm text-muted-foreground mb-4">
-                                    Permanently delete your account and all associated data.{" "}
-                                    <span className="font-semibold text-destructive">This action cannot be undone.</span>
+                            <div className="p-6 space-y-3 text-orange-900 dark:text-orange-100">
+                                {recruiter ? (
+                                    <>
+                                        <div>
+                                            <p className="text-xs font-bold uppercase mb-1">Company</p>
+                                            <p className="font-medium">{recruiter.companyName}</p>
+                                        </div>
+                                        {recruiter.designation && (
+                                            <div>
+                                                <p className="text-xs font-bold uppercase mb-1">Designation</p>
+                                                <p className="font-medium">{recruiter.designation}</p>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <p className="text-sm">No recruiter profile data found.</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Admin Section */}
+                    {isAdmin && (
+                        <div className="rounded-2xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20 overflow-hidden">
+                            <div className="px-6 py-4 border-b border-red-200 dark:border-red-800 bg-red-100 dark:bg-red-900/30">
+                                <p className="font-semibold text-red-900 dark:text-red-100">Admin Privileges</p>
+                            </div>
+                            <div className="p-6 space-y-4 text-red-900 dark:text-red-100">
+                                <p className="text-sm">
+                                    You have <span className="font-semibold">{userInfo.role === "SUPER_ADMIN" ? "Super Admin" : "Admin"}</span> privileges.
                                 </p>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="destructive" size="sm" disabled={isDeleting} className="gap-1.5 rounded-xl">
-                                            {isDeleting
-                                                ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Deleting…</>
-                                                : <><Trash2 className="h-3.5 w-3.5" /> Delete Account</>
-                                            }
+                                <div className="flex gap-2">
+                                    <Link href="/admin/dashboard">
+                                        <Button size="sm" variant="outline" className="border-red-200 hover:bg-red-100 dark:border-red-800">
+                                            Admin Dashboard
                                         </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent className="rounded-2xl">
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This will permanently delete your account, profile, resume, applications, and all data.
-                                                This action <strong>cannot be undone</strong>.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => deleteAccount()}
-                                                className="bg-destructive text-white hover:bg-destructive/90 rounded-xl">
-                                                Yes, delete my account
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                     )}
