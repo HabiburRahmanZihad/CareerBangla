@@ -84,6 +84,11 @@ const ResumeTwoPageLayout = ({ values }: ResumeTwoPageLayoutProps) => {
                         display: none !important;
                     }
                 }
+                @media screen {
+                    .resume-page {
+                        padding: 40px;
+                    }
+                }
             `}</style>
             <div className="resume-container bg-white text-black leading-tight">
                 {/* PAGE 1 */}

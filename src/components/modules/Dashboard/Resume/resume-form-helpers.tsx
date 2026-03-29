@@ -99,33 +99,33 @@ export const FormSection = ({
     const [open, setOpen] = useState(defaultOpen);
 
     return (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <button
                 type="button"
                 onClick={() => setOpen((v) => !v)}
-                className="flex w-full items-center justify-between rounded-lg px-1 py-1 text-left hover:bg-muted/40 transition-colors"
+                className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 -ml-3 text-left hover:bg-muted/40 transition-colors group"
             >
-                <span className="flex items-center gap-2 text-base font-semibold">
-                    <Icon className="w-4 h-4 text-primary shrink-0" />
+                <span className="flex items-center gap-2.5 text-base font-bold text-foreground/90 group-hover:text-primary transition-colors">
+                    <Icon className="w-5 h-5 text-primary shrink-0" />
                     {title}
                     {count !== undefined && count > 0 && (
-                        <Badge variant="secondary" className="text-xs px-1.5 py-0 h-5">
+                        <Badge variant="secondary" className="text-xs px-2 py-0 h-5 font-bold shadow-sm">
                             {count}
                         </Badge>
                     )}
                 </span>
                 <ChevronDown
-                    className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+                    className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${open ? "rotate-180" : ""}`}
                 />
             </button>
             {open && (
-                <div className="space-y-3">
+                <div className="space-y-5 px-1 pb-2">
                     {onAdd && (
                         <Button
                             type="button"
                             variant="outline"
                             size="sm"
-                            className="w-full border-dashed"
+                            className="w-full border-dashed border-2 hover:border-primary/50 hover:bg-primary/5 h-12 rounded-xl text-primary font-semibold transition-all"
                             onClick={onAdd}
                             disabled={isLocked}
                             title={isLocked ? "Profile is locked - unable to add" : ""}
@@ -190,20 +190,20 @@ export const TextareaField = ({
 
 /** Card for array items with delete button */
 export const ItemCard = ({ index, onRemove, children, isLocked }: { index: number; onRemove: () => void; children: React.ReactNode; isLocked?: boolean }) => (
-    <Card className="relative bg-muted/20 border-border/60">
+    <Card className="relative bg-muted/10 hover:bg-muted/20 transition-colors border border-border/40 rounded-2xl shadow-sm">
         <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            className="absolute top-2 right-2 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl"
             onClick={onRemove}
             disabled={isLocked}
             aria-label={`Remove item ${index + 1}`}
             title={isLocked ? "Profile is locked - unable to delete" : "Delete"}
         >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-4 h-4" />
         </Button>
-        <CardContent className="pt-5 pb-4 pr-10">
+        <CardContent className="pt-6 pb-5 pr-12 pl-5">
             {children}
         </CardContent>
     </Card>
@@ -225,19 +225,23 @@ export const LockedBanner = () => (
 
 /** Loading skeleton for the resume page */
 export const ResumeSkeleton = () => (
-    <div className="space-y-6">
-        <div className="flex items-center justify-between">
-            <div className="space-y-2">
-                <Skeleton className="h-7 w-40" />
-                <Skeleton className="h-4 w-56" />
+    <div className="w-full container mx-auto space-y-6 lg:space-y-8 pb-10">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="space-y-3">
+                <Skeleton className="h-10 w-64 rounded-xl" />
+                <Skeleton className="h-5 w-80 rounded-md" />
             </div>
-            <div className="flex gap-2">
-                <Skeleton className="h-8 w-32" />
-                <Skeleton className="h-8 w-24" />
+            <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                <Skeleton className="h-12 w-full sm:w-40 rounded-xl" />
+                <Skeleton className="h-12 w-full sm:w-32 rounded-xl" />
             </div>
         </div>
-        <Skeleton className="h-5 w-full" />
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-150 w-full rounded-xl" />
+        <Skeleton className="h-6 w-full rounded-md" />
+        <Skeleton className="h-16 w-full rounded-2xl" />
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+            <Skeleton className="h-200 w-full rounded-3xl" />
+            <Skeleton className="hidden xl:block h-200 w-full rounded-3xl" />
+        </div>
     </div>
 );

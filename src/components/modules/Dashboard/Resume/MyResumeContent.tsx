@@ -38,35 +38,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-// ─── Profile completion calculator ───────────────────────────────────────────
-
-const calculateProfileCompletion = (formValue: any) => {
-    const checklist: Record<string, boolean> = {
-        fullName: !!formValue?.fullName?.trim(),
-        email: !!formValue?.email?.trim(),
-        professionalTitle: !!formValue?.professionalTitle?.trim(),
-        professionalSummary: !!formValue?.professionalSummary?.trim(),
-        technicalSkills: !!formValue?.technicalSkills?.trim(),
-        softSkills: !!formValue?.softSkills?.trim(),
-        toolsAndTechnologies: !!formValue?.toolsAndTechnologies?.trim(),
-        contactNumber: !!formValue?.contactNumber?.trim(),
-        address: !!formValue?.address?.trim(),
-        dateOfBirth: !!formValue?.dateOfBirth?.trim(),
-        gender: !!formValue?.gender?.trim(),
-        linkedinUrl: !!formValue?.linkedinUrl?.trim(),
-        githubUrl: !!formValue?.githubUrl?.trim(),
-        portfolioUrl: !!formValue?.portfolioUrl?.trim(),
-        hasEducation: (formValue?.education || []).some((edu: any) => edu.degree?.trim()),
-        hasWorkExperience: (formValue?.workExperience || []).some((we: any) => we.jobTitle?.trim()),
-        hasProjects: (formValue?.projects || []).some((proj: any) => proj.projectName?.trim()),
-        hasLanguages: (formValue?.languages || []).some((lang: any) => lang.language?.trim()),
-    };
-
-    const completedFields = Object.values(checklist).filter(Boolean).length;
-    const totalFields = Object.keys(checklist).length;
-    return Math.round((completedFields / totalFields) * 100);
-};
-
 // ─── Submit payload builder ──────────────────────────────────────────────────
 
 const buildSubmitPayload = (value: any): Record<string, unknown> => {
@@ -287,76 +258,91 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
     const se = serverErrors;
 
     return (
-        <div className="space-y-6">
+        <div className="w-full container mx-auto space-y-6 lg:space-y-8 pb-10">
             {/* ── Header ── */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">My Resume</h1>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                        Build your ATS-optimised resume
-                    </p>
+            <div className="relative rounded-3xl border border-border/40 bg-card overflow-hidden shadow-sm">
+                <div className="absolute inset-0 bg-linear-to-r from-primary/5 via-transparent to-primary/5" />
+                <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
+                    <FileText className="w-48 h-48 -rotate-12" />
                 </div>
-                <div className="flex flex-wrap gap-2">
-                    {isPremium ? (
-                        <Button variant="outline" size="sm" onClick={handleDownloadPdf} disabled={isDownloading}>
-                            {isDownloading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ArrowDownToLine className="w-4 h-4 mr-2" />}
-                            {isDownloading ? "Downloading…" : "Download PDF"}
-                        </Button>
-                    ) : (
-                        <Link href="/dashboard/subscriptions">
-                            <Button variant="outline" size="sm" className="text-amber-600 border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950">
-                                <Crown className="w-4 h-4 mr-2" /> Download PDF
-                                <Badge variant="secondary" className="ml-2 text-[10px] py-0 px-1.5">PRO</Badge>
+
+                <div className="relative px-6 py-8 sm:px-10 sm:py-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                    <div className="space-y-2 relative z-10">
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold tracking-widest uppercase mb-2">
+                            <Crown className="w-4 h-4" /> Career Builder
+                        </div>
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-foreground">
+                            My Resume
+                        </h1>
+                        <p className="text-sm sm:text-base text-muted-foreground max-w-lg leading-relaxed">
+                            Build, preview, and download your beautifully formatted, ATS-optimised resume directly from your profile.
+                        </p>
+                    </div>
+                    <div className="relative z-10 shrink-0 flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                        {isPremium ? (
+                            <Button
+                                onClick={handleDownloadPdf}
+                                disabled={isDownloading}
+                                className="rounded-xl px-6 h-12 font-bold shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-transform gap-2 w-full sm:w-auto"
+                            >
+                                {isDownloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowDownToLine className="w-5 h-5" />}
+                                {isDownloading ? "Generating…" : "Download PDF"}
+                            </Button>
+                        ) : (
+                            <Link href="/dashboard/subscriptions" className="w-full sm:w-auto">
+                                <Button
+                                    className="w-full rounded-xl bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 h-12 font-bold shadow-lg shadow-orange-500/20 hover:-translate-y-0.5 transition-transform gap-2 border-0"
+                                >
+                                    <Crown className="w-5 h-5" /> Download PDF
+                                    <Badge variant="secondary" className="ml-1 text-[10px] py-0.5 px-2 bg-white/20 hover:bg-white/30 text-white border-0 shadow-none">PRO</Badge>
+                                </Button>
+                            </Link>
+                        )}
+                        <Link href="/dashboard/profile-completion-guide" className="w-full sm:w-auto">
+                            <Button variant="outline" className="w-full rounded-xl px-6 h-12 font-bold border-border/50 hover:bg-muted/40 shadow-sm gap-2">
+                                <AlertCircle className="w-5 h-5" /> ATS Guide
                             </Button>
                         </Link>
-                    )}
-                    <Link href="/dashboard/profile-completion-guide">
-                        <Button variant="outline" size="sm">
-                            <AlertCircle className="w-4 h-4 mr-2" /> ATS Guide
-                        </Button>
-                    </Link>
+                    </div>
                 </div>
             </div>
 
             {/* ── Profile completion bar (updates only after save) ── */}
-            <ProfileCompletionBar completion={resume?.profileCompletion ?? 0} />
+            <div className="px-1">
+                <ProfileCompletionBar completion={resume?.profileCompletion ?? 0} />
+            </div>
 
             {/* ── Status banner ── */}
             {isPremium ? (
-                <div className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
+                <div className="flex items-center gap-3 rounded-2xl border border-amber-300/60 bg-amber-500/5 dark:bg-amber-950/20 dark:border-amber-800/50 px-5 py-4 text-sm text-amber-800 dark:text-amber-300/90 shadow-sm transition-all hover:bg-amber-500/10">
                     <Crown className="h-5 w-5 shrink-0 text-amber-500" />
-                    <span>You have <strong>Career Boost</strong> — unlimited updates & professional ATS PDF downloads.</span>
+                    <span>You have <strong>Career Boost</strong> — unlimited updates & professional ATS PDF downloads enabled.</span>
                 </div>
             ) : (!isPremium && (resume?.profileCompletion ?? 0) === 100) ? (
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-300">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-rose-300/60 bg-rose-500/5 dark:bg-rose-950/20 dark:border-rose-800/50 px-5 py-4 text-sm text-rose-800 dark:text-rose-300/90 shadow-sm">
                     <div className="flex items-center gap-3">
-                        <Lock className="h-5 w-5 shrink-0 text-red-500" />
-                        <span>Your profile is 100% complete and <strong>locked</strong>. Upgrade to keep editing.</span>
+                        <Lock className="h-5 w-5 shrink-0 text-rose-500" />
+                        <span>Your profile is 100% complete and <strong>locked</strong>. Upgrade to Career Boost to keep editing.</span>
                     </div>
                     <Link href="/dashboard/subscriptions">
-                        <Button size="sm" variant="destructive">Upgrade Now</Button>
+                        <Button size="sm" variant="destructive" className="rounded-xl font-semibold shadow-md shadow-rose-500/20 w-full sm:w-auto">Upgrade Now</Button>
                     </Link>
                 </div>
-            ) : (
-                <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 px-4 py-3 text-sm text-blue-800 dark:text-blue-300">
-                    <AlertCircle className="h-5 w-5 shrink-0 text-blue-500" />
-                    <span>Fill in all sections to reach 100%. Editing is disabled at 100% on the Free tier.</span>
-                </div>
-            )}
+            ) : null}
 
             {/* ── Side-by-side layout ── */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
 
                 {/* ─── LEFT: Form ─── */}
                 <div>
-                    <Card>
-                        <CardHeader className="pb-4">
-                            <CardTitle className="flex items-center gap-2">
+                    <Card className="rounded-3xl border border-border/40 shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-sm overflow-hidden">
+                        <CardHeader className="pb-4 bg-muted/20 border-b border-border/40 px-6 py-5">
+                            <CardTitle className="flex items-center gap-2.5 text-lg">
                                 <FileText className="w-5 h-5 text-primary" />
-                                Profile Information
+                                Profile Information Details
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-6">
                             {(() => {
                                 const savedIsLocked = !isPremium && (resume?.profileCompletion ?? 0) === 100;
                                 const workExpLocked = !isPremium && !!(resume?.workExperience?.length);
@@ -402,15 +388,15 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                                         <InterestsSection form={form} se={se} />
 
                                         {/* ── Submit ── */}
-                                        <div className="pt-2 sticky bottom-0 bg-card pb-2">
-                                            <AppSubmitButton isPending={isPending} disabled={savedIsLocked} pendingLabel="Saving…">
+                                        <div className="mt-8 sticky bottom-0 bg-card/90 backdrop-blur-xl py-5 border-t border-border/40 z-20 w-[calc(100%+3rem)] -ml-6 px-6 shadow-[0_-15px_15px_-10px_rgba(0,0,0,0.05)]">
+                                            <AppSubmitButton isPending={isPending} disabled={savedIsLocked} pendingLabel="Saving…" className="w-full sm:w-auto min-w-50 h-12 rounded-xl text-base font-bold shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-transform">
                                                 {savedIsLocked ? (
                                                     <><Lock className="w-4 h-4 mr-2" /> Profile Locked</>
-                                                ) : "Save Resume"}
+                                                ) : "Save Resume Changes"}
                                             </AppSubmitButton>
                                             {savedIsLocked && (
-                                                <p className="text-xs text-center text-muted-foreground mt-2">
-                                                    <Link href="/dashboard/subscriptions" className="underline font-medium">Upgrade to Career Boost</Link> to continue editing.
+                                                <p className="text-xs sm:text-sm text-center sm:text-left text-muted-foreground mt-3">
+                                                    <Link href="/dashboard/subscriptions" className="font-semibold text-primary hover:underline underline-offset-4">Upgrade to Career Boost</Link> to continue editing.
                                                 </p>
                                             )}
                                         </div>
@@ -422,15 +408,15 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
                 </div>
 
                 {/* ─── RIGHT: Live Preview ─── */}
-                <div className="hidden xl:block">
+                <div className="hidden xl:block relative">
                     <div className="sticky top-6">
-                        <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-base font-semibold flex items-center gap-2">
-                                <FileText className="w-4 h-4 text-primary" /> Live Preview
+                        <div className="flex items-center justify-between mb-4 bg-muted/30 px-5 py-3 rounded-2xl border border-border/40">
+                            <h3 className="text-base font-bold flex items-center gap-2 relative z-10 text-foreground">
+                                <FileText className="w-4 h-4 text-primary" /> Live Document Preview
                             </h3>
-                            <Badge variant="outline" className="text-xs">Auto-updates</Badge>
+                            <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest bg-accent rounded-lg">Auto-syncing</Badge>
                         </div>
-                        <div className="max-h-[calc(100vh-140px)] overflow-y-auto rounded-lg border border-gray-200 shadow-sm bg-white px-6 pt-8 pb-6">
+                        <div className="max-h-[calc(100vh-140px)] overflow-y-auto rounded-3xl border border-border/40 shadow-2xl shadow-primary/5 bg-background scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
                             <form.Subscribe selector={(s) => s.values}>
                                 {(values) => <ResumeTwoPageLayout values={values} />}
                             </form.Subscribe>
