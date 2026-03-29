@@ -5,7 +5,7 @@ import { IResume } from "@/types/user.types";
 /**
  * Helper Types & Constants
  */
-export const USERS_PER_PAGE = 20;
+export const USERS_PER_PAGE = 32;
 
 export type CandidateListItem = {
     id: string;
