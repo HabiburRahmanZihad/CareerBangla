@@ -2,13 +2,13 @@
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import {
-    Award, Briefcase, Calendar, CheckCircle2, Code2,
+    Award, Briefcase, Calendar, Code2,
     Crown, ExternalLink, FileText, GraduationCap,
     Globe, Languages, MapPin, Mail, Phone,
-    Rocket, Sparkles, User, Users,
+    Rocket, Sparkles, TrendingUp, User, Users,
 } from "lucide-react";
 import Link from "next/link";
-import { completionGradient, completionText, InfoItem, SectionCard, TimelineItem } from "./MyProfileShared";
+import { completionColor, completionGradient, InfoItem, SectionCard, TimelineItem } from "./MyProfileShared";
 
 interface JobSeekerSectionProps {
     resume: any;
@@ -32,46 +32,57 @@ export const JobSeekerSection = ({
             {/* Career Boost */}
             <SectionCard icon={Rocket} title="Career Boost Status">
                 {premiumActive ? (
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 p-4">
-                        <div className="flex items-center gap-3">
-                            <div className="h-11 w-11 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
-                                <Crown className="h-5 w-5 text-amber-600" />
-                            </div>
-                            <div>
-                                <p className="font-semibold text-amber-900 dark:text-amber-200 text-sm">Career Boost Active</p>
-                                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-                                    {isLifetime ? "Lifetime access — never expires"
-                                        : `Expires ${format(new Date(premiumUntil!), "MMMM d, yyyy")}`}
-                                </p>
+                    <div className="relative rounded-2xl p-[2px] bg-linear-to-br from-amber-400 via-yellow-300 to-amber-500 shadow-lg shadow-amber-500/20">
+                        <div className="rounded-[14px] bg-card p-5">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="relative">
+                                        <div className="h-12 w-12 rounded-xl bg-linear-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md shadow-amber-500/30">
+                                            <Crown className="h-6 w-6 text-white" />
+                                        </div>
+                                        <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-card flex items-center justify-center">
+                                            <span className="text-[7px] text-white font-black">✓</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="font-black text-amber-700 dark:text-amber-300 text-sm tracking-tight">Career Boost Active</p>
+                                        <p className="text-xs text-amber-600/80 dark:text-amber-400/80 mt-0.5 font-medium">
+                                            {isLifetime ? "✦ Lifetime access — never expires"
+                                                : `Expires ${format(new Date(premiumUntil!), "MMMM d, yyyy")}`}
+                                        </p>
+                                    </div>
+                                </div>
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-linear-to-r from-amber-400 to-orange-400 text-white text-xs font-black shadow-sm self-start sm:self-auto">
+                                    <Sparkles className="h-3 w-3" /> {isLifetime ? "Lifetime" : "Active"}
+                                </span>
                             </div>
                         </div>
-                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 text-xs font-semibold self-start sm:self-auto">
-                            {isLifetime ? "Lifetime" : "Active"}
-                        </span>
                     </div>
                 ) : (
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-border/50 bg-muted/20 p-4">
-                        <div className="flex items-center gap-3">
-                            <div className="h-11 w-11 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                                <Crown className="h-5 w-5 text-muted-foreground/50" />
+                    <div className="rounded-2xl border border-border/40 bg-card p-5">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                                    <Crown className="h-6 w-6 text-muted-foreground/40" />
+                                </div>
+                                <div>
+                                    <p className="font-bold text-sm">Free Plan</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">Unlock unlimited edits, PDF export &amp; ATS boost</p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="font-semibold text-sm">Free Account</p>
-                                <p className="text-xs text-muted-foreground mt-0.5">Upgrade for unlimited edits, PDF downloads &amp; ATS boost.</p>
-                            </div>
+                            <Link href="/dashboard/subscriptions">
+                                <Button size="sm" className="bg-linear-to-r from-amber-500 to-orange-500 text-white border-0 hover:opacity-90 gap-1.5 shrink-0 rounded-xl shadow-sm shadow-amber-500/30">
+                                    <Sparkles className="h-3.5 w-3.5" /> Upgrade Now
+                                </Button>
+                            </Link>
                         </div>
-                        <Link href="/dashboard/subscriptions">
-                            <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white gap-1.5 shrink-0 rounded-xl">
-                                <Sparkles className="h-3.5 w-3.5" /> Upgrade
-                            </Button>
-                        </Link>
                     </div>
                 )}
             </SectionCard>
 
             {/* Profile Completion */}
             {resumeLoading ? (
-                <div className="rounded-2xl border border-border/50 bg-card p-5 space-y-3 animate-pulse">
+                <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-3 animate-pulse">
                     <div className="flex justify-between">
                         <div className="h-4 w-40 bg-muted rounded-lg" />
                         <div className="h-7 w-12 bg-muted rounded-lg" />
@@ -79,44 +90,65 @@ export const JobSeekerSection = ({
                     <div className="h-2.5 bg-muted rounded-full" />
                 </div>
             ) : (
-                <div className="rounded-2xl border border-border/50 bg-card p-5 space-y-3">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-semibold">Profile Completion</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                                {profileCompletion >= 60 ? (
-                                    <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-400 font-medium">
-                                        <CheckCircle2 className="h-3.5 w-3.5" /> Ready to apply for jobs!
-                                    </span>
-                                ) : `${60 - profileCompletion}% more to unlock job applications`}
+                <div className="rounded-2xl border border-border/40 bg-card overflow-hidden relative">
+                    <div className="absolute left-0 inset-y-0 w-0.75 bg-linear-to-b from-primary to-primary/10" />
+                    <div className="px-5 py-3.5 border-b border-border/30 flex items-center gap-2.5 bg-muted/10">
+                        <TrendingUp className="h-4 w-4 text-primary shrink-0" />
+                        <span className="text-sm font-semibold tracking-tight">Profile Completion</span>
+                    </div>
+                    <div className="p-5 flex items-center gap-5">
+                        {/* Circular conic-gradient ring */}
+                        <Link href="/dashboard/my-resume" className="shrink-0">
+                            <div className="relative h-[88px] w-[88px]">
+                                {/* Track */}
+                                <div className="absolute inset-0 rounded-full bg-muted/60" />
+                                {/* Progress */}
+                                <div className="absolute inset-0 rounded-full" style={{
+                                    background: `conic-gradient(${completionColor(profileCompletion)} ${profileCompletion * 3.6}deg, transparent ${profileCompletion * 3.6}deg)`
+                                }} />
+                                {/* Center cutout */}
+                                <div className="absolute inset-[10px] rounded-full bg-card flex flex-col items-center justify-center shadow-sm">
+                                    <span className="text-xl font-black leading-none" style={{ color: completionColor(profileCompletion) }}>{profileCompletion}</span>
+                                    <span className="text-[9px] font-bold text-muted-foreground/70">%</span>
+                                </div>
+                            </div>
+                        </Link>
+                        {/* Info */}
+                        <div className="flex-1 min-w-0 space-y-2.5">
+                            <div>
+                                <p className="text-sm font-bold">
+                                    {profileCompletion >= 60 ? "Applications Unlocked!" : `${60 - profileCompletion}% to unlock applying`}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                    {profileCompletion >= 80
+                                        ? "Outstanding profile — recruiters will notice you"
+                                        : profileCompletion >= 60
+                                        ? "You can apply for jobs now. Keep improving!"
+                                        : "Complete your resume to start applying for jobs"}
+                                </p>
+                            </div>
+                            {/* Progress bar */}
+                            <div className="relative h-2 rounded-full bg-muted overflow-hidden">
+                                <div className="h-full rounded-full transition-all duration-700 ease-out" style={{
+                                    width: `${profileCompletion}%`,
+                                    background: `linear-gradient(to right, ${completionColor(profileCompletion)}, ${completionColor(profileCompletion)}99)`
+                                }} />
+                                {/* 60% unlock marker */}
+                                <div className="absolute inset-y-0 w-0.5 bg-background/80" style={{ left: "60%" }} />
+                            </div>
+                            <p className="text-[10px] font-bold" style={{ color: completionColor(profileCompletion) }}>
+                                {profileCompletion >= 60 ? "✓ Unlocked — apply freely" : `Unlock at 60% · ${60 - profileCompletion}% remaining`}
                             </p>
                         </div>
-                        <Link href="/dashboard/my-resume">
-                            <span className={`text-2xl font-extrabold bg-linear-to-r ${completionGradient(profileCompletion)} bg-clip-text text-transparent`}>
-                                {profileCompletion}%
-                            </span>
-                        </Link>
                     </div>
-                    <div className="relative h-2.5 w-full rounded-full bg-muted overflow-hidden">
-                        <div
-                            className={`h-full rounded-full bg-linear-to-r ${completionGradient(profileCompletion)} transition-all duration-700`}
-                            style={{ width: `${profileCompletion}%` }}
-                        />
-                        <div className="absolute top-0 bottom-0" style={{ left: "60%" }}>
-                            <div className="w-0.5 h-full bg-background/70" />
-                        </div>
-                    </div>
-                    <p className={`text-[10px] font-medium ${completionText(profileCompletion)}`}>
-                        {profileCompletion >= 60 ? "✓ Unlocked — you can apply for jobs" : `Unlock at 60% · ${60 - profileCompletion}% remaining`}
-                    </p>
                 </div>
             )}
 
             {/* Personal Info */}
             {resumeLoading ? (
-                <div className="rounded-2xl border border-border/50 bg-card overflow-hidden animate-pulse">
-                    <div className="px-5 py-4 border-b border-border/40 flex gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-muted" />
+                <div className="rounded-2xl border border-border/40 bg-card overflow-hidden animate-pulse">
+                    <div className="px-5 py-3.5 border-b border-border/30 flex gap-3">
+                        <div className="h-4 w-4 rounded bg-muted" />
                         <div className="h-4 w-40 bg-muted rounded-lg self-center" />
                     </div>
                     <div className="p-5 grid grid-cols-2 gap-2">
@@ -125,7 +157,7 @@ export const JobSeekerSection = ({
                 </div>
             ) : resume && (resume.fullName || resume.professionalTitle || resume.email || resume.contactNumber || resume.address || resume.nationality || resume.dateOfBirth || resume.gender) ? (
                 <SectionCard icon={User} title="Personal Information">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-0">
                         <InfoItem icon={User} label="Full Name" value={resume.fullName} />
                         <InfoItem icon={FileText} label="Professional Title" value={resume.professionalTitle} />
                         <InfoItem icon={Mail} label="Resume Email" value={resume.email} />
@@ -157,7 +189,7 @@ export const JobSeekerSection = ({
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2.5">Technical Skills</p>
                                 <div className="flex flex-wrap gap-1.5">
                                     {resume?.technicalSkills?.map((s: string, i: number) => (
-                                        <span key={i} className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-medium">{s}</span>
+                                        <span key={i} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold border border-primary/20 hover:bg-primary/15 transition-colors">{s}</span>
                                     ))}
                                 </div>
                             </div>
@@ -167,7 +199,7 @@ export const JobSeekerSection = ({
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2.5">Soft Skills</p>
                                 <div className="flex flex-wrap gap-1.5">
                                     {resume?.softSkills?.map((s: string, i: number) => (
-                                        <span key={i} className="px-2.5 py-1 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">{s}</span>
+                                        <span key={i} className="px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold border border-green-200 dark:border-green-800 hover:bg-green-200/80 transition-colors">{s}</span>
                                     ))}
                                 </div>
                             </div>
@@ -177,7 +209,7 @@ export const JobSeekerSection = ({
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2.5">Tools &amp; Technologies</p>
                                 <div className="flex flex-wrap gap-1.5">
                                     {resume?.toolsAndTechnologies?.map((t: string, i: number) => (
-                                        <span key={i} className="px-2.5 py-1 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium">{t}</span>
+                                        <span key={i} className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-semibold border border-blue-200 dark:border-blue-800 hover:bg-blue-200/80 transition-colors">{t}</span>
                                     ))}
                                 </div>
                             </div>
@@ -224,7 +256,7 @@ export const JobSeekerSection = ({
                 <SectionCard icon={Code2} title="Projects" count={resume?.projects?.length}>
                     <div className="space-y-3">
                         {resume?.projects?.map((proj: any, i: number) => (
-                            <div key={i} className="rounded-xl border border-border/50 p-4 hover:border-border transition-colors">
+                            <div key={i} className="rounded-xl border border-border/40 p-4 hover:border-primary/30 hover:bg-primary/5 transition-colors">
                                 <div className="flex items-start justify-between gap-2">
                                     <h4 className="text-sm font-semibold">{proj.projectName}</h4>
                                     {proj.projectUrl && (
@@ -241,7 +273,7 @@ export const JobSeekerSection = ({
                                 {proj.technologiesUsed?.length > 0 && (
                                     <div className="flex flex-wrap gap-1 mt-2.5">
                                         {proj.technologiesUsed?.map((t: string, j: number) => (
-                                            <span key={j} className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-medium">{t}</span>
+                                            <span key={j} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold border border-primary/15">{t}</span>
                                         ))}
                                     </div>
                                 )}
@@ -256,7 +288,7 @@ export const JobSeekerSection = ({
                 <SectionCard icon={Award} title="Certifications" count={resume?.certifications?.length}>
                     <div className="space-y-2">
                         {resume?.certifications?.map((cert: any, i: number) => (
-                            <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
+                            <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-border/30 hover:border-border/60 transition-colors bg-card">
                                 <div>
                                     <p className="text-sm font-medium">{cert.certificationName}</p>
                                     {cert.issuingOrganization && <p className="text-xs text-muted-foreground">{cert.issuingOrganization}</p>}
@@ -277,8 +309,8 @@ export const JobSeekerSection = ({
                 <SectionCard icon={Languages} title="Languages" count={resume?.languages?.length}>
                     <div className="flex flex-wrap gap-2">
                         {resume?.languages?.map((lang: any, i: number) => (
-                            <span key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border/50 bg-muted/30 text-sm">
-                                <span className="font-medium">{lang.language}</span>
+                            <span key={i} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/40 bg-muted/20 hover:bg-muted/40 transition-colors">
+                                <span className="text-sm font-medium">{lang.language}</span>
                                 {lang.proficiencyLevel && <span className="text-xs text-muted-foreground">({lang.proficiencyLevel})</span>}
                             </span>
                         ))}
@@ -291,7 +323,7 @@ export const JobSeekerSection = ({
                 <SectionCard icon={Award} title="Awards" count={resume?.awards?.length}>
                     <div className="space-y-2">
                         {resume?.awards?.map((award: any, i: number) => (
-                            <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
+                            <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-border/30 hover:border-border/60 transition-colors bg-card">
                                 <div>
                                     <p className="text-sm font-medium">{award.title}</p>
                                     {award.issuer && <p className="text-xs text-muted-foreground">{award.issuer}</p>}
@@ -312,7 +344,7 @@ export const JobSeekerSection = ({
                 <SectionCard icon={Sparkles} title="Interests">
                     <div className="flex flex-wrap gap-1.5">
                         {resume?.interests?.map((interest: string, i: number) => (
-                            <span key={i} className="px-3 py-1.5 rounded-xl border border-border/50 bg-muted/30 text-sm">{interest}</span>
+                            <span key={i} className="px-3 py-1.5 rounded-full border border-border/30 bg-muted/20 hover:bg-muted/40 transition-colors text-sm font-medium">{interest}</span>
                         ))}
                     </div>
                 </SectionCard>
@@ -323,7 +355,7 @@ export const JobSeekerSection = ({
                 <SectionCard icon={Users} title="References" count={resume?.references?.length}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {resume?.references?.map((ref: any, i: number) => (
-                            <div key={i} className="rounded-xl border border-border/50 p-4">
+                            <div key={i} className="rounded-xl border border-border/40 p-4 hover:border-border/70 transition-colors">
                                 <p className="text-sm font-semibold">{ref.name}</p>
                                 {ref.designation && (
                                     <p className="text-xs text-muted-foreground mt-0.5">

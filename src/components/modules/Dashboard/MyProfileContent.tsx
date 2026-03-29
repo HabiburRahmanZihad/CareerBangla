@@ -16,11 +16,11 @@ import { IApplication, UserInfo } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     Briefcase, Building2, Camera, CheckCircle2, Clock,
-    ExternalLink, FileText, GithubIcon, Globe,
+    FileText, GithubIcon, Globe,
     LinkedinIcon, Loader2, Mail, MapPin,
     Pencil, Phone, Shield, ShieldCheck,
     Sparkles, Trash2, User, Users,
-    X, XCircle,
+    X, XCircle
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -35,9 +35,9 @@ interface MyProfileContentProps { userInfo: UserInfo; }
 
 // ── Role config ───────────────────────────────────────────────────────────────
 const ROLE_CFG: Record<string, { label: string; bg: string; text: string }> = {
-    JOB_SEEKER:  { label: "Job Seeker",  bg: "bg-primary/10",    text: "text-primary" },
-    RECRUITER:   { label: "Recruiter",   bg: "bg-blue-500/10",   text: "text-blue-600 dark:text-blue-400" },
-    ADMIN:       { label: "Admin",       bg: "bg-red-500/10",    text: "text-red-600 dark:text-red-400" },
+    JOB_SEEKER: { label: "Job Seeker", bg: "bg-primary/10", text: "text-primary" },
+    RECRUITER: { label: "Recruiter", bg: "bg-blue-500/10", text: "text-blue-600 dark:text-blue-400" },
+    ADMIN: { label: "Admin", bg: "bg-red-500/10", text: "text-red-600 dark:text-red-400" },
     SUPER_ADMIN: { label: "Super Admin", bg: "bg-purple-500/10", text: "text-purple-600 dark:text-purple-400" },
 };
 
@@ -93,14 +93,14 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
     const subtitle = isRecruiter && recruiter?.companyName
         ? `${recruiter.designation ? recruiter.designation + " · " : ""}${recruiter.companyName}`
         : !isRecruiter && resume?.professionalTitle
-        ? resume.professionalTitle
-        : "";
+            ? resume.professionalTitle
+            : "";
 
     const coverGradient = isAdmin
         ? "from-red-600 via-red-500 to-orange-500"
         : isRecruiter
-        ? "from-blue-600 via-blue-500 to-cyan-500"
-        : "from-primary via-primary/90 to-primary/75";
+            ? "from-blue-600 via-blue-500 to-cyan-500"
+            : "from-primary via-primary/90 to-primary/75";
 
     // ── Photo upload ─────────────────────────────────────────────────────────
     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -150,34 +150,21 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
     };
 
     return (
-        <div className="space-y-6 max-w-5xl pb-10">
-
-            {/* ── Page heading ─────────────────────────────────────────────── */}
-            <div className="flex items-center justify-between flex-wrap gap-3">
-                <div>
-                    <h1 className="text-2xl font-extrabold tracking-tight">My Profile</h1>
-                    <p className="text-sm text-muted-foreground mt-0.5">Manage your account and personal information</p>
-                </div>
-                {isJobSeeker && (
-                    <Link href="/dashboard/my-resume">
-                        <Button size="sm" variant="outline" className="gap-1.5 rounded-xl">
-                            <Pencil className="h-3.5 w-3.5" /> Edit Resume
-                        </Button>
-                    </Link>
-                )}
-            </div>
+        <div className="space-y-6 w-full pb-10 px-0 sm:px-2 md:px-4">
 
             {/* ── Hero card ────────────────────────────────────────────────── */}
             <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
                 {/* Cover gradient */}
-                <div className={`relative h-28 sm:h-36 bg-linear-to-br ${coverGradient}`}>
+                <div className={`relative h-44 sm:h-52 bg-linear-to-br ${coverGradient}`}>
                     <div className="pointer-events-none absolute inset-0 opacity-20"
                         style={{ backgroundImage: "radial-gradient(circle,white 1px,transparent 1px)", backgroundSize: "20px 20px" }} />
-                    <div className="pointer-events-none absolute -top-8 -right-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+                    {/* Floating orbs */}
+                    <div className="pointer-events-none absolute -top-8 -right-8 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+                    <div className="pointer-events-none absolute bottom-4 -left-6 h-20 w-20 rounded-full bg-white/10 blur-2xl" />
                     {isJobSeeker && (
                         <button type="button" onClick={() => photoInputRef.current?.click()}
                             disabled={isUploadingPhoto}
-                            className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/25 backdrop-blur hover:bg-black/35 transition text-white text-xs font-medium">
+                            className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/25 backdrop-blur-sm hover:bg-black/35 transition text-white text-xs font-semibold border border-white/20 shadow-sm">
                             {isUploadingPhoto
                                 ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                 : <Camera className="h-3.5 w-3.5" />}
@@ -189,22 +176,23 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                 </div>
 
                 {/* Avatar + info row */}
-                <div className="px-5 sm:px-7 pb-6">
-                    <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-12 sm:-mt-14">
-                        {/* Avatar */}
+                <div className="px-5 sm:px-7 pb-0">
+                    <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-11 sm:-mt-13">
+                        {/* Avatar with gradient ring */}
                         <div className="relative shrink-0">
-                            <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl border-4 border-background overflow-hidden bg-muted shadow-lg">
-                                {avatarSrc ? (
-                                    <Image src={avatarSrc} alt={userInfo.name} fill className="object-cover" />
-                                ) : (
-                                    <div className={`h-full w-full flex items-center justify-center text-3xl font-extrabold ${
-                                        isAdmin ? "bg-red-50 dark:bg-red-950/30 text-red-600"
-                                        : isRecruiter ? "bg-blue-50 dark:bg-blue-950/30 text-blue-600"
-                                        : "bg-primary/10 text-primary"
-                                    }`}>
-                                        {userInfo.name?.charAt(0)?.toUpperCase() || "U"}
-                                    </div>
-                                )}
+                            <div className={`h-22 w-22 sm:h-26 sm:w-26 rounded-2xl p-0.75 bg-linear-to-br ${coverGradient} shadow-lg`}>
+                                <div className="h-full w-full rounded-[11px] sm:rounded-[13px] overflow-hidden bg-muted">
+                                    {avatarSrc ? (
+                                        <Image src={avatarSrc} alt={userInfo.name} fill className="object-cover" />
+                                    ) : (
+                                        <div className={`h-full w-full flex items-center justify-center text-3xl font-extrabold ${isAdmin ? "bg-red-50 dark:bg-red-950/30 text-red-600"
+                                                : isRecruiter ? "bg-blue-50 dark:bg-blue-950/30 text-blue-600"
+                                                    : "bg-primary/10 text-primary"
+                                            }`}>
+                                            {userInfo.name?.charAt(0)?.toUpperCase() || "U"}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             {isRecruiter && recruiter?.companyLogo && (
                                 <div className="absolute -bottom-1 -right-1 h-9 w-9 rounded-xl border-2 border-background overflow-hidden bg-white shadow">
@@ -214,33 +202,32 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                         </div>
 
                         {/* Name + badges */}
-                        <div className="flex-1 min-w-0 sm:pb-1 space-y-1.5">
+                        <div className="flex-1 min-w-0 sm:pb-4 pt-2 space-y-1.5">
                             <div className="flex flex-wrap items-center gap-2">
-                                <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight">{userInfo.name}</h2>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${roleCfg.bg} ${roleCfg.text}`}>
+                                <h2 className="text-xl sm:text-2xl font-black tracking-tight">{userInfo.name}</h2>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${roleCfg.bg} ${roleCfg.text}`}>
                                     {roleCfg.label}
                                 </span>
                                 {userInfo.emailVerified && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold">
                                         <ShieldCheck className="h-3 w-3" /> Verified
                                     </span>
                                 )}
                                 {premiumActive && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-semibold">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold">
                                         <Sparkles className="h-3 w-3" /> Career Boost
                                     </span>
                                 )}
                                 {isHired && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold">
                                         <CheckCircle2 className="h-3 w-3" /> Hired
                                     </span>
                                 )}
                                 {isRecruiter && recruiter?.status && recruiter.status !== "APPROVED" && (
-                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${
-                                        recruiter.status === "PENDING"
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold border ${recruiter.status === "PENDING"
                                             ? "bg-yellow-50 border-yellow-200 text-yellow-700 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-400"
                                             : "bg-red-50 border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400"
-                                    }`}>
+                                        }`}>
                                         {recruiter.status === "PENDING" ? "Pending Approval" : "Rejected"}
                                     </span>
                                 )}
@@ -271,117 +258,122 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                         </div>
                     </div>
                 </div>
+
+                {/* Stats strip — job seekers only */}
+                {isJobSeeker && (
+                    <div className="border-t border-border/30 grid grid-cols-3 divide-x divide-border/30 mt-4">
+                        {[
+                            { label: "Applied", value: userInfo.applications?.length ?? 0 },
+                            { label: "Hired", value: isHired ? "Yes ✓" : "—" },
+                            { label: "Score", value: `${profileCompletion}%` },
+                        ].map(({ label, value }) => (
+                            <div key={label} className="py-3.5 flex flex-col items-center gap-0.5 hover:bg-muted/20 transition-colors cursor-default">
+                                <span className="text-lg font-black">{value}</span>
+                                <span className="text-[10px] font-semibold text-muted-foreground tracking-wide">{label}</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* ── Two-column layout ─────────────────────────────────────────── */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
 
                 {/* ══ LEFT SIDEBAR ═══════════════════════════════════════════ */}
                 <div className="lg:col-span-1 space-y-4">
 
                     {/* Account Details */}
                     <SectionCard icon={Shield} title="Account Details">
-                        <div className="space-y-2">
-                            <InfoItem icon={User} label="Full Name" value={userInfo.name} />
-                            <InfoItem icon={Mail} label="Email Address" value={userInfo.email} />
-
-                            {/* Phone — editable inline */}
-                            <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
-                                <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                                    <Phone className="h-3.5 w-3.5 text-primary" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Phone Number</p>
-                                    {isEditingPhone ? (
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                            <Input autoFocus type="tel" value={phoneValue}
-                                                onChange={(e) => setPhoneValue(e.target.value)}
-                                                placeholder="01XXXXXXXXX"
-                                                className="h-7 text-xs rounded-lg px-2" />
-                                            <button type="button" title="Save phone number"
-                                                onClick={handlePhoneSave} disabled={isSavingPhone}
-                                                className="h-7 px-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-1 hover:opacity-90 transition disabled:opacity-50 shrink-0">
-                                                {isSavingPhone ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
-                                            </button>
-                                            <button type="button" title="Cancel editing"
-                                                onClick={() => { setIsEditingPhone(false); setPhoneValue(userInfo.phone || ""); }}
-                                                className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted transition shrink-0">
-                                                <X className="h-3.5 w-3.5" />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center justify-between gap-2 mt-0.5">
-                                            <p className="text-sm font-medium">
-                                                {phoneValue || <span className="text-muted-foreground/50 italic text-xs">Not set</span>}
-                                            </p>
-                                            <button type="button" title="Edit phone number"
-                                                onClick={() => setIsEditingPhone(true)}
-                                                className="h-6 w-6 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition shrink-0">
-                                                <Pencil className="h-3 w-3" />
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            <InfoItem icon={Shield} label="Role" value={userInfo.role?.replace("_", " ").toLowerCase()} />
-                            <InfoItem
-                                icon={userInfo.status === "ACTIVE" ? CheckCircle2 : XCircle}
-                                label="Account Status"
-                                value={userInfo.status?.toLowerCase() || "active"}
-                            />
-                            {userInfo.referralCode && (
-                                <InfoItem icon={Users} label="Referral Code" value={userInfo.referralCode} />
+                        {/* Status pills */}
+                        <div className="flex flex-wrap gap-1.5 pb-4 mb-2 border-b border-border/20">
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${userInfo.status === "ACTIVE"
+                                    ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                    : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                                }`}>
+                                {userInfo.status === "ACTIVE"
+                                    ? <CheckCircle2 className="h-3 w-3" />
+                                    : <XCircle className="h-3 w-3" />}
+                                {userInfo.status?.toLowerCase() || "active"}
+                            </span>
+                            {userInfo.emailVerified && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                                    <ShieldCheck className="h-3 w-3" /> Verified
+                                </span>
                             )}
-                            <InfoItem
-                                icon={userInfo.emailVerified ? CheckCircle2 : XCircle}
-                                label="Email Verified"
-                                value={userInfo.emailVerified ? "Yes" : "No"}
-                            />
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${roleCfg.bg} ${roleCfg.text}`}>
+                                {roleCfg.label}
+                            </span>
                         </div>
+
+                        <InfoItem icon={User} label="Full Name" value={userInfo.name} />
+                        <InfoItem icon={Mail} label="Email Address" value={userInfo.email} />
+
+                        {/* Phone — editable inline */}
+                        <div className="flex items-start gap-2.5 py-2.5 border-b border-border/20 last:border-0">
+                            <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                                <Phone className="h-3 w-3 text-primary/80" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Phone Number</p>
+                                {isEditingPhone ? (
+                                    <div className="flex items-center gap-1.5 mt-1">
+                                        <Input autoFocus type="tel" value={phoneValue}
+                                            onChange={(e) => setPhoneValue(e.target.value)}
+                                            placeholder="01XXXXXXXXX"
+                                            className="h-7 text-xs rounded-lg px-2" />
+                                        <button type="button" title="Save phone number"
+                                            onClick={handlePhoneSave} disabled={isSavingPhone}
+                                            className="h-7 px-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-1 hover:opacity-90 transition disabled:opacity-50 shrink-0">
+                                            {isSavingPhone ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
+                                        </button>
+                                        <button type="button" title="Cancel editing"
+                                            onClick={() => { setIsEditingPhone(false); setPhoneValue(userInfo.phone || ""); }}
+                                            className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted transition shrink-0">
+                                            <X className="h-3.5 w-3.5" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-between gap-2 mt-0.5">
+                                        <p className="text-sm font-medium">
+                                            {phoneValue || <span className="text-muted-foreground/50 italic text-xs">Not set</span>}
+                                        </p>
+                                        <button type="button" title="Edit phone number"
+                                            onClick={() => setIsEditingPhone(true)}
+                                            className="h-6 w-6 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition shrink-0">
+                                            <Pencil className="h-3 w-3" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {userInfo.referralCode && (
+                            <InfoItem icon={Users} label="Referral Code" value={userInfo.referralCode} />
+                        )}
                     </SectionCard>
 
                     {/* Social Links — Job Seeker */}
                     {isJobSeeker && (resume?.linkedinUrl || resume?.githubUrl || resume?.portfolioUrl) && (
                         <SectionCard icon={Globe} title="Social Links">
-                            <div className="space-y-1.5">
-                                {resume?.linkedinUrl && (
-                                    <a href={resume.linkedinUrl} target="_blank" rel="noopener noreferrer"
-                                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition group">
-                                        <div className="h-7 w-7 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
-                                            <LinkedinIcon className="h-3.5 w-3.5 text-blue-600" />
-                                        </div>
-                                        <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground truncate flex-1">LinkedIn</span>
-                                        <ExternalLink className="h-3 w-3 text-muted-foreground shrink-0" />
+                            <div className="grid grid-cols-3 gap-2">
+                                {[
+                                    { url: resume?.linkedinUrl, label: "LinkedIn", icon: LinkedinIcon, cls: "bg-[#0A66C2]/10 text-[#0A66C2] border-[#0A66C2]/20 hover:bg-[#0A66C2]/20" },
+                                    { url: resume?.githubUrl, label: "GitHub", icon: GithubIcon, cls: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700" },
+                                    { url: resume?.portfolioUrl, label: "Portfolio", icon: Globe, cls: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800 hover:bg-green-200 dark:hover:bg-green-900/50" },
+                                ].filter(l => l.url).map(({ url, label, icon: Icon, cls }) => (
+                                    <a key={label} href={url!} target="_blank" rel="noopener noreferrer"
+                                        className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-colors ${cls}`}>
+                                        <Icon className="h-5 w-5" />
+                                        <span className="text-[10px] font-bold">{label}</span>
                                     </a>
-                                )}
-                                {resume?.githubUrl && (
-                                    <a href={resume.githubUrl} target="_blank" rel="noopener noreferrer"
-                                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/60 transition group">
-                                        <div className="h-7 w-7 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                                            <GithubIcon className="h-3.5 w-3.5 text-foreground" />
-                                        </div>
-                                        <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground truncate flex-1">GitHub</span>
-                                        <ExternalLink className="h-3 w-3 text-muted-foreground shrink-0" />
-                                    </a>
-                                )}
-                                {resume?.portfolioUrl && (
-                                    <a href={resume.portfolioUrl} target="_blank" rel="noopener noreferrer"
-                                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-green-50 dark:hover:bg-green-950/20 transition group">
-                                        <div className="h-7 w-7 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
-                                            <Globe className="h-3.5 w-3.5 text-green-600" />
-                                        </div>
-                                        <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground truncate flex-1">Portfolio</span>
-                                        <ExternalLink className="h-3 w-3 text-muted-foreground shrink-0" />
-                                    </a>
-                                )}
+                                ))}
                             </div>
                         </SectionCard>
                     )}
                 </div>
 
                 {/* ══ MAIN CONTENT ════════════════════════════════════════════ */}
-                <div className="lg:col-span-2 space-y-4">
+                <div className="sm:col-span-2 lg:col-span-2 space-y-4">
 
                     {/* ── JOB SEEKER ── */}
                     {isJobSeeker && (
@@ -401,9 +393,9 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                             {recruiterLoading ? (
                                 <div className="space-y-4">
                                     {[0, 1].map(i => (
-                                        <div key={i} className="rounded-2xl border border-border/50 bg-card overflow-hidden animate-pulse">
-                                            <div className="px-5 py-4 border-b border-border/40 flex gap-3">
-                                                <div className="h-8 w-8 rounded-lg bg-muted" />
+                                        <div key={i} className="rounded-2xl border border-border/40 bg-card overflow-hidden animate-pulse">
+                                            <div className="px-5 py-3.5 border-b border-border/30 flex gap-3">
+                                                <div className="h-4 w-4 rounded bg-muted" />
                                                 <div className="h-4 w-40 bg-muted rounded-lg self-center" />
                                             </div>
                                             <div className="p-5 grid grid-cols-2 gap-2">
@@ -416,14 +408,12 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                                 <>
                                     {/* Approval status banner */}
                                     {recruiter.status && recruiter.status !== "APPROVED" && (
-                                        <div className={`rounded-2xl border p-4 flex items-start gap-3 ${
-                                            recruiter.status === "PENDING"
+                                        <div className={`rounded-2xl border p-4 flex items-start gap-3 ${recruiter.status === "PENDING"
                                                 ? "bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800"
                                                 : "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800"
-                                        }`}>
-                                            <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${
-                                                recruiter.status === "PENDING" ? "bg-yellow-100 dark:bg-yellow-900/40" : "bg-red-100 dark:bg-red-900/40"
                                             }`}>
+                                            <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${recruiter.status === "PENDING" ? "bg-yellow-100 dark:bg-yellow-900/40" : "bg-red-100 dark:bg-red-900/40"
+                                                }`}>
                                                 {recruiter.status === "PENDING"
                                                     ? <Clock className="h-4 w-4 text-yellow-600" />
                                                     : <XCircle className="h-4 w-4 text-red-600" />}
@@ -442,7 +432,7 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                                     )}
 
                                     <SectionCard icon={Building2} title="Company Information">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-0">
                                             <InfoItem icon={Building2} label="Company Name" value={recruiter.companyName} />
                                             <InfoItem icon={Globe} label="Website" value={recruiter.companyWebsite} href={recruiter.companyWebsite} />
                                             <InfoItem icon={MapPin} label="Address" value={recruiter.companyAddress} />
@@ -452,7 +442,7 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                                     </SectionCard>
 
                                     <SectionCard icon={Shield} title="Recruiter Details">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-0">
                                             <InfoItem icon={User} label="Full Name" value={recruiter.name} />
                                             <InfoItem icon={Briefcase} label="Designation" value={recruiter.designation} />
                                             <InfoItem icon={Mail} label="Email" value={recruiter.email} />
@@ -482,19 +472,31 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                                         </SectionCard>
                                     )}
 
-                                    <div className="rounded-2xl border border-border/50 bg-card p-5">
-                                        <p className="text-sm font-semibold mb-3">Quick Actions</p>
-                                        <div className="flex flex-wrap gap-2">
-                                            <Link href="/recruiter/dashboard/my-jobs">
-                                                <Button variant="outline" size="sm" className="gap-1.5 rounded-xl text-xs">
-                                                    <Briefcase className="h-3.5 w-3.5" /> My Jobs
-                                                </Button>
-                                            </Link>
-                                            <Link href="/recruiter/dashboard/post-job">
-                                                <Button size="sm" className="gap-1.5 rounded-xl text-xs">
-                                                    <Sparkles className="h-3.5 w-3.5" /> Post a Job
-                                                </Button>
-                                            </Link>
+                                    {/* Quick Actions */}
+                                    <div className="rounded-2xl border border-border/40 bg-card overflow-hidden relative hover:border-border/60 transition-colors duration-200">
+                                        <div className="absolute left-0 inset-y-0 w-0.75 bg-linear-to-b from-primary to-primary/10" />
+                                        <div className="px-5 py-3.5 border-b border-border/30 bg-muted/10">
+                                            <p className="text-sm font-semibold tracking-tight">Quick Actions</p>
+                                        </div>
+                                        <div className="p-5">
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <Link href="/recruiter/dashboard/my-jobs">
+                                                    <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border/40 hover:border-border/70 hover:bg-muted/20 transition-colors cursor-pointer">
+                                                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                                            <Briefcase className="h-5 w-5 text-primary" />
+                                                        </div>
+                                                        <span className="text-xs font-bold">My Jobs</span>
+                                                    </div>
+                                                </Link>
+                                                <Link href="/recruiter/dashboard/post-job">
+                                                    <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-primary/30 hover:border-primary/60 hover:bg-primary/5 transition-colors cursor-pointer">
+                                                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                                            <Sparkles className="h-5 w-5 text-primary" />
+                                                        </div>
+                                                        <span className="text-xs font-bold">Post a Job</span>
+                                                    </div>
+                                                </Link>
+                                            </div>
                                         </div>
                                     </div>
                                 </>
