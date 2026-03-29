@@ -304,7 +304,7 @@ const JobDetailsContent = ({ job, userRole, isPremium }: JobDetailsContentProps)
                 <div className="px-6 sm:px-8 pt-4">
                     <div className="flex items-end gap-4 mb-5">
                         {/* Company avatar — gradient ring */}
-                        <div className={`p-[3px] rounded-2xl bg-linear-to-br ${grad} shadow-xl shrink-0`}>
+                        <div className={`p-0.75 rounded-2xl bg-linear-to-br ${grad} shadow-xl shrink-0`}>
                             {job.recruiter?.companyLogo || job.recruiter?.profilePhoto ? (
                                 <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-[14px] border-2 border-card bg-card flex items-center justify-center overflow-hidden shadow-sm">
                                     <Image
