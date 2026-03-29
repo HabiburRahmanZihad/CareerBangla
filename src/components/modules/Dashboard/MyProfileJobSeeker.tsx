@@ -180,44 +180,6 @@ export const JobSeekerSection = ({
                 </SectionCard>
             )}
 
-            {/* Skills */}
-            {(resume?.technicalSkills?.length || resume?.softSkills?.length || resume?.toolsAndTechnologies?.length) ? (
-                <SectionCard icon={Code2} title="Skills">
-                    <div className="space-y-4">
-                        {(resume?.technicalSkills?.length ?? 0) > 0 && (
-                            <div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2.5">Technical Skills</p>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {resume?.technicalSkills?.map((s: string, i: number) => (
-                                        <span key={i} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold border border-primary/20 hover:bg-primary/15 transition-colors">{s}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                        {(resume?.softSkills?.length ?? 0) > 0 && (
-                            <div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2.5">Soft Skills</p>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {resume?.softSkills?.map((s: string, i: number) => (
-                                        <span key={i} className="px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold border border-green-200 dark:border-green-800 hover:bg-green-200/80 transition-colors">{s}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                        {(resume?.toolsAndTechnologies?.length ?? 0) > 0 && (
-                            <div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2.5">Tools &amp; Technologies</p>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {resume?.toolsAndTechnologies?.map((t: string, i: number) => (
-                                        <span key={i} className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-semibold border border-blue-200 dark:border-blue-800 hover:bg-blue-200/80 transition-colors">{t}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </SectionCard>
-            ) : null}
-
             {/* Work Experience */}
             {(resume?.workExperience?.length ?? 0) > 0 && (
                 <SectionCard icon={Briefcase} title="Work Experience" count={resume?.workExperience?.length}>
@@ -334,17 +296,6 @@ export const JobSeekerSection = ({
                                     </span>
                                 )}
                             </div>
-                        ))}
-                    </div>
-                </SectionCard>
-            )}
-
-            {/* Interests */}
-            {(resume?.interests?.length ?? 0) > 0 && (
-                <SectionCard icon={Sparkles} title="Interests">
-                    <div className="flex flex-wrap gap-1.5">
-                        {resume?.interests?.map((interest: string, i: number) => (
-                            <span key={i} className="px-3 py-1.5 rounded-full border border-border/30 bg-muted/20 hover:bg-muted/40 transition-colors text-sm font-medium">{interest}</span>
                         ))}
                     </div>
                 </SectionCard>
