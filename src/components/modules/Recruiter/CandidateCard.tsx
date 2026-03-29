@@ -30,7 +30,7 @@ export const CandidateCard = ({
     return (
         <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
             {/* Header with Avatar */}
-            <CardHeader className="pb-4 border-b">
+            <CardHeader className="pb-3 border-b">
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
                         <div className="relative w-12 h-12 rounded-full overflow-hidden bg-linear-to-br from-primary/20 to-primary/10 shrink-0 border-2 border-primary/20">
@@ -61,7 +61,7 @@ export const CandidateCard = ({
             </CardHeader>
 
             {/* Content */}
-            <CardContent className="pt-4 flex-1 flex flex-col space-y-3">
+            <CardContent className="flex-1 flex flex-col gap-4 py-4">
                 {/* Education */}
                 <div className="bg-muted/50 rounded-lg p-3 space-y-1">
                     <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
@@ -73,7 +73,7 @@ export const CandidateCard = ({
 
                 {/* Contact Info - Only for Premium/Premium Users */}
                 {canViewCv && (
-                    <div className="space-y-1.5">
+                    <div className="space-y-1.5 bg-muted/30 rounded-lg p-3">
                         {candidate.email && (
                             <div className="flex items-center gap-2 text-xs">
                                 <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
@@ -93,8 +93,8 @@ export const CandidateCard = ({
                 <div>
                     <p className="text-xs font-medium text-muted-foreground mb-2">Skills</p>
                     {candidateSkills.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5">
-                            {candidateSkills.slice(0, 5).map((skill) => (
+                        <div className="flex flex-wrap gap-1.5 ">
+                            {candidateSkills.slice(0, 4).map((skill) => (
                                 <Badge
                                     key={skill}
                                     variant="secondary"
@@ -103,9 +103,9 @@ export const CandidateCard = ({
                                     {skill}
                                 </Badge>
                             ))}
-                            {candidateSkills.length > 5 && (
+                            {candidateSkills.length > 4 && (
                                 <Badge variant="outline" className="text-xs font-medium">
-                                    +{candidateSkills.length - 5}
+                                    +{candidateSkills.length - 4}
                                 </Badge>
                             )}
                         </div>
@@ -116,7 +116,7 @@ export const CandidateCard = ({
             </CardContent>
 
             {/* Action Button */}
-            <div className="pt-4 border-t">
+            <div className="border-t px-6 py-3">
                 {canViewCv ? (
                     <Button
                         onClick={onDownload}
