@@ -13,394 +13,28 @@ import { downloadCvForRecruiter, getApplicationsByJob, updateApplicationStatus }
 import { getMyJobs } from "@/services/job.services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { ArrowLeft, BookOpen, Briefcase, Calendar, Code, Crown, ExternalLink, FileText, Globe, Loader2, Lock, Mail, Phone, StickyNote, Star, User } from "lucide-react";
+import {
+    Briefcase,
+    Calendar,
+    CheckCircle,
+    Crown,
+    FileText,
+    Grid3X3,
+    List,
+    Loader2,
+    Lock,
+    Mail,
+    Phone,
+    Search,
+    User,
+    X
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-
-const statusColors: Record<string, string> = {
-    PENDING: "bg-yellow-100 text-yellow-800",
-    SHORTLISTED: "bg-indigo-100 text-indigo-800",
-    INTERVIEW: "bg-blue-100 text-blue-800",
-    HIRED: "bg-green-100 text-green-800",
-    REJECTED: "bg-red-100 text-red-800",
-};
-
-const terminalStatuses = ["HIRED", "REJECTED", "INTERVIEW"];
-
-// Recruiter can only move forward: PENDING → SHORTLISTED → INTERVIEW
-// HIRED is set by Admin only after final verification
-const validTransitions: Record<string, string[]> = {
-    PENDING: ["SHORTLISTED"],
-    SHORTLISTED: ["INTERVIEW"],
-    INTERVIEW: [],
-    HIRED: [],
-    REJECTED: [],
-};
-
-const toPdfBlob = (payload: unknown): Blob => {
-    if (payload instanceof Blob) {
-        return payload;
-    }
-
-    if (payload instanceof ArrayBuffer) {
-        return new Blob([payload], { type: "application/pdf" });
-    }
-
-    if (ArrayBuffer.isView(payload)) {
-        const view = payload as ArrayBufferView;
-        const bytes = new Uint8Array(view.buffer, view.byteOffset || 0, view.byteLength || 0);
-        return new Blob([bytes as unknown as BlobPart], { type: "application/pdf" });
-    }
-
-    if (payload && typeof payload === "object" && "type" in payload && "data" in payload) {
-        const maybeBuffer = payload as { type?: unknown; data?: unknown };
-        if (maybeBuffer.type === "Buffer" && Array.isArray(maybeBuffer.data)) {
-            return new Blob([new Uint8Array(maybeBuffer.data)], { type: "application/pdf" });
-        }
-    }
-
-    return new Blob([payload as BlobPart], { type: "application/pdf" });
-};
-
-interface ApplicationDetailViewProps {
-    app: any;
-    isPremiumRecruiter: boolean;
-    isUpdating: boolean;
-    downloadingCv: string | null;
-    onBack: () => void;
-    onStatusChange: (appId: string, status: string) => void;
-    onDownloadCv: (userId: string, userName: string, applicationId?: string) => void;
-}
-
-const ApplicationDetailView = ({ app, isPremiumRecruiter, isUpdating, downloadingCv, onBack, onStatusChange, onDownloadCv }: ApplicationDetailViewProps) => {
-    const nextStatuses = validTransitions[app.status] || [];
-    const isTerminal = terminalStatuses.includes(app.status);
-    const resume = app.user?.resume;
-
-    return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <Button variant="ghost" onClick={onBack}>
-                    <ArrowLeft className="h-4 w-4 mr-2" /> Back to Applications
-                </Button>
-                <Badge className={statusColors[app.status] || ""}>{app.status}</Badge>
-            </div>
-
-            {/* Candidate Profile Card */}
-            <Card>
-                <CardContent className="pt-6">
-                    <div className="flex items-start gap-4">
-                        <div className="relative w-16 h-16 rounded-full overflow-hidden bg-muted shrink-0">
-                            {resume?.profilePhoto || app.user?.image ? (
-                                <Image
-                                    src={resume?.profilePhoto || app.user.image}
-                                    alt={app.user?.name || ""}
-                                    fill
-                                    className="object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                    <User className="w-8 h-8 text-muted-foreground" />
-                                </div>
-                            )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <h2 className="text-xl font-bold">{app.user?.name || "Unknown"}</h2>
-                            {resume?.professionalTitle && (
-                                <p className="text-muted-foreground">{resume.professionalTitle}</p>
-                            )}
-                            <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
-                                {isPremiumRecruiter ? (
-                                    <>
-                                        {app.user?.email && (
-                                            <span className="flex items-center gap-1">
-                                                <Mail className="w-3.5 h-3.5" /> {app.user.email}
-                                            </span>
-                                        )}
-                                        {resume?.contactNumber && (
-                                            <span className="flex items-center gap-1">
-                                                <Phone className="w-3.5 h-3.5" /> {resume.contactNumber}
-                                            </span>
-                                        )}
-                                    </>
-                                ) : (
-                                    <span className="flex items-center gap-1 text-xs">
-                                        <Lock className="w-3 h-3" /> Contact info hidden — upgrade to Career Boost
-                                    </span>
-                                )}
-                                {resume?.linkedinUrl && (
-                                    <a href={resume.linkedinUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground">
-                                        <ExternalLink className="w-3.5 h-3.5" /> LinkedIn
-                                    </a>
-                                )}
-                                {resume?.githubUrl && (
-                                    <a href={resume.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground">
-                                        <Globe className="w-3.5 h-3.5" /> GitHub
-                                    </a>
-                                )}
-                                {resume?.portfolioUrl && (
-                                    <a href={resume.portfolioUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground">
-                                        <Globe className="w-3.5 h-3.5" /> Portfolio
-                                    </a>
-                                )}
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-2 shrink-0">
-                            {!isTerminal && nextStatuses.length > 0 && (
-                                <Select value="" onValueChange={(s) => onStatusChange(app.id, s)} disabled={isUpdating}>
-                                    <SelectTrigger className="w-44 h-8 text-xs">
-                                        <SelectValue placeholder="Change status..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {nextStatuses.map((s) => (
-                                            <SelectItem key={s} value={s}>
-                                                {s.charAt(0) + s.slice(1).toLowerCase()}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            )}
-                            {isPremiumRecruiter ? (
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="text-xs"
-                                    disabled={downloadingCv === app.user?.id}
-                                    onClick={() => onDownloadCv(app.user?.id, app.user?.name || "Applicant", app.id)}
-                                >
-                                    {downloadingCv === app.user?.id ? (
-                                        <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Downloading...</>
-                                    ) : (
-                                        <><FileText className="w-3.5 h-3.5 mr-1" /> Download CV</>
-                                    )}
-                                </Button>
-                            ) : (
-                                <Button variant="outline" size="sm" className="text-xs opacity-50 cursor-not-allowed" disabled>
-                                    <Lock className="w-3.5 h-3.5 mr-1" /> CV (Career Boost)
-                                </Button>
-                            )}
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Application Status Banner */}
-            {app.status === "INTERVIEW" && app.interviewDate && (
-                <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800">
-                    <CardContent className="pt-4 pb-4">
-                        <h3 className="font-semibold text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-2">
-                            <Calendar className="w-4 h-4" /> Interview Scheduled
-                        </h3>
-                        <p className="text-sm text-blue-700 dark:text-blue-300">
-                            {new Date(app.interviewDate).toLocaleDateString("en-US", {
-                                weekday: "long", year: "numeric", month: "long", day: "numeric",
-                            })}
-                        </p>
-                        {app.interviewNote && (
-                            <p className="text-sm text-blue-600 dark:text-blue-400 mt-1 flex items-center gap-1">
-                                <StickyNote className="w-3.5 h-3.5" /> {app.interviewNote}
-                            </p>
-                        )}
-                    </CardContent>
-                </Card>
-            )}
-
-            {app.status === "HIRED" && (
-                <Card className="border-green-200 bg-green-50 dark:bg-green-950/30 dark:border-green-800">
-                    <CardContent className="pt-4 pb-4">
-                        <h3 className="font-semibold text-green-700 dark:text-green-300 mb-2">Hired</h3>
-                        {app.hiredCompany && <p className="text-sm text-green-700 dark:text-green-300">Company: {app.hiredCompany}</p>}
-                        {app.hiredDesignation && <p className="text-sm text-green-600 dark:text-green-400">Designation: {app.hiredDesignation}</p>}
-                        {app.hiredDate && <p className="text-xs text-green-500 mt-1">Hired on {new Date(app.hiredDate).toLocaleDateString()}</p>}
-                    </CardContent>
-                </Card>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Cover Letter */}
-                {app.coverLetter && (
-                    <Card className="md:col-span-2">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <FileText className="w-4 h-4" /> Cover Letter
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{app.coverLetter}</p>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Professional Summary */}
-                {resume?.professionalSummary && (
-                    <Card className="md:col-span-2">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <User className="w-4 h-4" /> Professional Summary
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground">{resume.professionalSummary}</p>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Skills */}
-                {(resume?.technicalSkills?.length > 0 || resume?.skills?.length > 0) && (
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <Code className="w-4 h-4" /> Skills
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            {resume?.technicalSkills?.length > 0 && (
-                                <div>
-                                    <p className="text-xs font-medium text-muted-foreground mb-1">Technical</p>
-                                    <div className="flex flex-wrap gap-1">
-                                        {resume.technicalSkills.map((skill: string) => (
-                                            <Badge key={skill} variant="secondary" className="text-xs">{skill}</Badge>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                            {resume?.softSkills?.length > 0 && (
-                                <div>
-                                    <p className="text-xs font-medium text-muted-foreground mb-1">Soft Skills</p>
-                                    <div className="flex flex-wrap gap-1">
-                                        {resume.softSkills.map((skill: string) => (
-                                            <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                            {!resume?.technicalSkills?.length && resume?.skills?.length > 0 && (
-                                <div className="flex flex-wrap gap-1">
-                                    {resume.skills.map((skill: string) => (
-                                        <Badge key={skill} variant="secondary" className="text-xs">{skill}</Badge>
-                                    ))}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Work Experience */}
-                {resume?.workExperience?.length > 0 && (
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <Briefcase className="w-4 h-4" /> Work Experience
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {resume.workExperience.map((exp: any) => (
-                                <div key={exp.id} className="border-l-2 border-muted pl-3">
-                                    <p className="font-medium text-sm">{exp.jobTitle}</p>
-                                    <p className="text-xs text-muted-foreground">{exp.companyName}{exp.location ? ` · ${exp.location}` : ""}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {new Date(exp.startDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
-                                        {" — "}
-                                        {exp.currentlyWorking ? "Present" : exp.endDate ? new Date(exp.endDate).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : ""}
-                                    </p>
-                                    {exp.responsibilities?.length > 0 && (
-                                        <ul className="mt-1 space-y-0.5">
-                                            {exp.responsibilities.slice(0, 3).map((r: string, i: number) => (
-                                                <li key={i} className="text-xs text-muted-foreground flex gap-1"><span>•</span>{r}</li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
-                            ))}
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Education */}
-                {resume?.education?.length > 0 && (
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <BookOpen className="w-4 h-4" /> Education
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            {resume.education.map((edu: any) => (
-                                <div key={edu.id} className="border-l-2 border-muted pl-3">
-                                    <p className="font-medium text-sm">{edu.degree}{edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}</p>
-                                    <p className="text-xs text-muted-foreground">{edu.institutionName}{edu.location ? ` · ${edu.location}` : ""}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {new Date(edu.startDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
-                                        {" — "}
-                                        {edu.currentlyStudying ? "Present" : edu.endDate ? new Date(edu.endDate).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : ""}
-                                    </p>
-                                    {edu.cgpaOrResult && <p className="text-xs text-muted-foreground">Result: {edu.cgpaOrResult}</p>}
-                                </div>
-                            ))}
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Certifications */}
-                {resume?.certifications?.length > 0 && (
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <Star className="w-4 h-4" /> Certifications
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            {resume.certifications.map((cert: any) => (
-                                <div key={cert.id} className="border-l-2 border-muted pl-3">
-                                    <p className="font-medium text-sm">{cert.certificationName}</p>
-                                    <p className="text-xs text-muted-foreground">{cert.issuingOrganization}</p>
-                                    <p className="text-xs text-muted-foreground">{new Date(cert.issueDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })}</p>
-                                    {cert.credentialUrl && (
-                                        <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary flex items-center gap-1 mt-0.5">
-                                            <ExternalLink className="w-3 h-3" /> View Credential
-                                        </a>
-                                    )}
-                                </div>
-                            ))}
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Application Info */}
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-base">Application Info</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Applied</span>
-                            <span>{app.createdAt ? formatDistanceToNow(new Date(app.createdAt), { addSuffix: true }) : "—"}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Status</span>
-                            <Badge className={statusColors[app.status] || ""}>{app.status}</Badge>
-                        </div>
-                        {resume?.nationality && (
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Nationality</span>
-                                <span>{resume.nationality}</span>
-                            </div>
-                        )}
-                        {resume?.address && (
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Location</span>
-                                <span>{resume.address}</span>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
-    );
-};
+import { ApplicationDetailView } from "./ApplicationDetailView";
+import { statusConfig, terminalStatuses, toPdfBlob, validTransitions } from "./applicationsConstants";
 
 const RecruiterApplicationsContent = () => {
     const queryClient = useQueryClient();
@@ -412,6 +46,7 @@ const RecruiterApplicationsContent = () => {
     } | null>(null);
     const [selectedApp, setSelectedApp] = useState<any | null>(null);
     const [downloadingCv, setDownloadingCv] = useState<string | null>(null);
+    const [layoutMode, setLayoutMode] = useState<"grid" | "list">("grid");
     const [searchTerm, setSearchTerm] = useState("");
     const [skillsFilter, setSkillsFilter] = useState("");
     const [educationFilter, setEducationFilter] = useState("");
@@ -511,64 +146,149 @@ const RecruiterApplicationsContent = () => {
     }
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Applications</h1>
-
-            {jobsLoading ? (
-                <Skeleton className="h-10 w-64" />
-            ) : (
-                <div>
-                    <div className="max-w-sm mb-4">
-                        <Select value={selectedJobId} onValueChange={setSelectedJobId}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a job to view applications" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {jobs.map((job: any) => (
-                                    <SelectItem key={job.id} value={job.id}>
-                                        {job.title} ({job._count?.applications || 0} apps)
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+        <div className="space-y-6 pb-10">
+            {/* Hero Section */}
+            <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-primary to-primary/70 text-primary-foreground p-8 md:p-12 shadow-xl border border-primary/20">
+                <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white/10 blur-3xl opacity-50" />
+                <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-48 h-48 rounded-full bg-white/10 blur-3xl opacity-50" />
+                <div className="relative z-10 max-w-2xl">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm border border-white/20 text-sm font-medium mb-4">
+                        <Briefcase className="w-4 h-4" />
+                        <span>Applicant Tracking</span>
                     </div>
+                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Applications</h1>
+                    <p className="text-primary-foreground/90 text-sm sm:text-base">
+                        Manage and review all job applications in one place. Shortlist talent, schedule interviews, and make hiring decisions.
+                    </p>
+                </div>
+            </div>
 
-                    {/* Filters */}
+            {/* Job Selector */}
+            {jobsLoading ? (
+                <div className="space-y-4">
+                    <Skeleton className="h-12 rounded-2xl" />
+                    <Skeleton className="h-20 rounded-2xl" />
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {/* Job Selection Card */}
+                    <Card className="border-border/50 bg-card/60 backdrop-blur-xl shadow-sm overflow-hidden">
+                        <CardContent className="p-6">
+                            <Label className="uppercase text-xs font-bold text-muted-foreground tracking-wider mb-3 block">
+                                Select a Position
+                            </Label>
+                            <Select value={selectedJobId} onValueChange={setSelectedJobId}>
+                                <SelectTrigger className="h-11 bg-muted/50 border-muted-foreground/20">
+                                    <SelectValue placeholder="Choose a job to view applications..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {jobs.length === 0 ? (
+                                        <SelectItem value="_empty" disabled>
+                                            No jobs found
+                                        </SelectItem>
+                                    ) : (
+                                        jobs.map((job: any) => (
+                                            <SelectItem key={job.id} value={job.id}>
+                                                <div className="flex items-center gap-2">
+                                                    <span>{job.title}</span>
+                                                    <Badge variant="secondary" className="ml-2">
+                                                        {job._count?.applications || 0}
+                                                    </Badge>
+                                                </div>
+                                            </SelectItem>
+                                        ))
+                                    )}
+                                </SelectContent>
+                            </Select>
+                        </CardContent>
+                    </Card>
+
+                    {/* Advanced Filters */}
                     {selectedJobId && (
-                        <Card className="bg-muted/50">
-                            <CardContent className="pt-6">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                                    <Input
-                                        placeholder="Search name or email..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="text-xs"
-                                    />
-                                    <Input
-                                        placeholder="Skills (comma separated)"
-                                        value={skillsFilter}
-                                        onChange={(e) => setSkillsFilter(e.target.value)}
-                                        className="text-xs"
-                                    />
-                                    <Input
-                                        placeholder="Education"
-                                        value={educationFilter}
-                                        onChange={(e) => setEducationFilter(e.target.value)}
-                                        className="text-xs"
-                                    />
-                                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                        <SelectTrigger className="text-xs">
-                                            <SelectValue placeholder="Filter by status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All Statuses</SelectItem>
-                                            <SelectItem value="PENDING">Pending</SelectItem>
-                                            <SelectItem value="SHORTLISTED">Shortlisted</SelectItem>
-                                            <SelectItem value="INTERVIEW">Interview</SelectItem>
-                                            <SelectItem value="HIRED">Hired</SelectItem>
-                                            <SelectItem value="REJECTED">Rejected</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                        <Card className="border-border/50 bg-card/60 backdrop-blur-xl shadow-sm overflow-hidden">
+                            <CardContent className="p-6">
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="uppercase text-xs font-bold text-muted-foreground tracking-wider">
+                                            Filters
+                                        </Label>
+                                        {(searchTerm || skillsFilter || educationFilter || statusFilter !== "all") && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setSearchTerm("");
+                                                    setSkillsFilter("");
+                                                    setEducationFilter("");
+                                                    setStatusFilter("all");
+                                                }}
+                                                className="h-7 text-xs"
+                                            >
+                                                <X className="w-3 h-3 mr-1" /> Clear All
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                            <Input
+                                                placeholder="Search by name or email..."
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                className="pl-9 h-10 bg-muted/50 border-muted-foreground/20 placeholder:text-muted-foreground/60"
+                                            />
+                                        </div>
+                                        <Input
+                                            placeholder="Skills (comma separated)"
+                                            value={skillsFilter}
+                                            onChange={(e) => setSkillsFilter(e.target.value)}
+                                            className="h-10 bg-muted/50 border-muted-foreground/20 placeholder:text-muted-foreground/60"
+                                        />
+                                        <Input
+                                            placeholder="Education"
+                                            value={educationFilter}
+                                            onChange={(e) => setEducationFilter(e.target.value)}
+                                            className="h-10 bg-muted/50 border-muted-foreground/20 placeholder:text-muted-foreground/60"
+                                        />
+                                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                            <SelectTrigger className="h-10 bg-muted/50 border-muted-foreground/20">
+                                                <SelectValue placeholder="All Statuses" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All Statuses</SelectItem>
+                                                <SelectItem value="PENDING">Pending</SelectItem>
+                                                <SelectItem value="SHORTLISTED">Shortlisted</SelectItem>
+                                                <SelectItem value="INTERVIEW">Interview</SelectItem>
+                                                <SelectItem value="HIRED">Hired</SelectItem>
+                                                <SelectItem value="REJECTED">Rejected</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    {/* Grid/List Toggle */}
+                                    <div className="flex items-center justify-between pt-2 border-t border-border/30">
+                                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">View</p>
+                                        <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg">
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant={layoutMode === "grid" ? "default" : "ghost"}
+                                                onClick={() => setLayoutMode("grid")}
+                                                className="h-8 px-3"
+                                            >
+                                                <Grid3X3 className="w-4 h-4 mr-1.5" /> Grid
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant={layoutMode === "list" ? "default" : "ghost"}
+                                                onClick={() => setLayoutMode("list")}
+                                                className="h-8 px-3"
+                                            >
+                                                <List className="w-4 h-4 mr-1.5" /> List
+                                            </Button>
+                                        </div>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
@@ -578,52 +298,83 @@ const RecruiterApplicationsContent = () => {
 
             {/* Premium upsell banner for free recruiters */}
             {selectedJobId && !applicationsLoading && !isPremiumRecruiter && applications.length > 0 && (
-                <div className="flex items-center justify-between rounded-lg border border-yellow-300 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-800 px-4 py-3 text-sm text-yellow-800 dark:text-yellow-300">
-                    <div className="flex items-center gap-3">
-                        <Crown className="h-5 w-5 shrink-0 text-yellow-600 dark:text-yellow-400" />
-                        <span>
-                            Upgrade to <strong>Career Boost</strong> to see full applicant details (email, phone) and download their CVs.
-                        </span>
-                    </div>
-                    <Link href="/recruiter/dashboard/subscriptions">
-                        <Button size="sm" className="bg-yellow-600 hover:bg-yellow-700 text-white">
-                            Upgrade
-                        </Button>
-                    </Link>
-                </div>
+                <Card className="border-yellow-200/50 bg-linear-to-r from-yellow-50/50 to-amber-50/50 dark:from-yellow-950/20 dark:to-amber-950/20 backdrop-blur-xl shadow-sm overflow-hidden">
+                    <CardContent className="p-5 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-full bg-yellow-100 dark:bg-yellow-900/30">
+                                <Crown className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                            </div>
+                            <div>
+                                <p className="font-semibold text-sm text-yellow-800 dark:text-yellow-300">Unlock Premium Features</p>
+                                <p className="text-xs text-yellow-700 dark:text-yellow-400">View contact info, download CVs, and more with Career Boost</p>
+                            </div>
+                        </div>
+                        <Link href="/recruiter/dashboard/subscriptions">
+                            <Button size="sm" className="bg-yellow-500 hover:bg-yellow-600 text-white shrink-0">
+                                Upgrade Now
+                            </Button>
+                        </Link>
+                    </CardContent>
+                </Card>
             )}
 
             {!selectedJobId ? (
-                <Card>
-                    <CardContent className="py-12 text-center text-muted-foreground">
-                        Select a job above to view its applications
+                <Card className="border-border/50 bg-card/60 backdrop-blur-xl shadow-sm">
+                    <CardContent className="py-16 px-6 text-center">
+                        <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-4">
+                            <Briefcase className="w-8 h-8 text-muted-foreground/50" />
+                        </div>
+                        <h3 className="font-semibold text-foreground mb-1">No Position Selected</h3>
+                        <p className="text-sm text-muted-foreground">Select a job above to view and manage its applications</p>
                     </CardContent>
                 </Card>
             ) : applicationsLoading ? (
                 <div className="space-y-4">
                     {Array.from({ length: 3 }).map((_, i) => (
-                        <Skeleton key={i} className="h-24 rounded-lg" />
+                        <Card key={i} className="border-border/50 bg-card/60 backdrop-blur-xl">
+                            <CardContent className="p-6">
+                                <div className="flex items-center gap-4">
+                                    <Skeleton className="w-12 h-12 rounded-full shrink-0" />
+                                    <div className="flex-1 space-y-2">
+                                        <Skeleton className="h-4 w-32" />
+                                        <Skeleton className="h-3 w-48" />
+                                    </div>
+                                    <Skeleton className="h-8 w-20 rounded-lg" />
+                                </div>
+                            </CardContent>
+                        </Card>
                     ))}
                 </div>
             ) : applications.length === 0 ? (
-                <Card>
-                    <CardContent className="py-12 text-center text-muted-foreground">
-                        No applications for this job yet.
+                <Card className="border-border/50 bg-card/60 backdrop-blur-xl">
+                    <CardContent className="py-16 px-6 text-center">
+                        <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-4">
+                            <FileText className="w-8 h-8 text-muted-foreground/50" />
+                        </div>
+                        <h3 className="font-semibold text-foreground mb-1">No Applications Yet</h3>
+                        <p className="text-sm text-muted-foreground">Check back later when applicants start submitting their applications</p>
                     </CardContent>
                 </Card>
             ) : (
-                <div className="space-y-4">
+                <div className={layoutMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5" : "space-y-4"}>
                     {applications.map((app: any) => {
                         const nextStatuses = validTransitions[app.status] || [];
                         const isTerminal = terminalStatuses.includes(app.status);
+                        const currentConfig = statusConfig[app.status] || statusConfig.PENDING;
 
                         return (
-                            <Card key={app.id}>
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div className="flex items-start gap-3">
-                                            {/* Avatar */}
-                                            <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted shrink-0">
+                            <Card
+                                key={app.id}
+                                className={`group relative overflow-hidden bg-card/60 backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 hover:border-primary/40 border border-border/50 rounded-2xl ${layoutMode === "grid" ? "flex flex-col h-full" : "flex flex-col h-auto"
+                                    }`}
+                            >
+                                {/* Decorative Background Blob */}
+                                <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors pointer-events-none" />
+
+                                <CardHeader className={`relative z-10 ${layoutMode === "grid" ? "pb-3" : "pb-4"}`}>
+                                    <div className={`flex items-start ${layoutMode === "grid" ? "flex-col gap-3" : "justify-between gap-4"}`}>
+                                        <div className="flex items-start gap-3 w-full">
+                                            <div className="relative w-12 h-12 rounded-lg bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center shrink-0 border border-primary/20 group-hover:scale-110 transition-transform overflow-hidden">
                                                 {app.user?.image || app.user?.resume?.profilePhoto ? (
                                                     <Image
                                                         src={app.user.resume?.profilePhoto || app.user.image}
@@ -632,92 +383,108 @@ const RecruiterApplicationsContent = () => {
                                                         className="object-cover"
                                                     />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                                                        <User className="w-5 h-5" />
-                                                    </div>
+                                                    <User className="w-5 h-5 text-primary" />
                                                 )}
                                             </div>
-                                            <div>
-                                                <CardTitle className="text-base">{app.user?.name || "Unknown User"}</CardTitle>
-                                                {/* Professional title - premium only */}
+                                            <div className="min-w-0 flex-1 w-full">
+                                                <div className={`flex items-center gap-2 mb-1 ${layoutMode === "grid" ? "flex-col items-start" : ""}`}>
+                                                    <CardTitle className="text-sm font-semibold truncate">{app.user?.name || "Unknown User"}</CardTitle>
+                                                    <Badge
+                                                        className={`${currentConfig.badge} border font-semibold text-xs uppercase tracking-wide shrink-0`}
+                                                    >
+                                                        {app.status}
+                                                    </Badge>
+                                                </div>
                                                 {isPremiumRecruiter && app.user?.resume?.professionalTitle && (
-                                                    <p className="text-xs text-muted-foreground">{app.user.resume.professionalTitle}</p>
+                                                    <p className="text-xs text-muted-foreground truncate">{app.user.resume.professionalTitle}</p>
                                                 )}
                                                 {/* Contact info - premium only */}
                                                 {isPremiumRecruiter ? (
-                                                    <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground flex-wrap">
+                                                    <div className="flex gap-2 mt-1.5 text-xs text-muted-foreground flex-col items-start">
                                                         {app.user?.email && (
-                                                            <span className="flex items-center gap-1">
-                                                                <Mail className="w-3.5 h-3.5" /> {app.user.email}
+                                                            <span className="flex items-center gap-1 truncate max-w-full">
+                                                                <Mail className="w-3 h-3 shrink-0" /> <span className="truncate">{app.user.email}</span>
                                                             </span>
                                                         )}
                                                         {app.user?.resume?.contactNumber && (
                                                             <span className="flex items-center gap-1">
-                                                                <Phone className="w-3.5 h-3.5" /> {app.user.resume.contactNumber}
+                                                                <Phone className="w-3 h-3 shrink-0" /> {app.user.resume.contactNumber}
                                                             </span>
                                                         )}
                                                     </div>
                                                 ) : (
-                                                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                                                        <Lock className="w-3 h-3" /> Contact info hidden &mdash; upgrade to Career Boost
+                                                    <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                                                        <Lock className="w-3 h-3 shrink-0" /> Contact info hidden
                                                     </p>
                                                 )}
                                             </div>
                                         </div>
-                                        <Badge className={statusColors[app.status] || ""}>{app.status}</Badge>
+
+                                        {/* Stats Badges - Only in list mode */}
+                                        {layoutMode === "list" && (
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <div className="text-right text-xs">
+                                                    <p className="font-semibold text-foreground">
+                                                        {formatDistanceToNow(new Date(app.createdAt), { addSuffix: false })}
+                                                    </p>
+                                                    <p className="text-muted-foreground text-xs">ago</p>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </CardHeader>
-                                <CardContent className="pt-0">
+
+                                <CardContent className={`relative z-10 ${layoutMode === "grid" ? "space-y-2.5" : "space-y-4"}`}>
+                                    {/* Cover Letter Preview */}
                                     {app.coverLetter && (
-                                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{app.coverLetter}</p>
-                                    )}
-
-                                    {/* Interview details if scheduled */}
-                                    {app.status === "INTERVIEW" && app.interviewDate && (
-                                        <div className="flex items-center gap-4 mb-3 text-sm bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md px-3 py-2">
-                                            <span className="flex items-center gap-1 text-blue-700 dark:text-blue-300">
-                                                <Calendar className="w-3.5 h-3.5" />
-                                                Interview: {new Date(app.interviewDate).toLocaleDateString("en-US", {
-                                                    weekday: "short", year: "numeric", month: "short", day: "numeric"
-                                                })}
-                                            </span>
-                                            {app.interviewNote && (
-                                                <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
-                                                    <StickyNote className="w-3.5 h-3.5" /> {app.interviewNote}
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {/* Hired details if hired */}
-                                    {app.status === "HIRED" && (
-                                        <div className="flex items-center gap-4 mb-3 text-sm bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-md px-3 py-2">
-                                            {app.hiredCompany && (
-                                                <span className="flex items-center gap-1 text-green-700 dark:text-green-300">
-                                                    <span className="font-semibold">Company:</span> {app.hiredCompany}
-                                                </span>
-                                            )}
-                                            {app.hiredDesignation && (
-                                                <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
-                                                    <span className="font-semibold">Designation:</span> {app.hiredDesignation}
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <p className="text-xs text-muted-foreground">
-                                            Applied {app.createdAt && formatDistanceToNow(new Date(app.createdAt), { addSuffix: true })}
+                                        <p className={`text-muted-foreground leading-relaxed opacity-80 ${layoutMode === "grid" ? "text-xs line-clamp-2" : "text-sm line-clamp-3"}`}>
+                                            {app.coverLetter}
                                         </p>
-                                        <div className="ml-auto flex items-center gap-2">
+                                    )}
+
+                                    {/* Interview Details Banner */}
+                                    {app.status === "INTERVIEW" && app.interviewDate && (
+                                        <div className={`bg-linear-to-r from-blue-500/10 to-blue-500/5 border border-blue-200/50 dark:border-blue-500/30 rounded-lg ${layoutMode === "grid" ? "p-2 flex items-start gap-2" : "p-3 flex items-center gap-3"}`}>
+                                            <div className={`${layoutMode === "grid" ? "p-1" : "p-2"} rounded-lg bg-blue-500/20 shrink-0`}>
+                                                <Calendar className={`${layoutMode === "grid" ? "w-3 h-3" : "w-4 h-4"} text-blue-600 dark:text-blue-400`} />
+                                            </div>
+                                            <div className={layoutMode === "grid" ? "text-xs" : "text-sm"}>
+                                                <p className="font-semibold text-blue-700 dark:text-blue-300">Interview</p>
+                                                <p className="text-xs text-blue-600 dark:text-blue-400">
+                                                    {new Date(app.interviewDate).toLocaleDateString("en-US", {
+                                                        weekday: "short", month: "short", day: "numeric"
+                                                    })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Hired Banner */}
+                                    {app.status === "HIRED" && (
+                                        <div className={`bg-linear-to-r from-green-500/10 to-green-500/5 border border-green-200/50 dark:border-green-500/30 rounded-lg ${layoutMode === "grid" ? "p-2 flex items-start gap-2" : "p-3 flex items-center gap-3"}`}>
+                                            <div className={`${layoutMode === "grid" ? "p-1" : "p-2"} rounded-lg bg-green-500/20 shrink-0`}>
+                                                <CheckCircle className={`${layoutMode === "grid" ? "w-3 h-3" : "w-4 h-4"} text-green-600 dark:text-green-400`} />
+                                            </div>
+                                            <div className={layoutMode === "grid" ? "text-xs" : "text-sm"}>
+                                                <p className="font-semibold text-green-700 dark:text-green-300">Hired</p>
+                                                {app.hiredCompany && (
+                                                    <p className="text-xs text-green-600 dark:text-green-400 truncate">{app.hiredCompany}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Action Buttons */}
+                                    <div className={`flex gap-2 pt-2 border-t border-border/50 ${layoutMode === "grid" ? "flex-col" : "items-center justify-between"}`}>
+                                        <div className="flex items-center gap-2 flex-wrap flex-1">
                                             {/* View Details button */}
                                             <Button
                                                 size="sm"
                                                 variant="outline"
-                                                className="text-xs"
+                                                className="text-xs h-8 flex-1 min-w-fit"
                                                 onClick={() => setSelectedApp(app)}
                                             >
-                                                <FileText className="w-3.5 h-3.5 mr-1" /> View Details
+                                                <FileText className="w-3 h-3 mr-1" /> Details
                                             </Button>
 
                                             {/* Status transition dropdown */}
@@ -726,8 +493,8 @@ const RecruiterApplicationsContent = () => {
                                                     value=""
                                                     onValueChange={(status) => handleStatusChange(app.id, status)}
                                                 >
-                                                    <SelectTrigger className="w-40 h-8 text-xs">
-                                                        <SelectValue placeholder="Change status..." />
+                                                    <SelectTrigger className={`h-8 text-xs px-2 bg-primary/10 border-primary/20 hover:bg-primary/20 ${layoutMode === "grid" ? "w-full" : "w-auto"}`}>
+                                                        <SelectValue placeholder="Status" />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         {nextStatuses.map((s) => (
@@ -738,28 +505,28 @@ const RecruiterApplicationsContent = () => {
                                                     </SelectContent>
                                                 </Select>
                                             )}
-
-                                            {/* Download CV button - premium only */}
-                                            {isPremiumRecruiter ? (
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="text-xs"
-                                                    disabled={downloadingCv === app.user?.id}
-                                                    onClick={() => handleDownloadCv(app.user?.id, app.user?.name || "Applicant", app.id)}
-                                                >
-                                                    {downloadingCv === app.user?.id ? (
-                                                        <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Downloading...</>
-                                                    ) : (
-                                                        <><FileText className="w-3.5 h-3.5 mr-1" /> Download CV</>
-                                                    )}
-                                                </Button>
-                                            ) : (
-                                                <Button variant="outline" size="sm" className="text-xs opacity-50 cursor-not-allowed" disabled>
-                                                    <Lock className="w-3.5 h-3.5 mr-1" /> CV (Career Boost)
-                                                </Button>
-                                            )}
                                         </div>
+
+                                        {/* Download CV button - premium only */}
+                                        {isPremiumRecruiter ? (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className={`text-xs h-8 ${layoutMode === "grid" ? "w-full" : "w-auto"}`}
+                                                disabled={downloadingCv === app.user?.id}
+                                                onClick={() => handleDownloadCv(app.user?.id, app.user?.name || "Applicant", app.id)}
+                                            >
+                                                {downloadingCv === app.user?.id ? (
+                                                    <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Downloading</>
+                                                ) : (
+                                                    <><FileText className="w-3 h-3 mr-1" /> CV</>
+                                                )}
+                                            </Button>
+                                        ) : (
+                                            <Button variant="outline" size="sm" className={`text-xs h-8 opacity-50 cursor-not-allowed ${layoutMode === "grid" ? "w-full" : "w-auto"}`} disabled>
+                                                <Lock className="w-3 h-3 mr-1" /> CV
+                                            </Button>
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>
