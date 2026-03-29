@@ -126,6 +126,8 @@ const UserDropdown = ({ userInfo }: UserDropdownProps) => {
     const roleLabel = ROLE_LABEL[userInfo.role] ?? userInfo.role;
     const roleColor = ROLE_COLOR[userInfo.role] ?? "text-primary";
     const initial = userInfo.name.charAt(0).toUpperCase();
+    // Prefer resume profilePhoto, fallback to social image
+    const avatarSrc = userInfo.resume?.profilePhoto || userInfo.image || null;
 
     const onConfirmLogout = async () => {
         await deleteCookie("accessToken");
@@ -144,9 +146,9 @@ const UserDropdown = ({ userInfo }: UserDropdownProps) => {
                         type="button"
                         className="relative h-9 w-9 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 group"
                     >
-                        {userInfo.image ? (
+                        {avatarSrc ? (
                             <Image
-                                src={userInfo.image}
+                                src={avatarSrc}
                                 alt={userInfo.name}
                                 fill
                                 className="rounded-full object-cover border-2 border-card group-hover:border-primary/30 transition-colors"
@@ -188,8 +190,8 @@ const UserDropdown = ({ userInfo }: UserDropdownProps) => {
                             <div className="-mt-6 mb-2 relative w-fit">
                                 <div className={`p-0.5 rounded-xl bg-linear-to-br ${grad} shadow-lg`}>
                                     <div className="h-11 w-11 rounded-[10px] border-2 border-card bg-card flex items-center justify-center overflow-hidden">
-                                        {userInfo.image ? (
-                                            <Image src={userInfo.image} alt={userInfo.name} width={44} height={44} className="object-cover" />
+                                        {avatarSrc ? (
+                                            <Image src={avatarSrc} alt={userInfo.name} width={44} height={44} className="object-cover w-full h-full" />
                                         ) : (
                                             <span className={`font-black text-lg bg-linear-to-br ${grad} bg-clip-text text-transparent`}>
                                                 {initial}

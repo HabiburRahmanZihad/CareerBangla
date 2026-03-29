@@ -37,6 +37,7 @@ export interface UserInfo {
     isHired?: boolean;
     referralCode?: string;
     applications?: IApplication[];
+    resume?: { profilePhoto?: string | null; professionalTitle?: string | null } | null;
 }
 
 export interface IUserWithDetails extends UserInfo {
