@@ -1,7 +1,6 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { swalConfirm, swalDanger } from "@/lib/swal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { downloadPdfFromElement } from "@/lib/pdfUtils";
+import { swalConfirm, swalDanger } from "@/lib/swal";
 import { changeUserStatus, updateUser, updateUserHiredStatus } from "@/services/admin.services";
 import { IResume, IUserWithDetails } from "@/types/user.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -145,6 +145,8 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
                                     <Image
                                         src={user.image}
                                         alt={user.name}
+                                        width={80}
+                                        height={80}
                                         className="h-20 w-20 object-cover rounded-lg"
                                         onError={(e) => {
                                             e.currentTarget.style.display = 'none';
