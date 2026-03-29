@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,9 +18,8 @@ import {
     List,
     Lock,
     Search,
-    Users,
     X,
-    Zap,
+    Zap
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -162,31 +160,6 @@ const SearchCandidatesContent = () => {
                 )}
             </div>
 
-            {/* View Mode Toggle - Premium Styled */}
-            <div className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-lg w-fit">
-                <button
-                    onClick={() => handleViewModeChange("directory")}
-                    className={`px-4 py-2.5 rounded-md font-medium transition-all flex items-center gap-2 text-sm ${viewMode === "directory"
-                        ? "bg-white dark:bg-slate-800 text-primary shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                        }`}
-                >
-                    <Users className="w-4 h-4" />
-                    <span className="hidden sm:inline">User Directory</span>
-                    <span className="sm:hidden">Directory</span>
-                </button>
-                <button
-                    onClick={() => handleViewModeChange("premium")}
-                    className={`px-4 py-2.5 rounded-md font-medium transition-all flex items-center gap-2 text-sm ${viewMode === "premium"
-                        ? "bg-white dark:bg-slate-800 text-primary shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                        }`}
-                >
-                    <Zap className="w-4 h-4" />
-                    <span>Premium</span>
-                    {viewMode === "premium" && <Badge variant="secondary" className="ml-1 text-xs py-0">Pro</Badge>}
-                </button>
-            </div>
 
             {/* Search Filters - Enhanced */}
             <Card className="border-0 shadow-sm bg-linear-to-br from-card to-card/50">
