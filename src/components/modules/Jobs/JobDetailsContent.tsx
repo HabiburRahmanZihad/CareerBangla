@@ -136,9 +136,19 @@ const RelatedJobCard = ({ job }: { job: IJob }) => {
             <div className="p-4 flex-1 flex flex-col gap-3">
                 {/* Company row */}
                 <div className="flex items-center gap-2.5">
-                    <div className={`h-9 w-9 rounded-xl bg-linear-to-br ${grad} flex items-center justify-center font-black text-sm text-white shrink-0 shadow-sm`}>
-                        {job.company?.[0]?.toUpperCase() ?? "C"}
-                    </div>
+                    {job.recruiter?.companyLogo || job.recruiter?.profilePhoto ? (
+                        <div className="h-9 w-9 rounded-xl border border-border/40 bg-card flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                            <img
+                                src={job.recruiter.companyLogo || job.recruiter.profilePhoto || ""}
+                                alt={job.company}
+                                className="w-full h-full object-contain p-0.5"
+                            />
+                        </div>
+                    ) : (
+                        <div className={`h-9 w-9 rounded-xl bg-linear-to-br ${grad} flex items-center justify-center font-black text-sm text-white shrink-0 shadow-sm`}>
+                            {job.company?.[0]?.toUpperCase() ?? "C"}
+                        </div>
+                    )}
                     <div className="min-w-0">
                         <p className="text-xs font-bold text-foreground truncate">{job.company}</p>
                         {job.location && (
@@ -292,9 +302,19 @@ const JobDetailsContent = ({ job, userRole, isPremium }: JobDetailsContentProps)
                     <div className="flex items-end gap-4 mb-5">
                         {/* Company avatar — gradient ring */}
                         <div className={`p-[3px] rounded-2xl bg-linear-to-br ${grad} shadow-xl shrink-0`}>
-                            <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-[14px] border-2 border-card bg-card flex items-center justify-center font-black text-2xl sm:text-3xl text-primary">
-                                {companyInitial}
-                            </div>
+                            {job.recruiter?.companyLogo || job.recruiter?.profilePhoto ? (
+                                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-[14px] border-2 border-card bg-card flex items-center justify-center overflow-hidden shadow-sm">
+                                    <img
+                                        src={job.recruiter.companyLogo || job.recruiter.profilePhoto || ""}
+                                        alt={job.company || "Company"}
+                                        className="w-full h-full object-contain p-1"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-[14px] border-2 border-card bg-card flex items-center justify-center font-black text-2xl sm:text-3xl text-primary">
+                                    {companyInitial}
+                                </div>
+                            )}
                         </div>
                         <div className="pb-1 min-w-0 flex-1">
                             <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-tight">{job.title}</h1>
@@ -487,8 +507,8 @@ const JobDetailsContent = ({ job, userRole, isPremium }: JobDetailsContentProps)
                                                     onClick={() => setShowApplyForm(true)}
                                                     disabled={!canApply}
                                                     className={`w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-black shadow-lg transition-all duration-150 ${hasApplied
-                                                            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 cursor-not-allowed"
-                                                            : "bg-primary text-primary-foreground shadow-primary/25 hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 cursor-not-allowed"
+                                                        : "bg-primary text-primary-foreground shadow-primary/25 hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                                                         }`}
                                                 >
                                                     {hasApplied
@@ -576,9 +596,19 @@ const JobDetailsContent = ({ job, userRole, isPremium }: JobDetailsContentProps)
                             </div>
                             <div className="p-5 space-y-4">
                                 <div className="flex items-center gap-3">
-                                    <div className={`h-11 w-11 rounded-xl bg-linear-to-br ${avatarGradient(job.recruiter.companyName ?? job.company ?? "C")} flex items-center justify-center font-black text-lg text-white shrink-0 shadow-sm`}>
-                                        {(job.recruiter.companyName ?? job.company)?.[0]?.toUpperCase() ?? "C"}
-                                    </div>
+                                    {job.recruiter?.companyLogo || job.recruiter?.profilePhoto ? (
+                                        <div className="h-11 w-11 rounded-xl border border-border/40 bg-card flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                                            <img
+                                                src={job.recruiter.companyLogo || job.recruiter.profilePhoto || ""}
+                                                alt={job.recruiter.companyName ?? job.company}
+                                                className="w-full h-full object-contain p-1"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className={`h-11 w-11 rounded-xl bg-linear-to-br ${avatarGradient(job.recruiter.companyName ?? job.company ?? "C")} flex items-center justify-center font-black text-lg text-white shrink-0 shadow-sm`}>
+                                            {(job.recruiter.companyName ?? job.company)?.[0]?.toUpperCase() ?? "C"}
+                                        </div>
+                                    )}
                                     <div>
                                         <p className="font-black text-sm">{job.recruiter.companyName ?? job.company}</p>
                                         {job.recruiter.industry && (
@@ -670,8 +700,8 @@ const JobDetailsContent = ({ job, userRole, isPremium }: JobDetailsContentProps)
                         }}
                         disabled={!canApply}
                         className={`w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl text-sm font-black shadow-xl transition-all ${hasApplied
-                                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 cursor-not-allowed"
-                                : "bg-primary text-primary-foreground shadow-primary/30 hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 cursor-not-allowed"
+                            : "bg-primary text-primary-foreground shadow-primary/30 hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                             }`}
                     >
                         {hasApplied
