@@ -417,7 +417,7 @@ const ReferralContent = ({ userInfo, referralStats }: ReferralContentProps) => {
                                                             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
                                                                 {ref.referredUserName.charAt(0).toUpperCase()}
                                                             </div>
-                                                            <span className="truncate max-w-[150px] sm:max-w-none">{ref.referredUserName}</span>
+                                                            <span className="truncate max-w-37.5 sm:max-w-none">{ref.referredUserName}</span>
                                                         </div>
                                                         <span className="text-xs text-muted-foreground">{ref.referredUserEmail}</span>
                                                     </div>
