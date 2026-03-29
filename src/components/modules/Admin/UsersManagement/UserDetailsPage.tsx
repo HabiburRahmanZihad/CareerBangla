@@ -1,15 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { swalConfirm, swalDanger } from "@/lib/swal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,7 +30,6 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
     const [isResumeEditModalOpen, setIsResumeEditModalOpen] = useState(false);
-    const [banConfirmOpen, setBanConfirmOpen] = useState(false);
     const [editData, setEditData] = useState({
         name: user.name,
         email: user.email,
@@ -81,13 +72,9 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
             toast.success("User status updated");
             queryClient.invalidateQueries({ queryKey: ["users-with-details"] });
             queryClient.invalidateQueries({ queryKey: ["user", user.id] });
-            setBanConfirmOpen(false);
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update status"),
     });
-
-    const [hiredConfirmOpen, setHiredConfirmOpen] = useState(false);
-    const [pendingHiredValue, setPendingHiredValue] = useState<boolean>(false);
 
     const { mutateAsync: doUpdateHiredStatus, isPending: isUpdatingHired } = useMutation({
         mutationFn: (isHired: boolean) => updateUserHiredStatus(user.id, isHired),
@@ -95,7 +82,6 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
             toast.success("Hired status updated successfully");
             queryClient.invalidateQueries({ queryKey: ["users-with-details"] });
             queryClient.invalidateQueries({ queryKey: ["user", user.id] });
-            setHiredConfirmOpen(false);
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update hired status"),
     });
@@ -417,7 +403,13 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
                                     </div>
                                     <Button
                                         variant={user.status === "ACTIVE" ? "destructive" : "default"}
-                                        onClick={() => setBanConfirmOpen(true)}
+                                        onClick={async () => {
+                                            const isBanning = user.status === "ACTIVE";
+                                            const r = isBanning
+                                                ? await swalDanger({ title: "Ban User?", text: "This will block the user from accessing the platform. They will not be able to login or use any services.", confirmText: "Ban User" })
+                                                : await swalConfirm({ title: "Unban User?", text: "This will reactivate the user account and they will regain access to the platform.", confirmText: "Unban User", icon: "question" });
+                                            if (r.isConfirmed) doChangeStatus(isBanning ? "BLOCKED" : "ACTIVE");
+                                        }}
                                     >
                                         {user.status === "ACTIVE" ? (
                                             <>
@@ -451,9 +443,15 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
                                     <Button
                                         variant={user.isHired ? "outline" : "default"}
                                         disabled={isUpdatingHired}
-                                        onClick={() => {
-                                            setPendingHiredValue(!user.isHired);
-                                            setHiredConfirmOpen(true);
+                                        onClick={async () => {
+                                            const newValue = !user.isHired;
+                                            const r = await swalConfirm({
+                                                title: newValue ? "Mark User as Hired?" : "Mark User as Not Hired?",
+                                                text: newValue ? "This will update the user's latest application status to HIRED." : "This will revert the user's hired applications back to PENDING.",
+                                                confirmText: "Confirm",
+                                                icon: "question",
+                                            });
+                                            if (r.isConfirmed) doUpdateHiredStatus(newValue);
                                         }}
                                     >
                                         {user.isHired ? "Mark as Not Hired" : "Mark as Hired"}
@@ -479,49 +477,6 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
                 onClose={() => setIsPremiumModalOpen(false)}
                 user={user}
             />
-
-            {/* Ban Confirmation */}
-            <AlertDialog open={banConfirmOpen} onOpenChange={setBanConfirmOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {user.status === "ACTIVE" ? "Ban User?" : "Unban User?"}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {user.status === "ACTIVE"
-                                ? "This will block the user from accessing the platform. They will not be able to login or use any services."
-                                : "This will reactivate the user account and they will regain access to the platform."}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                        onClick={() => doChangeStatus(user.status === "ACTIVE" ? "BLOCKED" : "ACTIVE")}
-                        className={user.status === "ACTIVE" ? "bg-destructive hover:bg-destructive/90" : ""}
-                    >
-                        {user.status === "ACTIVE" ? "Ban User" : "Unban User"}
-                    </AlertDialogAction>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            {/* Hired Status Confirmation */}
-            <AlertDialog open={hiredConfirmOpen} onOpenChange={setHiredConfirmOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {pendingHiredValue ? "Mark User as Hired?" : "Mark User as Not Hired?"}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {pendingHiredValue
-                                ? "This will update the user's latest application status to HIRED."
-                                : "This will revert the user's hired applications back to PENDING."}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => doUpdateHiredStatus(pendingHiredValue)}>
-                        Confirm
-                    </AlertDialogAction>
-                </AlertDialogContent>
-            </AlertDialog>
 
             {/* Resume Edit Modal */}
             <ResumeEditModal

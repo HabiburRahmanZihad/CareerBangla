@@ -1,20 +1,12 @@
 "use client";
 
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { deleteCookie } from "@/lib/cookieUtils";
+import { swalDanger } from "@/lib/swal";
 import { IApplication, UserInfo } from "@/types/user.types";
 import {
     Award, Bell, ChevronRight, Crown,
@@ -118,7 +110,6 @@ const MenuItem = ({
 // ── Main component ─────────────────────────────────────────────────────────────
 const UserDropdown = ({ userInfo }: UserDropdownProps) => {
     const router = useRouter();
-    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [open, setOpen] = useState(false);
 
     const isHired = userInfo.applications?.some((app: IApplication) => app.status === "HIRED");
@@ -129,12 +120,21 @@ const UserDropdown = ({ userInfo }: UserDropdownProps) => {
     // Prefer resume profilePhoto, fallback to social image
     const avatarSrc = userInfo.resume?.profilePhoto || userInfo.image || null;
 
-    const onConfirmLogout = async () => {
-        await deleteCookie("accessToken");
-        await deleteCookie("refreshToken");
-        await deleteCookie("better-auth.session_token");
-        router.push("/login");
-        router.refresh();
+    const handleLogoutClick = async () => {
+        setOpen(false);
+        const result = await swalDanger({
+            title: "Confirm Logout",
+            text: "You'll be signed out of your current session. You can always sign back in.",
+            confirmText: "Logout",
+            cancelText: "Cancel",
+        });
+        if (result.isConfirmed) {
+            await deleteCookie("accessToken");
+            await deleteCookie("refreshToken");
+            await deleteCookie("better-auth.session_token");
+            router.push("/login");
+            router.refresh();
+        }
     };
 
     return (
@@ -296,37 +296,12 @@ const UserDropdown = ({ userInfo }: UserDropdownProps) => {
                             icon={LogOut}
                             label="Logout"
                             danger
-                            onClick={() => { setOpen(false); setShowLogoutConfirm(true); }}
+                            onClick={handleLogoutClick}
                         />
                     </div>
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* ── Logout confirm dialog ─────────────────────────────────────── */}
-            <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
-                <AlertDialogContent className="rounded-2xl max-w-sm">
-                    <AlertDialogHeader>
-                        <div className="flex items-center gap-3 mb-1">
-                            <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
-                                <LogOut className="h-5 w-5 text-destructive" />
-                            </div>
-                            <AlertDialogTitle className="text-base font-black">Confirm Logout</AlertDialogTitle>
-                        </div>
-                        <AlertDialogDescription className="text-sm leading-relaxed">
-                            You&apos;ll be signed out of your current session. You can always sign back in.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <div className="flex gap-3 justify-end mt-2">
-                        <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={onConfirmLogout}
-                            className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                            <LogOut className="h-4 w-4 mr-2" /> Logout
-                        </AlertDialogAction>
-                    </div>
-                </AlertDialogContent>
-            </AlertDialog>
         </>
     );
 };

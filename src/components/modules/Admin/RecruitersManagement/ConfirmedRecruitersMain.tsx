@@ -1,16 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { swalConfirm } from "@/lib/swal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +26,6 @@ const ConfirmedRecruitersMain = () => {
     const [viewMode, setViewMode] = useState<"list" | "grid">("list");
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedRecruiter, setSelectedRecruiter] = useState<IRecruiterProfile | null>(null);
-    const [statusConfirmId, setStatusConfirmId] = useState<{ recruiterId: string; newStatus: string } | null>(null);
 
     const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["all-recruiters"],
@@ -48,7 +38,6 @@ const ConfirmedRecruitersMain = () => {
         onSuccess: () => {
             toast.success("Status updated successfully");
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
-            setStatusConfirmId(null);
         },
         onError: (err: Error) => {
             const errorMessage = err instanceof Error && "message" in err ? (err as any).response?.data?.message : "Failed to update status";
@@ -219,10 +208,15 @@ const ConfirmedRecruitersMain = () => {
                                             <Button
                                                 size="sm"
                                                 variant={userStatus === "ACTIVE" ? "destructive" : "default"}
-                                                onClick={() => setStatusConfirmId({
-                                                    recruiterId: recruiter.userId,
-                                                    newStatus: userStatus === "ACTIVE" ? "BLOCKED" : "ACTIVE"
-                                                })}
+                                                onClick={async () => {
+                                                    const newStatus = userStatus === "ACTIVE" ? "BLOCKED" : "ACTIVE";
+                                                    const r = await swalConfirm({
+                                                        title: "Change Recruiter Status",
+                                                        text: `Change this recruiter's account status to ${newStatus}?`,
+                                                        confirmText: "Confirm",
+                                                    });
+                                                    if (r.isConfirmed) doUpdateStatus({ userId: recruiter.userId, status: newStatus });
+                                                }}
                                             >
                                                 {userStatus === "ACTIVE" ? "Block" : "Unblock"}
                                             </Button>
@@ -339,32 +333,6 @@ const ConfirmedRecruitersMain = () => {
                 </div>
             )}
 
-            {/* Status Change Confirmation Dialog */}
-            <AlertDialog open={!!statusConfirmId} onOpenChange={() => setStatusConfirmId(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Change Recruiter Status</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Do you want to change this recruiter&apos;s account status to <strong>{statusConfirmId?.newStatus}</strong>?
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => {
-                                if (statusConfirmId) {
-                                    doUpdateStatus({
-                                        userId: statusConfirmId.recruiterId,
-                                        status: statusConfirmId.newStatus
-                                    });
-                                }
-                            }}
-                        >
-                            Confirm
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </div>
     );
 };

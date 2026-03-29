@@ -39,11 +39,6 @@ const JobsManagementContent = () => {
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [jobTypeFilter, setJobTypeFilter] = useState("ALL");
     const [currentPage, setCurrentPage] = useState(1);
-    const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; jobId: string | null; jobTitle: string }>({
-        isOpen: false,
-        jobId: null,
-        jobTitle: "",
-    });
 
     const queryParams = useMemo(
         () => ({
@@ -65,7 +60,6 @@ const JobsManagementContent = () => {
         mutationFn: ({ id, reason }: { id: string; reason: string }) => deleteJob(id, reason),
         onSuccess: () => {
             toast.success("Job deleted successfully and recruiter notified");
-            setDeleteConfirmation({ isOpen: false, jobId: null, jobTitle: "" });
             queryClient.invalidateQueries({ queryKey: ["admin-all-jobs"] });
             queryClient.invalidateQueries({ queryKey: ["pending-jobs"] });
         },
@@ -258,21 +252,22 @@ const JobsManagementContent = () => {
                                         <Edit className="h-4 w-4" />
                                     </Button>
                                 </Link>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-destructive h-8 w-8"
-                                    disabled={deleting || updatingStatus || isFetching}
-                                    onClick={() => {
-                                        setDeleteConfirmation({
-                                            isOpen: true,
-                                            jobId: job.id,
-                                            jobTitle: job.title,
-                                        });
-                                    }}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
+                                <DeleteJobConfirmation
+                                    jobTitle={job.title}
+                                    onConfirm={(reason) => deleteMutate({ id: job.id, reason })}
+                                    trigger={(open) => (
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-destructive h-8 w-8"
+                                            disabled={deleting || updatingStatus || isFetching}
+                                            onClick={open}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                />
                             </CardContent>
                         </Card>
                     ))}
@@ -304,21 +299,6 @@ const JobsManagementContent = () => {
                     </Button>
                 </div>
             )}
-
-            <DeleteJobConfirmation
-                isOpen={deleteConfirmation.isOpen}
-                jobTitle={deleteConfirmation.jobTitle}
-                isLoading={deleting}
-                onConfirm={(reason) => {
-                    if (deleteConfirmation.jobId) {
-                        deleteMutate({
-                            id: deleteConfirmation.jobId,
-                            reason,
-                        });
-                    }
-                }}
-                onCancel={() => setDeleteConfirmation({ isOpen: false, jobId: null, jobTitle: "" })}
-            />
         </div>
     );
 };

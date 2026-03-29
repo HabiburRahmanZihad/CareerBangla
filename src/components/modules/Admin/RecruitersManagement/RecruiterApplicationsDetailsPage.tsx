@@ -1,16 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { swalConfirm, swalDanger } from "@/lib/swal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,8 +24,6 @@ interface RecruiterApplicationsDetailsPageProps {
 const RecruiterApplicationsDetailsPage = ({ recruiter, onBack }: RecruiterApplicationsDetailsPageProps) => {
     const queryClient = useQueryClient();
     const [isEditMode, setIsEditMode] = useState(false);
-    const [approveConfirmOpen, setApproveConfirmOpen] = useState(false);
-    const [rejectConfirmOpen, setRejectConfirmOpen] = useState(false);
     const [editData, setEditData] = useState({
         name: recruiter.name,
         email: recruiter.email,
@@ -66,7 +55,6 @@ const RecruiterApplicationsDetailsPage = ({ recruiter, onBack }: RecruiterApplic
         onSuccess: () => {
             toast.success("Recruiter approved successfully and verification email sent");
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
-            setApproveConfirmOpen(false);
             setTimeout(() => onBack(), 1000);
         },
         onError: (err: Error) => {
@@ -80,7 +68,6 @@ const RecruiterApplicationsDetailsPage = ({ recruiter, onBack }: RecruiterApplic
         onSuccess: () => {
             toast.success("Recruiter rejected successfully");
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
-            setRejectConfirmOpen(false);
             setTimeout(() => onBack(), 1000);
         },
         onError: (err: Error) => {
@@ -387,14 +374,29 @@ const RecruiterApplicationsDetailsPage = ({ recruiter, onBack }: RecruiterApplic
                         <div className="flex gap-2 flex-wrap">
                             <Button
                                 className="bg-green-600 hover:bg-green-700"
-                                onClick={() => setApproveConfirmOpen(true)}
+                                onClick={async () => {
+                                    const r = await swalConfirm({
+                                        title: "Approve Recruiter Application",
+                                        text: "This will approve the recruiter account and send them a verification email. They will be able to post jobs immediately.",
+                                        confirmText: "Approve",
+                                        icon: "question",
+                                    });
+                                    if (r.isConfirmed) doApproveRecruiter();
+                                }}
                             >
                                 <CheckCircle className="h-4 w-4 mr-2" />
                                 Approve Application
                             </Button>
                             <Button
                                 variant="destructive"
-                                onClick={() => setRejectConfirmOpen(true)}
+                                onClick={async () => {
+                                    const r = await swalDanger({
+                                        title: "Reject Recruiter Application",
+                                        text: "This will reject the recruiter application. They will not be able to use the platform with this account.",
+                                        confirmText: "Reject",
+                                    });
+                                    if (r.isConfirmed) doRejectRecruiter();
+                                }}
                             >
                                 <XCircle className="h-4 w-4 mr-2" />
                                 Reject Application
@@ -404,47 +406,6 @@ const RecruiterApplicationsDetailsPage = ({ recruiter, onBack }: RecruiterApplic
                 </Card>
             )}
 
-            {/* Approve Confirmation Dialog */}
-            <AlertDialog open={approveConfirmOpen} onOpenChange={setApproveConfirmOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Approve Recruiter Application</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This will approve the recruiter account and send them a verification email. They will be able to post jobs immediately.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => doApproveRecruiter()}
-                            className="bg-green-600 text-white hover:bg-green-700"
-                        >
-                            Approve
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            {/* Reject Confirmation Dialog */}
-            <AlertDialog open={rejectConfirmOpen} onOpenChange={setRejectConfirmOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Reject Recruiter Application</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This will reject the recruiter application. They will not be able to use the platform with this account.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => doRejectRecruiter()}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                            Reject
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </div>
     );
 };

@@ -1,11 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {
-    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-    AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
-    AlertDialogTitle, AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { swalDanger } from "@/lib/swal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import envConfig from "@/lib/envConfig";
@@ -388,34 +384,26 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                                 Permanently delete your account and all data.{" "}
                                 <span className="font-semibold text-destructive">This cannot be undone.</span>
                             </p>
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" size="sm" disabled={isDeleting} className="gap-2">
-                                        {isDeleting
-                                            ? <><Loader2 className="h-4 w-4 animate-spin" /> Deleting…</>
-                                            : <><Trash2 className="h-4 w-4" /> Delete Account</>
-                                        }
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent className="rounded-2xl">
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Delete your account?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This will permanently delete your account, profile, resume, and all data.
-                                            This action <strong>cannot be undone</strong>.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel className="rounded-lg">Cancel</AlertDialogCancel>
-                                        <AlertDialogAction
-                                            onClick={() => deleteAccount()}
-                                            className="bg-destructive text-white hover:bg-destructive/90 rounded-lg"
-                                        >
-                                            Yes, delete my account
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                disabled={isDeleting}
+                                className="gap-2"
+                                onClick={async () => {
+                                    const r = await swalDanger({
+                                        title: "Delete your account?",
+                                        text: "This will permanently delete your account, profile, resume, and all data. This action cannot be undone.",
+                                        confirmText: "Yes, delete my account",
+                                    });
+                                    if (r.isConfirmed) deleteAccount();
+                                }}
+                            >
+                                {isDeleting
+                                    ? <><Loader2 className="h-4 w-4 animate-spin" /> Deleting…</>
+                                    : <><Trash2 className="h-4 w-4" /> Delete Account</>
+                                }
+                            </Button>
                         </div>
                     </div>
                 </div>

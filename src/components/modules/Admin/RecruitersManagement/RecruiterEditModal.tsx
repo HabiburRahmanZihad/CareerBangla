@@ -1,16 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { swalConfirm } from "@/lib/swal";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -40,8 +31,6 @@ const RecruiterEditModal = ({ recruiter, isOpen, onClose, onSave }: RecruiterEdi
         companySize: recruiter.companySize || "",
         description: recruiter.description || "",
     });
-    const [showConfirm, setShowConfirm] = useState(false);
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -50,13 +39,14 @@ const RecruiterEditModal = ({ recruiter, isOpen, onClose, onSave }: RecruiterEdi
         }));
     };
 
-    const handleSubmitClick = () => {
-        setShowConfirm(true);
-    };
-
-    const handleConfirmSave = () => {
-        onSave(formData);
-        setShowConfirm(false);
+    const handleSubmitClick = async () => {
+        const r = await swalConfirm({
+            title: "Confirm Changes",
+            text: `Save changes for ${formData.name}? This will update their recruiter profile information.`,
+            confirmText: "Save Changes",
+            icon: "question",
+        });
+        if (r.isConfirmed) onSave(formData);
     };
 
     return (
@@ -219,23 +209,6 @@ const RecruiterEditModal = ({ recruiter, isOpen, onClose, onSave }: RecruiterEdi
                 </DialogContent>
             </Dialog>
 
-            {/* Confirmation Dialog */}
-            <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Changes</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Are you sure you want to save these changes for <strong>{formData.name}</strong>? This action will update their recruiter profile information.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleConfirmSave}>
-                            Save Changes
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </>
     );
 };

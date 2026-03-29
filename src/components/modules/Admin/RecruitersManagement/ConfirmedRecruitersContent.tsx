@@ -1,16 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { swalConfirm } from "@/lib/swal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +26,6 @@ const ConfirmedRecruitersContent = () => {
     const [editingRecruiter, setEditingRecruiter] = useState<IRecruiterProfile | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [expandedDetailsId, setExpandedDetailsId] = useState<string | null>(null);
-    const [confirmAction, setConfirmAction] = useState<{ type: string; recruiterId: string; data?: Record<string, unknown> } | null>(null);
 
     const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["all-recruiters"],
@@ -48,7 +38,6 @@ const ConfirmedRecruitersContent = () => {
         onSuccess: () => {
             toast.success("Status updated successfully");
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
-            setConfirmAction(null);
         },
         onError: (err: Error) => {
             const errorMessage = err instanceof Error && "message" in err ? (err as any).response?.data?.message : "Failed to update status";
@@ -64,7 +53,6 @@ const ConfirmedRecruitersContent = () => {
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
             setIsEditModalOpen(false);
             setEditingRecruiter(null);
-            setConfirmAction(null);
         },
         onError: (err: Error) => {
             const errorMessage = err instanceof Error && "message" in err ? (err as any).response?.data?.message : "Failed to update recruiter";
@@ -244,13 +232,14 @@ const ConfirmedRecruitersContent = () => {
                                             </Button>
                                             <Select
                                                 defaultValue={userStatus}
-                                                onValueChange={(status) =>
-                                                    setConfirmAction({
-                                                        type: 'updateStatus',
-                                                        recruiterId: recruiter.userId,
-                                                        data: { status }
-                                                    })
-                                                }
+                                                onValueChange={async (status) => {
+                                                    const r = await swalConfirm({
+                                                        title: "Change Account Status",
+                                                        text: `Change this recruiter's account status to ${status}?`,
+                                                        confirmText: "Confirm",
+                                                    });
+                                                    if (r.isConfirmed) updateStatus({ userId: recruiter.userId, status });
+                                                }}
                                             >
                                                 <SelectTrigger className="w-32 h-8 text-xs">
                                                     <SelectValue placeholder="Status" />
@@ -278,34 +267,6 @@ const ConfirmedRecruitersContent = () => {
                     })}
                 </div>
             )}
-
-            {/* Confirmation Dialog for Status Change */}
-            <AlertDialog open={!!confirmAction} onOpenChange={() => setConfirmAction(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Status Change</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Do you want to change the recruiter&apos;s account status to <strong>{String((confirmAction?.data as Record<string, unknown>)?.status)}</strong>? This action cannot be undone immediately.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => {
-                                if (confirmAction?.type === 'updateStatus') {
-                                    const status = (confirmAction?.data as Record<string, unknown>)?.status as string;
-                                    updateStatus({
-                                        userId: confirmAction.recruiterId,
-                                        status: status
-                                    });
-                                }
-                            }}
-                        >
-                            Confirm
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
 
             {editingRecruiter && (
                 <RecruiterEditModal

@@ -1,15 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { swalDanger } from "@/lib/swal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,7 +28,6 @@ const UsersManagementMain = () => {
     const [viewMode, setViewMode] = useState<"list" | "grid">("list");
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-    const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
     const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["users-with-details"],
@@ -48,7 +39,6 @@ const UsersManagementMain = () => {
         onSuccess: () => {
             toast.success("User deleted successfully");
             queryClient.invalidateQueries({ queryKey: ["users-with-details"] });
-            setDeleteConfirmId(null);
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to delete user"),
     });
@@ -264,9 +254,17 @@ const UsersManagementMain = () => {
                                             Details
                                         </Button>
                                         <Button
+                                            type="button"
                                             size="sm"
                                             variant="destructive"
-                                            onClick={() => setDeleteConfirmId(user.id)}
+                                            onClick={async () => {
+                                                const r = await swalDanger({
+                                                    title: "Delete User?",
+                                                    text: "This will permanently delete the user and all their data including resume, applications, and wallet. This cannot be undone.",
+                                                    confirmText: "Delete User",
+                                                });
+                                                if (r.isConfirmed) doDeleteUser(user.id);
+                                            }}
                                         >
                                             <Trash2 className="h-3.5 w-3.5" />
                                         </Button>
@@ -368,24 +366,6 @@ const UsersManagementMain = () => {
                 </div>
             )}
 
-            {/* Delete Confirmation Dialog */}
-            <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Delete User?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This will permanently delete the user and all their associated data including resume, applications, and wallet information. This action cannot be undone.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                        onClick={() => deleteConfirmId && doDeleteUser(deleteConfirmId)}
-                        className="bg-destructive hover:bg-destructive/90"
-                    >
-                        Delete User
-                    </AlertDialogAction>
-                </AlertDialogContent>
-            </AlertDialog>
         </div>
     );
 };

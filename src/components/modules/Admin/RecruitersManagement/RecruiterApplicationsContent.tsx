@@ -1,16 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { swalConfirm, swalDanger } from "@/lib/swal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,7 +23,6 @@ const RecruiterApplicationsContent = () => {
     const [editingRecruiter, setEditingRecruiter] = useState<IRecruiterProfile | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [expandedDetailsId, setExpandedDetailsId] = useState<string | null>(null);
-    const [confirmAction, setConfirmAction] = useState<{ type: 'approve' | 'reject'; recruiterId: string } | null>(null);
 
     const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["all-recruiters"],
@@ -44,7 +34,6 @@ const RecruiterApplicationsContent = () => {
         onSuccess: () => {
             toast.success("Recruiter approved successfully");
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
-            setConfirmAction(null);
         },
         onError: (err: Error) => {
             const errorMessage = err instanceof Error && "message" in err ? (err as any).response?.data?.message : "Failed to approve";
@@ -57,7 +46,6 @@ const RecruiterApplicationsContent = () => {
         onSuccess: () => {
             toast.success("Recruiter rejected successfully");
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
-            setConfirmAction(null);
         },
         onError: (err: Error) => {
             const errorMessage = err instanceof Error && "message" in err ? (err as any).response?.data?.message : "Failed to reject";
@@ -229,7 +217,15 @@ const RecruiterApplicationsContent = () => {
                                         <Button
                                             size="sm"
                                             variant="default"
-                                            onClick={() => setConfirmAction({ type: 'approve', recruiterId: recruiter.id })}
+                                            onClick={async () => {
+                                                const r = await swalConfirm({
+                                                    title: "Approve Recruiter?",
+                                                    text: "This will approve the recruiter account and send them a verification email. They will be able to post jobs immediately.",
+                                                    confirmText: "Approve",
+                                                    icon: "question",
+                                                });
+                                                if (r.isConfirmed) approve(recruiter.id);
+                                            }}
                                         >
                                             <CheckCircle className="mr-1 h-3.5 w-3.5" />
                                             Approve
@@ -237,7 +233,14 @@ const RecruiterApplicationsContent = () => {
                                         <Button
                                             size="sm"
                                             variant="destructive"
-                                            onClick={() => setConfirmAction({ type: 'reject', recruiterId: recruiter.id })}
+                                            onClick={async () => {
+                                                const r = await swalDanger({
+                                                    title: "Reject Recruiter?",
+                                                    text: "This will reject the recruiter application. They will be notified and cannot log in.",
+                                                    confirmText: "Reject",
+                                                });
+                                                if (r.isConfirmed) reject(recruiter.id);
+                                            }}
                                         >
                                             <XCircle className="mr-1 h-3.5 w-3.5" />
                                             Reject
@@ -259,39 +262,6 @@ const RecruiterApplicationsContent = () => {
                     ))}
                 </div>
             )}
-
-            {/* Confirmation Dialog */}
-            <AlertDialog open={!!confirmAction} onOpenChange={() => setConfirmAction(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {confirmAction?.type === 'approve' ? 'Approve Recruiter?' : 'Reject Recruiter?'}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {confirmAction?.type === 'approve'
-                                ? 'This action will approve the recruiter account and send them a verification email. They will be able to log in and start posting jobs.'
-                                : 'This action will reject the recruiter application. They will be notified and cannot log in.'}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => {
-                                if (confirmAction) {
-                                    if (confirmAction.type === 'approve') {
-                                        approve(confirmAction.recruiterId);
-                                    } else {
-                                        reject(confirmAction.recruiterId);
-                                    }
-                                }
-                            }}
-                            className={confirmAction?.type === 'approve' ? '' : 'bg-destructive'}
-                        >
-                            {confirmAction?.type === 'approve' ? 'Approve' : 'Reject'}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
 
             {editingRecruiter && (
                 <RecruiterEditModal

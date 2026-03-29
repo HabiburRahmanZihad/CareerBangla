@@ -1,16 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { swalConfirm, swalDanger } from "@/lib/swal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,30 +20,26 @@ const RejectedRecruitersContent = () => {
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState("");
     const [expandedId, setExpandedId] = useState<string | null>(null);
-    const [deleteId, setDeleteId] = useState<string | null>(null);
-    const [reApproveId, setReApproveId] = useState<string | null>(null);
 
     const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["all-recruiters"],
         queryFn: () => getAllRecruiters({ limit: "200" }),
     });
 
-    const { mutateAsync: doDelete, isPending: deleting } = useMutation({
+    const { mutateAsync: doDelete } = useMutation({
         mutationFn: (id: string) => deleteRecruiter(id),
         onSuccess: () => {
             toast.success("Recruiter permanently deleted");
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
-            setDeleteId(null);
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to delete"),
     });
 
-    const { mutateAsync: doApprove, isPending: approving } = useMutation({
+    const { mutateAsync: doApprove } = useMutation({
         mutationFn: (id: string) => approveRecruiter(id),
         onSuccess: () => {
             toast.success("Recruiter re-approved and verification email sent");
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
-            setReApproveId(null);
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to approve"),
     });
@@ -216,7 +203,15 @@ const RejectedRecruitersContent = () => {
                                         <Button
                                             size="sm"
                                             className="bg-green-600 hover:bg-green-700 text-white"
-                                            onClick={() => setReApproveId(recruiter.id)}
+                                            onClick={async () => {
+                                                const r = await swalConfirm({
+                                                    title: "Re-Approve Recruiter?",
+                                                    text: "This will approve the recruiter account and send them a verification email. They will be able to log in and post jobs immediately.",
+                                                    confirmText: "Re-Approve",
+                                                    icon: "question",
+                                                });
+                                                if (r.isConfirmed) doApprove(recruiter.id);
+                                            }}
                                         >
                                             <CheckCircle className="h-3.5 w-3.5 mr-1" />
                                             Re-Approve
@@ -224,7 +219,14 @@ const RejectedRecruitersContent = () => {
                                         <Button
                                             size="sm"
                                             variant="destructive"
-                                            onClick={() => setDeleteId(recruiter.id)}
+                                            onClick={async () => {
+                                                const r = await swalDanger({
+                                                    title: "Permanently Delete Recruiter?",
+                                                    text: "This will permanently delete the recruiter and all associated data. This action cannot be undone.",
+                                                    confirmText: "Delete Permanently",
+                                                });
+                                                if (r.isConfirmed) doDelete(recruiter.id);
+                                            }}
                                         >
                                             <Trash2 className="h-3.5 w-3.5 mr-1" />
                                             Delete Permanently
@@ -249,7 +251,7 @@ const RejectedRecruitersContent = () => {
                                                     className="rounded-lg border object-cover"
                                                 />
                                             ) : (
-                                                <div className="w-[120px] h-[120px] rounded-lg border bg-muted flex items-center justify-center text-muted-foreground">
+                                                <div className="w-30 h-30 rounded-lg border bg-muted flex items-center justify-center text-muted-foreground">
                                                     <User className="h-10 w-10" />
                                                 </div>
                                             )}
@@ -267,7 +269,7 @@ const RejectedRecruitersContent = () => {
                                                     className="rounded-lg border object-cover"
                                                 />
                                             ) : (
-                                                <div className="w-[120px] h-[120px] rounded-lg border bg-muted flex items-center justify-center text-muted-foreground">
+                                                <div className="w-30 h-30 rounded-lg border bg-muted flex items-center justify-center text-muted-foreground">
                                                     <Building2 className="h-10 w-10" />
                                                 </div>
                                             )}
@@ -307,51 +309,6 @@ const RejectedRecruitersContent = () => {
                 </div>
             )}
 
-            {/* Delete confirmation */}
-            <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Permanently Delete Recruiter?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This will permanently delete the recruiter and all associated data from the database.
-                            This action <strong>cannot be undone</strong>.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => deleteId && doDelete(deleteId)}
-                            disabled={deleting}
-                            className="bg-destructive hover:bg-destructive/90"
-                        >
-                            {deleting ? "Deleting..." : "Delete Permanently"}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            {/* Re-approve confirmation */}
-            <AlertDialog open={!!reApproveId} onOpenChange={(open) => !open && setReApproveId(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Re-Approve Recruiter?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This will approve the recruiter account and send them a verification email.
-                            They will be able to log in and post jobs immediately.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => reApproveId && doApprove(reApproveId)}
-                            disabled={approving}
-                            className="bg-green-600 hover:bg-green-700"
-                        >
-                            {approving ? "Approving..." : "Re-Approve"}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </div>
     );
 };

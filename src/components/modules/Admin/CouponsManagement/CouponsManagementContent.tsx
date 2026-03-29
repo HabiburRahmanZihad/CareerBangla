@@ -1,15 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { swalDanger } from "@/lib/swal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,7 +81,6 @@ const DEFAULT_FORM = {
 const CouponsManagementContent = () => {
     const queryClient = useQueryClient();
     const [showForm, setShowForm] = useState(false);
-    const [deleteId, setDeleteId] = useState<string | null>(null);
     const [form, setForm] = useState(DEFAULT_FORM);
     const [filterType, setFilterType] = useState<string>("all");
     const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -115,7 +106,6 @@ const CouponsManagementContent = () => {
         onSuccess: () => {
             toast.success("Coupon deleted");
             queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
-            setDeleteId(null);
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to delete coupon"),
     });
@@ -288,7 +278,7 @@ const CouponsManagementContent = () => {
                                     <div className="space-y-1.5">
                                         <Label>User Discount (BDT) *</Label>
                                         <Input type="number" min={1} placeholder="e.g. 200" value={form.discountAmount} onChange={e => setField("discountAmount", e.target.value)} />
-                                        <p className="text-xs text-muted-foreground">Amount deducted from user's subscription price</p>
+                                        <p className="text-xs text-muted-foreground">Amount deducted from user&apos;s subscription price</p>
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label>Recruiter Commission (BDT) *</Label>
@@ -448,10 +438,18 @@ const CouponsManagementContent = () => {
                                             </div>
                                         </div>
                                         <Button
+                                            type="button"
                                             variant="ghost"
                                             size="icon"
                                             className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                            onClick={() => setDeleteId(coupon.id)}
+                                            onClick={async () => {
+                                                const r = await swalDanger({
+                                                    title: "Delete Coupon?",
+                                                    text: `Permanently delete coupon "${coupon.code}"? Anyone with this code will no longer be able to use it.`,
+                                                    confirmText: "Delete",
+                                                });
+                                                if (r.isConfirmed) doDelete(coupon.id);
+                                            }}
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
@@ -463,24 +461,6 @@ const CouponsManagementContent = () => {
                 </div>
             )}
 
-            {/* Delete Confirmation */}
-            <AlertDialog open={!!deleteId} onOpenChange={open => !open && setDeleteId(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Coupon?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This will permanently delete the coupon. Anyone who has the code will no longer be able to use it.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                        onClick={() => deleteId && doDelete(deleteId)}
-                        className="bg-destructive hover:bg-destructive/90"
-                    >
-                        Delete
-                    </AlertDialogAction>
-                </AlertDialogContent>
-            </AlertDialog>
         </div>
     );
 };
