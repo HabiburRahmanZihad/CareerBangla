@@ -5,7 +5,7 @@ import { getIconComponent } from "@/lib/iconMapper";
 import { cn } from "@/lib/utils";
 import { NavSection } from "@/types/dashboard.types";
 import { UserInfo } from "@/types/user.types";
-import { Crown, LogOut } from "lucide-react";
+import { Crown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -140,17 +140,6 @@ const DashboardSidebarContent = ({ dashboardHome, navItems, userInfo }: Dashboar
                         </div>
                         <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{roleLabel}</p>
                     </div>
-                </Link>
-
-                {/* Logout shortcut */}
-                <Link
-                    href="/login"
-                    className="flex items-center gap-3 px-3 py-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/8 transition-colors group"
-                >
-                    <div className="h-7 w-7 rounded-lg bg-muted/50 group-hover:bg-destructive/10 flex items-center justify-center shrink-0 transition-colors">
-                        <LogOut className="h-3.5 w-3.5" />
-                    </div>
-                    <span className="text-sm font-semibold">Logout</span>
                 </Link>
             </div>
         </div>
