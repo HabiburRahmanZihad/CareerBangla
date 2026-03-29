@@ -175,7 +175,7 @@ const NotificationDropdown = ({ userRole }: { userRole?: UserRole }) => {
 
     const { data: notificationsData } = useQuery({
         queryKey: ["notifications-dropdown"],
-        queryFn: () => getMyNotifications({ limit: 10 }),
+        queryFn: () => getMyNotifications({ limit: 50 }),
     });
 
     const { mutate: markRead } = useMutation({
@@ -211,10 +211,10 @@ const NotificationDropdown = ({ userRole }: { userRole?: UserRole }) => {
                 align="end"
                 sideOffset={10}
                 collisionPadding={12}
-                className="w-80 max-w-[calc(100vw-24px)] p-0 rounded-2xl border border-border/50 shadow-2xl shadow-black/10 overflow-hidden"
+                className="w-80 max-w-[calc(100vw-24px)] p-0 rounded-2xl border border-border/50 shadow-2xl shadow-black/10 flex flex-col max-h-[80vh]"
             >
                 {/* ── Header ───────────────────────────────────────────────── */}
-                <div className="px-4 py-3.5 border-b border-border/30 bg-muted/10 flex items-center justify-between gap-2">
+                <div className="px-4 py-3.5 border-b border-border/30 bg-muted/10 flex items-center justify-between gap-2 shrink-0">
                     <div className="flex items-center gap-2">
                         <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                             <Bell className="h-3.5 w-3.5 text-primary" />
@@ -248,7 +248,7 @@ const NotificationDropdown = ({ userRole }: { userRole?: UserRole }) => {
                 </div>
 
                 {/* ── Notification list ─────────────────────────────────────── */}
-                <ScrollArea className="max-h-90">
+                <ScrollArea className="flex-1 min-h-0 overflow-hidden">
                     {notifications.length > 0 ? (
                         <div className="p-2 space-y-0.5">
                             {/* Unread section label */}
@@ -290,7 +290,7 @@ const NotificationDropdown = ({ userRole }: { userRole?: UserRole }) => {
                 </ScrollArea>
 
                 {/* ── Footer ───────────────────────────────────────────────── */}
-                <div className="border-t border-border/30 bg-muted/5">
+                <div className="border-t border-border/30 bg-muted/5 shrink-0">
                     <button
                         type="button"
                         onClick={() => router.push(notificationsPagePath)}
