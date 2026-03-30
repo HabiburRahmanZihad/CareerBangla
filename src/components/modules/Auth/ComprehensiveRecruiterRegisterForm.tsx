@@ -232,11 +232,15 @@ const ComprehensiveRecruiterRegisterForm = () => {
 
                 <div className="relative z-10 w-full max-w-md text-center space-y-6">
                     {/* Logo */}
-                    <Link href="/" className="inline-flex items-center gap-2.5 mb-2">
-                        <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center">
-                            <Briefcase className="h-5 w-5 text-primary-foreground" />
-                        </div>
-                        <span className="text-xl font-extrabold text-primary tracking-tight">CareerBangla</span>
+                    <Link href="/">
+                        <Image
+                            src="/carrerBanglalogo.png"
+                            alt="CareerBangla"
+                            width={158}
+                            height={48}
+                            priority
+                            className="object-contain"
+                        />
                     </Link>
 
                     <div className="backdrop-blur-xl bg-white/80 dark:bg-white/5 border border-white/60 dark:border-white/10 rounded-2xl shadow-2xl shadow-black/10 p-10 space-y-5">
@@ -278,11 +282,15 @@ const ComprehensiveRecruiterRegisterForm = () => {
 
                 {/* ── Brand header ──────────────────────────────────────────── */}
                 <div className="flex items-center justify-between mb-8">
-                    <Link href="/" className="inline-flex items-center gap-2.5">
-                        <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center">
-                            <Briefcase className="h-5 w-5 text-primary-foreground" />
-                        </div>
-                        <span className="text-xl font-extrabold text-primary tracking-tight">CareerBangla</span>
+                    <Link href="/">
+                        <Image
+                            src="/carrerBanglalogo.png"
+                            alt="CareerBangla"
+                            width={158}
+                            height={48}
+                            priority
+                            className="object-contain"
+                        />
                     </Link>
                     <Link href="/register" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors font-medium">
                         <ArrowLeft className="h-3.5 w-3.5" />

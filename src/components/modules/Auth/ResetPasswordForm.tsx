@@ -1,5 +1,6 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import CareerBanglaLogo from "@/components/shared/CareerBanglaLogo";
 import AppField from "@/components/shared/form/AppField";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -14,7 +15,6 @@ import {
     AlertCircle,
     ArrowLeft,
     ArrowRight,
-    Briefcase,
     CheckCircle2,
     Eye,
     EyeOff,
@@ -23,6 +23,7 @@ import {
     RotateCcw,
     ShieldCheck,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -138,11 +139,15 @@ const ResetPasswordForm = ({ email, phone }: ResetPasswordFormProps) => {
 
                 {/* Logo */}
                 <div className="relative z-10">
-                    <Link href="/" className="inline-flex items-center gap-2.5">
-                        <div className="h-9 w-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
-                            <Briefcase className="h-5 w-5 text-white" />
-                        </div>
-                        <span className="text-xl font-extrabold text-white tracking-tight">CareerBangla</span>
+                    <Link href="/">
+                        <Image
+                            src="/carrerBanglalogo.png"
+                            alt="CareerBangla"
+                            width={158}
+                            height={48}
+                            priority
+                            className="object-contain"
+                        />
                     </Link>
                 </div>
 
@@ -178,13 +183,12 @@ const ResetPasswordForm = ({ email, phone }: ResetPasswordFormProps) => {
                         ].map((step, i) => (
                             <div key={i} className="flex items-start gap-4">
                                 <div className="flex flex-col items-center shrink-0">
-                                    <div className={`h-8 w-8 rounded-full border flex items-center justify-center transition-all ${
-                                        step.done
-                                            ? "bg-white/30 border-white/50"
-                                            : step.active
+                                    <div className={`h-8 w-8 rounded-full border flex items-center justify-center transition-all ${step.done
+                                        ? "bg-white/30 border-white/50"
+                                        : step.active
                                             ? "bg-white/20 border-white/40 ring-2 ring-white/30 ring-offset-1 ring-offset-transparent"
                                             : "bg-white/10 border-white/20"
-                                    }`}>
+                                        }`}>
                                         {step.done
                                             ? <CheckCircle2 className="h-4 w-4 text-white" />
                                             : <span className="text-xs font-bold text-white">{i + 1}</span>
@@ -226,11 +230,8 @@ const ResetPasswordForm = ({ email, phone }: ResetPasswordFormProps) => {
 
                 <div className="relative z-10 w-full max-w-105">
                     {/* Mobile logo */}
-                    <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-                        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                            <Briefcase className="h-4 w-4 text-primary-foreground" />
-                        </div>
-                        <span className="text-lg font-extrabold text-primary">CareerBangla</span>
+                    <div className="lg:hidden flex items-center justify-center mb-8">
+                        <CareerBanglaLogo size="md" withText={true} href="/" isLink={true} />
                     </div>
 
                     {/* Card */}
@@ -378,18 +379,16 @@ const ResetPasswordForm = ({ email, phone }: ResetPasswordFormProps) => {
                                                             {[1, 2, 3, 4, 5].map((level) => (
                                                                 <div
                                                                     key={level}
-                                                                    className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                                                                        s.score >= level ? s.color : "bg-muted"
-                                                                    }`}
+                                                                    className={`h-1 flex-1 rounded-full transition-all duration-300 ${s.score >= level ? s.color : "bg-muted"
+                                                                        }`}
                                                                 />
                                                             ))}
                                                         </div>
-                                                        <p className={`text-xs font-medium ${
-                                                            s.score <= 1 ? "text-red-500"
+                                                        <p className={`text-xs font-medium ${s.score <= 1 ? "text-red-500"
                                                             : s.score <= 2 ? "text-amber-500"
-                                                            : s.score <= 3 ? "text-yellow-600"
-                                                            : "text-emerald-600 dark:text-emerald-400"
-                                                        }`}>
+                                                                : s.score <= 3 ? "text-yellow-600"
+                                                                    : "text-emerald-600 dark:text-emerald-400"
+                                                            }`}>
                                                             {s.label}
                                                         </p>
                                                     </div>

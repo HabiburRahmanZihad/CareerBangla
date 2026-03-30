@@ -5,7 +5,8 @@ import UserDropdown from "@/components/modules/Dashboard/Layout/UserDropdown";
 import { UserRole } from "@/lib/authUtils";
 import { cn } from "@/lib/utils";
 import { UserInfo } from "@/types/user.types";
-import { Briefcase, LogIn, Menu, UserPlus, X } from "lucide-react";
+import { LogIn, Menu, UserPlus, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -31,20 +32,14 @@ export default function Navbar({ user }: NavbarProps) {
                 <nav className="glass glass-shadow glass-border rounded-2xl">
                     <div className="flex h-19 items-center justify-between px-4 sm:px-6 lg:px-8">
                         {/* logo */}
-                        <Link href="/" className="flex items-center gap-3">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-                                <Briefcase className="h-5 w-5" />
-                            </div>
-
-                            <div className="flex flex-col leading-none">
-                                <span className="text-lg font-extrabold tracking-tight text-foreground">
-                                    CareerBangla
-                                </span>
-                                <span className="text-xs font-medium text-muted-foreground">
-                                    Find your dream job
-                                </span>
-                            </div>
-                        </Link>
+                        <Image
+                            src="/carrerBanglalogo.png"
+                            alt="CareerBangla"
+                            width={158}
+                            height={48}
+                            priority
+                            className="object-contain"
+                        />
 
                         {/* desktop nav */}
                         <div className="hidden items-center gap-8 lg:flex">

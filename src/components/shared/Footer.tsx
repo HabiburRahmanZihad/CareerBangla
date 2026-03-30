@@ -1,4 +1,4 @@
-import { Briefcase } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 const Footer = () => {
@@ -9,8 +9,15 @@ const Footer = () => {
                     {/* Brand */}
                     <div className="space-y-3">
                         <Link href="/" className="flex items-center gap-2">
-                            <Briefcase className="h-6 w-6 text-primary" />
-                            <span className="text-xl font-bold text-primary">CareerBangla</span>
+
+                            <Image
+                                src="/carrerBanglalogo.png"
+                                alt="CareerBangla"
+                                width={158}
+                                height={48}
+                                priority
+                                className="object-contain"
+                            />
                         </Link>
                         <p className="text-sm text-muted-foreground">
                             Your trusted job portal platform in Bangladesh. Connect with top recruiters and find your dream career.

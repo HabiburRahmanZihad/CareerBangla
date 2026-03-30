@@ -2,9 +2,10 @@ import DeviceLimitActions from "@/components/modules/Auth/DeviceLimitActions";
 import { getDefaultDashboardRoute } from "@/lib/authUtils";
 import { getUserInfo } from "@/services/auth.services";
 import {
-    AlertTriangle, Briefcase, Monitor,
+    AlertTriangle, Monitor,
     MonitorSmartphone, Shield, Smartphone,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -41,11 +42,15 @@ const DeviceLimitPage = async ({ searchParams }: DeviceLimitPageProps) => {
 
                 {/* Brand */}
                 <div className="flex justify-center mb-8">
-                    <Link href="/" className="inline-flex items-center gap-2.5 group">
-                        <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30 group-hover:scale-105 transition-transform duration-200">
-                            <Briefcase className="h-5 w-5 text-white" />
-                        </div>
-                        <span className="text-xl font-black tracking-tight">CareerBangla</span>
+                    <Link href="/">
+                        <Image
+                            src="/carrerBanglalogo.png"
+                            alt="CareerBangla"
+                            width={158}
+                            height={48}
+                            priority
+                            className="object-contain"
+                        />
                     </Link>
                 </div>
 

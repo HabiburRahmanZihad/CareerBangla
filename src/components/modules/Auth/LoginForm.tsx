@@ -12,7 +12,6 @@ import { useMutation } from "@tanstack/react-query";
 import {
   AlertCircle,
   ArrowRight,
-  Briefcase,
   CheckCircle2,
   Eye,
   EyeOff,
@@ -20,6 +19,7 @@ import {
   LogIn,
   Sparkles,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -124,11 +124,15 @@ const LoginForm = ({ redirectPath, oauthError, forceLogoutMode = false }: LoginF
 
         {/* Logo */}
         <div className="relative z-10">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
-              <Briefcase className="h-8 w-8 text-white" />
-            </div>
-            <span className="text-5xl font-extrabold text-white tracking-tight">CareerBangla</span>
+          <Link href="/">
+            <Image
+              src="/carrerBanglalogo.png"
+              alt="CareerBangla"
+              width={200}
+              height={48}
+              priority
+              className="object-contain"
+            />
           </Link>
         </div>
 
@@ -200,11 +204,17 @@ const LoginForm = ({ redirectPath, oauthError, forceLogoutMode = false }: LoginF
 
         <div className="relative z-10 w-full max-w-105">
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <Briefcase className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-extrabold text-primary">CareerBangla</span>
+          <div className="lg:hidden flex items-center justify-center mb-8">
+            <Link href="/">
+              <Image
+                src="/carrerBanglalogo.png"
+                alt="CareerBangla"
+                width={158}
+                height={48}
+                priority
+                className="object-contain"
+              />
+            </Link>
           </div>
 
           {/* Card */}

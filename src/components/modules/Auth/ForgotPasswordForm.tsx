@@ -11,12 +11,12 @@ import {
     AlertCircle,
     ArrowLeft,
     ArrowRight,
-    Briefcase,
     KeyRound,
     LockKeyholeOpen,
     Mail,
     ShieldCheck,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -86,11 +86,15 @@ const ForgotPasswordForm = () => {
 
                 {/* Logo */}
                 <div className="relative z-10">
-                    <Link href="/" className="inline-flex items-center gap-2.5">
-                        <div className="h-9 w-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
-                            <Briefcase className="h-5 w-5 text-white" />
-                        </div>
-                        <span className="text-xl font-extrabold text-white tracking-tight">CareerBangla</span>
+                    <Link href="/">
+                        <Image
+                            src="/carrerBanglalogo.png"
+                            alt="CareerBangla"
+                            width={158}
+                            height={48}
+                            priority
+                            className="object-contain"
+                        />
                     </Link>
                 </div>
 
@@ -158,11 +162,17 @@ const ForgotPasswordForm = () => {
 
                 <div className="relative z-10 w-full max-w-105">
                     {/* Mobile logo */}
-                    <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-                        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                            <Briefcase className="h-4 w-4 text-primary-foreground" />
-                        </div>
-                        <span className="text-lg font-extrabold text-primary">CareerBangla</span>
+                    <div className="lg:hidden flex items-center justify-center mb-8">
+                        <Link href="/">
+                            <Image
+                                src="/carrerBanglalogo.png"
+                                alt="CareerBangla"
+                                width={158}
+                                height={48}
+                                priority
+                                className="object-contain"
+                            />
+                        </Link>
                     </div>
 
                     {/* Card */}

@@ -46,8 +46,15 @@ const DashboardSidebarContent = ({ navItems, userInfo }: DashboardSidebarContent
 
             {/* ── Logo ──────────────────────────────────────────────────── */}
             <div className="flex h-16 items-center px-5 border-b border-border/40 shrink-0">
-                <Link href="/" className="flex items-center gap-2.5 group">
-                    <span className="text-2xl font-black text-primary tracking-tight">CareerBangla</span>
+                <Link href="/">
+                    <Image
+                        src="/carrerBanglalogo.png"
+                        alt="CareerBangla"
+                        width={158}
+                        height={48}
+                        priority
+                        className="object-contain"
+                    />
                 </Link>
             </div>
 
