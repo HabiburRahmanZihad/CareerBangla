@@ -1,10 +1,18 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { swalDanger } from "@/lib/swal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { COUNTRIES, getDistrictsForCountry } from "@/constants/countries";
 import envConfig from "@/lib/envConfig";
+import { swalDanger } from "@/lib/swal";
 import { deleteMyAccount, updateMyProfile } from "@/services/auth.services";
 import { getMyRecruiterProfile } from "@/services/recruiter.services";
 import { getMyResume } from "@/services/resume.services";
@@ -40,6 +48,11 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
     const [isEditingPhone, setIsEditingPhone] = useState(false);
     const [phoneValue, setPhoneValue] = useState(userInfo.phone || "");
     const [isSavingPhone, setIsSavingPhone] = useState(false);
+    const [isEditingCountry, setIsEditingCountry] = useState(false);
+    const [countryValue, setCountryValue] = useState(userInfo.country || "");
+    const [districtValue, setDistrictValue] = useState("");
+    const [isSavingCountry, setIsSavingCountry] = useState(false);
+    const availableDistricts = getDistrictsForCountry(countryValue);
 
     const { mutate: deleteAccount, isPending: isDeleting } = useMutation({
         mutationFn: () => deleteMyAccount(),
@@ -134,6 +147,28 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
             toast.error(err?.response?.data?.message || "Failed to update phone");
         } finally {
             setIsSavingPhone(false);
+        }
+    };
+
+    // ── Country save ──────────────────────────────────────────────────────────
+    const handleCountrySave = async () => {
+        if (!countryValue.trim()) {
+            toast.error("Please select a country");
+            return;
+        }
+        setIsSavingCountry(true);
+        try {
+            const fullCountry = countryValue + (districtValue ? `, ${districtValue}` : "");
+            await updateMyProfile({ country: fullCountry });
+            toast.success("Country information updated!");
+            setIsEditingCountry(false);
+            setDistrictValue("");
+            await queryClient.invalidateQueries({ queryKey: ["my-resume"] });
+            router.refresh();
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message || "Failed to update country");
+        } finally {
+            setIsSavingCountry(false);
         }
     };
 
@@ -310,6 +345,95 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                                             type="button"
                                             title="Edit phone number"
                                             onClick={() => setIsEditingPhone(true)}
+                                            className="h-6 w-6 rounded-md hover:bg-muted flex items-center justify-center ml-1 shrink-0"
+                                        >
+                                            <Edit2 className="h-3 w-3 text-muted-foreground" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Country — inline editable with optional district selector for Bangladesh */}
+                        <div className="flex items-start gap-2.5 py-2.5 border-b border-border/20">
+                            <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                                <Globe className="h-3 w-3 text-primary/80" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Country / Region</p>
+                                {isEditingCountry ? (
+                                    <div className="flex flex-col gap-2 mt-2">
+                                        <div>
+                                            <Select value={countryValue} onValueChange={(val) => { setCountryValue(val); setDistrictValue(""); }}>
+                                                <SelectTrigger className="h-7 text-xs rounded-lg">
+                                                    <SelectValue placeholder="Select a country..." />
+                                                </SelectTrigger>
+                                                <SelectContent className="max-h-64">
+                                                    {COUNTRIES.map((country) => (
+                                                        <SelectItem key={country} value={country}>
+                                                            {country}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        {/* District selector for Bangladesh */}
+                                        {countryValue === "Bangladesh" && availableDistricts.length > 0 && (
+                                            <div>
+                                                <p className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Select District</p>
+                                                <Select value={districtValue} onValueChange={setDistrictValue}>
+                                                    <SelectTrigger className="h-7 text-xs rounded-lg">
+                                                        <SelectValue placeholder="Choose a district..." />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="max-h-64">
+                                                        {availableDistricts.map((district) => (
+                                                            <SelectItem key={district} value={district}>
+                                                                {district}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center gap-1.5">
+                                            <button
+                                                type="button"
+                                                title="Save country"
+                                                onClick={handleCountrySave}
+                                                disabled={isSavingCountry}
+                                                className="flex-1 h-7 px-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center"
+                                            >
+                                                {isSavingCountry ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                title="Cancel editing"
+                                                onClick={() => {
+                                                    setIsEditingCountry(false);
+                                                    setCountryValue(userInfo.country ? userInfo.country.split(",")[0].trim() : "");
+                                                    setDistrictValue("");
+                                                }}
+                                                className="h-7 w-7 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground shrink-0"
+                                            >
+                                                <X className="h-3.5 w-3.5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-between mt-0.5">
+                                        <p className="text-sm font-medium">
+                                            {userInfo.country || <span className="text-muted-foreground/50 italic text-xs">Not set</span>}
+                                        </p>
+                                        <button
+                                            type="button"
+                                            title="Edit country"
+                                            onClick={() => {
+                                                setIsEditingCountry(true);
+                                                setCountryValue(userInfo.country ? userInfo.country.split(",")[0].trim() : "");
+                                                setDistrictValue(userInfo.country && userInfo.country.includes(",") ? userInfo.country.split(",")[1].trim() : "");
+                                            }}
                                             className="h-6 w-6 rounded-md hover:bg-muted flex items-center justify-center ml-1 shrink-0"
                                         >
                                             <Edit2 className="h-3 w-3 text-muted-foreground" />
