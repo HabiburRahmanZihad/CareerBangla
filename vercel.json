@@ -8,12 +8,7 @@
         "sfo1",
         "lhr1"
     ],
-    "env": {
-        "NEXT_PUBLIC_API_BASE_URL": {
-            "description": "API base URL for production",
-            "required": true
-        }
-    },
+    "env": {},
     "git": {
         "deploymentEnabled": true
     },
