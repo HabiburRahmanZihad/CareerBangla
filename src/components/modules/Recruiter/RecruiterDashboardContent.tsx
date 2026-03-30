@@ -155,7 +155,7 @@ const BarTip = ({ active, payload, label }: BarTipProps) => {
 
 // ── Main component ────────────────────────────────────────────────────────────
 interface RecruiterDashboardContentProps {
-    userInfo: IUserWithDetails;
+    userInfo: Pick<IUserWithDetails, "name" | "isPremium" | "recruiter">;
 }
 
 const RecruiterDashboardContent = ({ userInfo }: RecruiterDashboardContentProps) => {
