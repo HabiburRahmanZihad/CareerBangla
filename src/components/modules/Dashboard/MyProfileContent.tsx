@@ -1,5 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* Note: This file contains dynamic inline styles for visual effects.
+   These are necessary for computed gradients and responsive design elements. */
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -172,6 +174,11 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
         }
     };
 
+    const dotGridStyle = {
+        backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
+        backgroundSize: "20px 20px",
+    } as const;
+
     return (
         <div className="w-full pb-12 space-y-5">
 
@@ -185,7 +192,7 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
                     {/* Dot grid */}
                     <div
                         className="absolute inset-0 opacity-10"
-                        style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "20px 20px" }}
+                        style={dotGridStyle}
                     />
                     {/* Ambient blobs */}
                     <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />

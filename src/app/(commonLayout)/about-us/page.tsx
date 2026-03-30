@@ -159,8 +159,8 @@ export default function AboutUsPage() {
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`px-6 py-3 rounded-lg font-semibold transition-all ${activeTab === tab.id
-                                            ? "bg-orange-500 text-white shadow-lg"
-                                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                                        ? "bg-orange-500 text-white shadow-lg"
+                                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                                         }`}
                                 >
                                     {tab.label}
@@ -339,7 +339,7 @@ export default function AboutUsPage() {
                         <Button
                             size="lg"
                             variant="outline"
-                            className="border-2 border-white text-white hover:bg-white/10 px-8 font-bold"
+                            className="border-2 border-white bg-white/10 text-white  px-8 font-bold"
                             asChild
                         >
                             <Link href="/register">

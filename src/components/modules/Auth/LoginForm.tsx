@@ -49,6 +49,12 @@ const GoogleIcon = () => (
   </svg>
 );
 
+// ── Styles ────────────────────────────────────────────────────────────────────
+const DOT_GRID_STYLE = {
+  backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
+  backgroundSize: "32px 32px",
+} as const;
+
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface LoginFormProps {
   redirectPath?: string;
@@ -113,10 +119,7 @@ const LoginForm = ({ redirectPath, oauthError, forceLogoutMode = false }: LoginF
         {/* Dot grid */}
         <div
           className="pointer-events-none absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
+          style={DOT_GRID_STYLE}
         />
 
         {/* Logo */}

@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { swalConfirm, swalDanger } from "@/lib/swal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+import { swalConfirm, swalDanger } from "@/lib/swal";
 import { approveRecruiter, getAllRecruiters, rejectRecruiter, updateRecruiterData } from "@/services/recruiter.services";
 import { IRecruiterProfile } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -171,164 +170,160 @@ const RecruiterApplicationsContent = () => {
                     </CardContent>
                 </Card>
             ) : (
-                {/* ── Pending Applications Grid ────────────────────────────────────── */ }
-                < div className="space-y-3">
-            {recruiters.map((recruiter: IRecruiterProfile) => (
-                <Card
-                    key={recruiter.id}
-                    className="border-border/40 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all group overflow-hidden"
-                >
-                    <CardHeader className="pb-3 space-y-3 bg-linear-to-br from-muted/50 to-transparent">
-                        <div className="flex items-start justify-between gap-3 flex-wrap">
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <Building2 className="h-4 w-4 text-primary shrink-0" />
-                                    <h3 className="font-bold text-lg leading-tight truncate">{recruiter.name}</h3>
+                <div className="space-y-3">
+                    {/* ── Pending Applications Grid ────────────────────────────────────── */}
+                    {recruiters.map((recruiter: IRecruiterProfile) => (
+                        <Card
+                            key={recruiter.id}
+                            className="border-border/40 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all group overflow-hidden"
+                        >
+                            <CardHeader className="pb-3 space-y-3 bg-linear-to-br from-muted/50 to-transparent">
+                                <div className="flex items-start justify-between gap-3 flex-wrap">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <Building2 className="h-4 w-4 text-primary shrink-0" />
+                                            <h3 className="font-bold text-lg leading-tight truncate">{recruiter.name}</h3>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground flex items-center gap-2">
+                                            <Mail className="h-3.5 w-3.5 shrink-0" />
+                                            {recruiter.email}
+                                        </p>
+                                    </div>
+                                    <Badge className="bg-primary/10 text-primary border-primary/30 font-bold">PENDING</Badge>
                                 </div>
-                                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                                    <Mail className="h-3.5 w-3.5 shrink-0" />
-                                    {recruiter.email}
-                                </p>
-                            </div>
-                            <Badge className="bg-primary/10 text-primary border-primary/30 font-bold">PENDING</Badge>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {/* Info Grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {recruiter.companyName && (
-                                <div className="text-sm">
-                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Company</p>
-                                    <p className="font-semibold truncate">{recruiter.companyName}</p>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {/* Info Grid */}
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {recruiter.companyName && (
+                                        <div className="text-sm">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Company</p>
+                                            <p className="font-semibold truncate">{recruiter.companyName}</p>
+                                        </div>
+                                    )}
+                                    {recruiter.designation && (
+                                        <div className="text-sm">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Position</p>
+                                            <p className="font-semibold truncate">{recruiter.designation}</p>
+                                        </div>
+                                    )}
+                                    {recruiter.industry && (
+                                        <div className="text-sm">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Industry</p>
+                                            <p className="font-semibold truncate">{recruiter.industry}</p>
+                                        </div>
+                                    )}
+                                    {recruiter.companySize && (
+                                        <div className="text-sm">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Company Size</p>
+                                            <p className="font-semibold truncate">{recruiter.companySize}</p>
+                                        </div>
+                                    )}
+                                    {recruiter.contactNumber && (
+                                        <div className="text-sm">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Phone</p>
+                                            <p className="font-semibold truncate">{recruiter.contactNumber}</p>
+                                        </div>
+                                    )}
+                                    {recruiter.createdAt && (
+                                        <div className="text-sm">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Applied</p>
+                                            <p className="font-semibold truncate">{new Date(recruiter.createdAt).toLocaleDateString()}</p>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                            {recruiter.designation && (
-                                <div className="text-sm">
-                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Position</p>
-                                    <p className="font-semibold truncate">{recruiter.designation}</p>
-                                </div>
-                            )}
-                            {recruiter.industry && (
-                                <div className="text-sm">
-                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Industry</p>
-                                    <p className="font-semibold truncate">{recruiter.industry}</p>
-                                </div>
-                            )}
-                            {recruiter.companySize && (
-                                <div className="text-sm">
-                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Company Size</p>
-                                    <p className="font-semibold truncate">{recruiter.companySize}</p>
-                                </div>
-                            )}
-                            {recruiter.contactNumber && (
-                                <div className="text-sm">
-                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Phone</p>
-                                    <p className="font-semibold truncate">{recruiter.contactNumber}</p>
-                                </div>
-                            )}
-                            {recruiter.createdAt && (
-                                <div className="text-sm">
-                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Applied</p>
-                                    <p className="font-semibold truncate">{new Date(recruiter.createdAt).toLocaleDateString()}</p>
-                                </div>
-                            )}
-                        </div>
 
-                        {/* Expandable Details */}
-                        {expandedDetailsId === recruiter.id && (
-                            <div className="border-t border-border/40 pt-4 space-y-2">
-                                <RecruiterDetailsView recruiter={recruiter} />
-                            </div>
-                        )}
-
-                        {/* Action Buttons */}
-                        <div className="flex flex-wrap gap-2 pt-2 border-t border-border/40">
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                    setEditingRecruiter(recruiter);
-                                    setIsEditModalOpen(true);
-                                }}
-                                className="rounded-lg"
-                            >
-                                <Edit2 className="mr-1.5 h-3.5 w-3.5" />
-                                Edit
-                            </Button>
-                            <Button
-                                size="sm"
-                                variant={expandedDetailsId === recruiter.id ? "default" : "outline"}
-                                onClick={() => setExpandedDetailsId(expandedDetailsId === recruiter.id ? null : recruiter.id)}
-                                className="rounded-lg"
-                            >
-                                {expandedDetailsId === recruiter.id ? (
-                                    <>
-                                        <ChevronUp className="mr-1.5 h-3.5 w-3.5" />
-                                        Hide
-                                    </>
-                                ) : (
-                                    <>
-                                        <ChevronDown className="mr-1.5 h-3.5 w-3.5" />
-                                        View
-                                    </>
+                                {/* Expandable Details */}
+                                {expandedDetailsId === recruiter.id && (
+                                    <div className="border-t border-border/40 pt-4 space-y-2">
+                                        <RecruiterDetailsView recruiter={recruiter} />
+                                    </div>
                                 )}
-                            </Button>
-                            <Button
-                                size="sm"
-                                className="rounded-lg bg-primary hover:bg-orange-700 text-primary-foreground ms-auto"
-                                onClick={async () => {
-                                    const r = await swalConfirm({
-                                        title: "Approve Recruiter?",
-                                        text: "This will activate their account and send a verification email.",
-                                        confirmText: "Approve",
-                                        icon: "question",
-                                    });
-                                    if (r.isConfirmed) approve(recruiter.id);
-                                }}
-                            >
-                                <CheckCircle className="mr-1.5 h-3.5 w-3.5" />
-                                Approve
-                            </Button>
-                            <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={async () => {
-                                    const r = await swalDanger({
-                                        title: "Reject This Application?",
-                                        text: "The recruiter will be notified about the rejection.",
-                                        confirmText: "Reject",
-                                    });
-                                    if (r.isConfirmed) reject(recruiter.id);
-                                }}
-                                className="rounded-lg"
-                            >
-                                <XCircle className="mr-1.5 h-3.5 w-3.5" />
-                                Reject
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            ))}
-        </div>
-    )
-}
+
+                                {/* Action Buttons */}
+                                <div className="flex flex-wrap gap-2 pt-2 border-t border-border/40">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                            setEditingRecruiter(recruiter);
+                                            setIsEditModalOpen(true);
+                                        }}
+                                        className="rounded-lg"
+                                    >
+                                        <Edit2 className="mr-1.5 h-3.5 w-3.5" />
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant={expandedDetailsId === recruiter.id ? "default" : "outline"}
+                                        onClick={() => setExpandedDetailsId(expandedDetailsId === recruiter.id ? null : recruiter.id)}
+                                        className="rounded-lg"
+                                    >
+                                        {expandedDetailsId === recruiter.id ? (
+                                            <>
+                                                <ChevronUp className="mr-1.5 h-3.5 w-3.5" />
+                                                Hide
+                                            </>
+                                        ) : (
+                                            <>
+                                                <ChevronDown className="mr-1.5 h-3.5 w-3.5" />
+                                                View
+                                            </>
+                                        )}
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        className="rounded-lg bg-primary hover:bg-orange-700 text-primary-foreground ms-auto"
+                                        onClick={async () => {
+                                            const r = await swalConfirm({
+                                                title: "Approve Recruiter?",
+                                                text: "This will activate their account and send a verification email.",
+                                                confirmText: "Approve",
+                                                icon: "question",
+                                            });
+                                            if (r.isConfirmed) approve(recruiter.id);
+                                        }}
+                                    >
+                                        <CheckCircle className="mr-1.5 h-3.5 w-3.5" />
+                                        Approve
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={async () => {
+                                            const r = await swalDanger({
+                                                title: "Reject This Application?",
+                                                text: "The recruiter will be notified about the rejection.",
+                                                confirmText: "Reject",
+                                            });
+                                            if (r.isConfirmed) reject(recruiter.id);
+                                        }}
+                                        className="rounded-lg"
+                                    >
+                                        <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                                        Reject
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
                     ))}
-                </div >
+                </div>
             )}
 
-{
-    editingRecruiter && (
-        <RecruiterEditModal
-            recruiter={editingRecruiter}
-            isOpen={isEditModalOpen}
-            onClose={() => {
-                setIsEditModalOpen(false);
-                setEditingRecruiter(null);
-            }}
-            onSave={(updatedData: any) => doUpdateRecruiterData({ recruiterId: editingRecruiter.id, data: updatedData })}
-        />
-    )
-}
+            {
+                editingRecruiter && (
+                    <RecruiterEditModal
+                        recruiter={editingRecruiter}
+                        isOpen={isEditModalOpen}
+                        onClose={() => {
+                            setIsEditModalOpen(false);
+                            setEditingRecruiter(null);
+                        }}
+                        onSave={(updatedData: any) => doUpdateRecruiterData({ recruiterId: editingRecruiter.id, data: updatedData })}
+                    />
+                )
+            }
         </div >
     );
 };

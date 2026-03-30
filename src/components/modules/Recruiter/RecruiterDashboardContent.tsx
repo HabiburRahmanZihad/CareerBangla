@@ -106,7 +106,13 @@ const StatCard = ({ title, value, sub, icon: Icon, iconClass, href, loading }: S
 );
 
 // ── Custom tooltips ──────────────────────────────────────────────────────────
-const AreaTip = ({ active, payload, label }: any) => {
+interface AreaTipProps {
+    active?: boolean;
+    payload?: Array<{ value: number }>;
+    label?: string | number;
+}
+
+const AreaTip = ({ active, payload, label }: AreaTipProps) => {
     if (!active || !payload?.length) return null;
     return (
         <div className="bg-background border rounded-lg shadow-lg px-3 py-2 text-sm">
@@ -116,7 +122,12 @@ const AreaTip = ({ active, payload, label }: any) => {
     );
 };
 
-const PieTip = ({ active, payload }: any) => {
+interface PieTipProps {
+    active?: boolean;
+    payload?: Array<{ name: string; value: number; payload: { fill: string } }>;
+}
+
+const PieTip = ({ active, payload }: PieTipProps) => {
     if (!active || !payload?.length) return null;
     return (
         <div className="bg-background border rounded-lg shadow-lg px-3 py-2 text-sm">
@@ -126,7 +137,13 @@ const PieTip = ({ active, payload }: any) => {
     );
 };
 
-const BarTip = ({ active, payload, label }: any) => {
+interface BarTipProps {
+    active?: boolean;
+    payload?: Array<{ value: number }>;
+    label?: string | number;
+}
+
+const BarTip = ({ active, payload, label }: BarTipProps) => {
     if (!active || !payload?.length) return null;
     return (
         <div className="bg-background border rounded-lg shadow-lg px-3 py-2 text-sm">

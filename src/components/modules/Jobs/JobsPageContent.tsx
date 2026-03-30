@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { JobGridCard, JobListCard, JOB_TYPE_LABELS } from "./JobCard";
+import { JOB_TYPE_LABELS, JobGridCard, JobListCard } from "./JobCard";
 import { DATE_POSTED_OPTIONS, FilterChip, JobsFilterPanel } from "./JobsFilterPanel";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -43,6 +43,11 @@ const SORT_OPTIONS = [
 ];
 
 const TRENDING = ["React Developer", "Python", "UI/UX", "Remote", "Internship", "Full Stack"];
+
+const DOT_GRID_STYLE = {
+    backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)",
+    backgroundSize: "28px 28px",
+} as const;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface JobsPageContentProps {
@@ -182,12 +187,10 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                 <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
                 <div className="pointer-events-none absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-primary/8 blur-2xl" />
                 {/* Dot grid */}
+                { }
                 <div
                     className="pointer-events-none absolute inset-0 opacity-[0.04]"
-                    style={{
-                        backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)",
-                        backgroundSize: "28px 28px",
-                    }}
+                    style={DOT_GRID_STYLE}
                 />
 
                 <div className="relative container mx-auto px-3 sm:px-4 py-10 sm:py-14 text-center">
@@ -465,11 +468,10 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                                                 type="button"
                                                 key={p}
                                                 onClick={() => handlePageChange(p as number)}
-                                                className={`h-8 w-8 rounded-lg text-sm font-semibold transition-all ${
-                                                    p === currentPage
-                                                        ? "bg-primary text-primary-foreground shadow-md scale-105"
-                                                        : "border bg-card hover:bg-muted"
-                                                }`}
+                                                className={`h-8 w-8 rounded-lg text-sm font-semibold transition-all ${p === currentPage
+                                                    ? "bg-primary text-primary-foreground shadow-md scale-105"
+                                                    : "border bg-card hover:bg-muted"
+                                                    }`}
                                             >
                                                 {p}
                                             </button>

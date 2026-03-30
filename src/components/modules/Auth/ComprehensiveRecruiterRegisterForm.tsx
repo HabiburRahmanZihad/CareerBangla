@@ -267,8 +267,6 @@ const ComprehensiveRecruiterRegisterForm = () => {
         );
     }
 
-    const stepIds = STEPS.map((s) => s.id);
-
     return (
         <div className="min-h-screen bg-background flex flex-col items-center justify-start px-4 py-10">
             {/* Background */}
@@ -407,7 +405,6 @@ const ComprehensiveRecruiterRegisterForm = () => {
 
                                         <form.Field
                                             name="designation"
-                                            validators={{ onChange: recruiterRegisterZodSchema.shape.designation }}
                                         >
                                             {(field) => (
                                                 <AppField
@@ -436,7 +433,6 @@ const ComprehensiveRecruiterRegisterForm = () => {
 
                                     <form.Field
                                         name="contactNumber"
-                                        validators={{ onChange: recruiterRegisterZodSchema.shape.contactNumber }}
                                     >
                                         {(field) => (
                                             <AppField
@@ -561,7 +557,6 @@ const ComprehensiveRecruiterRegisterForm = () => {
 
                                     <form.Field
                                         name="companyWebsite"
-                                        validators={{ onChange: recruiterRegisterZodSchema.shape.companyWebsite }}
                                     >
                                         {(field) => (
                                             <AppField
@@ -575,7 +570,6 @@ const ComprehensiveRecruiterRegisterForm = () => {
 
                                     <form.Field
                                         name="companyAddress"
-                                        validators={{ onChange: recruiterRegisterZodSchema.shape.companyAddress }}
                                     >
                                         {(field) => (
                                             <AppField
@@ -595,7 +589,6 @@ const ComprehensiveRecruiterRegisterForm = () => {
                                     {/* About Company */}
                                     <form.Field
                                         name="description"
-                                        validators={{ onChange: recruiterRegisterZodSchema.shape.description }}
                                     >
                                         {(field) => (
                                             <div className="space-y-1.5">

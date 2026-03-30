@@ -20,6 +20,7 @@ import {
     Users,
     Zap,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -236,12 +237,12 @@ export default function Home() {
             <section className="relative overflow-hidden bg-slate-950 py-20 md:py-28 lg:py-32">
                 {/* Ambient blobs */}
                 <div className="pointer-events-none absolute inset-0">
-                    <div className="absolute -left-48 -top-24 h-[650px] w-[650px] rounded-full bg-primary/10 blur-[150px]" />
-                    <div className="absolute -right-24 bottom-0 h-[500px] w-[500px] rounded-full bg-blue-600/8 blur-[120px]" />
-                    <div className="absolute left-1/2 top-1/3 -translate-x-1/2 h-[300px] w-[500px] rounded-full bg-violet-600/5 blur-[100px]" />
+                    <div className="absolute -left-48 -top-24 h-162.5 w-162.5 rounded-full bg-primary/10 blur-[150px]" />
+                    <div className="absolute -right-24 bottom-0 h-125 w-125 rounded-full bg-blue-600/8 blur-[120px]" />
+                    <div className="absolute left-1/2 top-1/3 -translate-x-1/2 h-75 w-125 rounded-full bg-violet-600/5 blur-[100px]" />
                 </div>
                 {/* Subtle dot grid */}
-                <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:28px_28px]" />
+                <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[28px_28px]" />
                 {/* Bottom fade */}
                 <div className="absolute inset-x-0 bottom-0 h-32 bg-linear-to-t from-slate-950 to-transparent" />
 
@@ -301,12 +302,13 @@ export default function Home() {
                             <div className="mt-9 flex flex-wrap items-center gap-4 pt-8 border-t border-white/10">
                                 <div className="flex -space-x-2.5">
                                     {["men/32", "women/44", "women/68", "men/75"].map((p, i) => (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img
+                                        <Image
                                             key={i}
                                             src={`https://randomuser.me/api/portraits/${p}.jpg`}
                                             alt="User"
-                                            className="h-9 w-9 rounded-full border-2 border-slate-950 object-cover"
+                                            width={36}
+                                            height={36}
+                                            className="rounded-full border-2 border-slate-950 object-cover"
                                         />
                                     ))}
                                     <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-950 bg-primary text-[10px] font-black text-primary-foreground">
@@ -514,11 +516,12 @@ export default function Home() {
                                 </p>
                                 {/* Author */}
                                 <div className="flex items-center gap-3 pt-4 border-t border-border/50">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
+                                    <Image
                                         src={`https://randomuser.me/api/portraits/${t.portrait}.jpg`}
                                         alt={t.name}
-                                        className="h-10 w-10 rounded-full object-cover border-2 border-border/50 shrink-0"
+                                        width={40}
+                                        height={40}
+                                        className="rounded-full object-cover border-2 border-border/50 shrink-0"
                                     />
                                     <div>
                                         <p className="text-sm font-semibold text-foreground">{t.name}</p>
@@ -546,8 +549,8 @@ export default function Home() {
             ══════════════════════════════════════════ */}
             <section className="relative overflow-hidden bg-slate-950 py-16 md:py-24">
                 <div className="pointer-events-none absolute inset-0">
-                    <div className="absolute left-1/2 top-0 -translate-x-1/2 h-[450px] w-[700px] rounded-full bg-primary/8 blur-[130px]" />
-                    <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:28px_28px]" />
+                    <div className="absolute left-1/2 top-0 -translate-x-1/2 h-112.5 w-175 rounded-full bg-primary/8 blur-[130px]" />
+                    <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.015)_1px,transparent_1px)] bg-size-[28px_28px]" />
                 </div>
                 <div className="relative z-10 container mx-auto max-w-3xl px-4 text-center">
                     <span className="mb-4 block text-[11px] font-bold tracking-[0.22em] uppercase text-primary">

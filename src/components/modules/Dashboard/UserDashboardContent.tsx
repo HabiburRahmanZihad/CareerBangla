@@ -6,7 +6,7 @@ import { getMyApplications } from "@/services/application.services";
 import { getMyResume } from "@/services/resume.services";
 import { getDashboardStats } from "@/services/stats.services";
 import { IUserDashboardData } from "@/types/dashboard.types";
-import { IUserWithDetails } from "@/types/user.types";
+import { UserInfo } from "@/types/user.types";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
@@ -55,23 +55,23 @@ const APP_STATUS_COLORS: Record<string, string> = {
 const FALLBACK = ["#6366f1", "#ec4899", "#14b8a6", "#f97316"];
 
 const statusStyle: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
-    HIRED:      { bg: "bg-green-100 dark:bg-green-900/30",   text: "text-green-700 dark:text-green-400",   icon: CheckCircle },
-    REJECTED:   { bg: "bg-red-100 dark:bg-red-900/30",      text: "text-red-700 dark:text-red-400",       icon: XCircle },
-    SHORTLISTED:{ bg: "bg-blue-100 dark:bg-blue-900/30",    text: "text-blue-700 dark:text-blue-400",     icon: Star },
-    INTERVIEW:  { bg: "bg-purple-100 dark:bg-purple-900/30",text: "text-purple-700 dark:text-purple-400", icon: Users },
-    PENDING:    { bg: "bg-amber-100 dark:bg-amber-900/30",  text: "text-amber-700 dark:text-amber-400",   icon: Clock },
+    HIRED: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-400", icon: CheckCircle },
+    REJECTED: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-400", icon: XCircle },
+    SHORTLISTED: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-400", icon: Star },
+    INTERVIEW: { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-400", icon: Users },
+    PENDING: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-400", icon: Clock },
 };
 
 // ── Quick-access links ────────────────────────────────────────────────────────
 const QUICK_LINKS = [
-    { title: "Browse Jobs",      href: "/jobs",                          icon: Search,    gradient: "from-primary/20 to-primary/10",      iconColor: "text-primary" },
-    { title: "Applications",     href: "/dashboard/my-applications",     icon: FileText,  gradient: "from-blue-500/20 to-blue-500/10",     iconColor: "text-blue-600 dark:text-blue-400" },
-    { title: "My Resume",        href: "/dashboard/my-resume",           icon: FileUser,  gradient: "from-green-500/20 to-green-500/10",   iconColor: "text-green-600 dark:text-green-400" },
-    { title: "ATS Score",        href: "/dashboard/ats-score",           icon: BarChart3, gradient: "from-purple-500/20 to-purple-500/10", iconColor: "text-purple-600 dark:text-purple-400" },
-    { title: "Subscriptions",    href: "/dashboard/subscriptions",       icon: CreditCard,gradient: "from-indigo-500/20 to-indigo-500/10", iconColor: "text-indigo-600 dark:text-indigo-400" },
-    { title: "Referrals",        href: "/dashboard/referrals",           icon: Users,     gradient: "from-cyan-500/20 to-cyan-500/10",     iconColor: "text-cyan-600 dark:text-cyan-400" },
-    { title: "Notifications",    href: "/dashboard/notifications",       icon: Bell,      gradient: "from-violet-500/20 to-violet-500/10", iconColor: "text-violet-600 dark:text-violet-400" },
-    { title: "Devices",          href: "/dashboard/devices",             icon: Monitor,   gradient: "from-slate-500/20 to-slate-500/10",   iconColor: "text-slate-600 dark:text-slate-400" },
+    { title: "Browse Jobs", href: "/jobs", icon: Search, gradient: "from-primary/20 to-primary/10", iconColor: "text-primary" },
+    { title: "Applications", href: "/dashboard/my-applications", icon: FileText, gradient: "from-blue-500/20 to-blue-500/10", iconColor: "text-blue-600 dark:text-blue-400" },
+    { title: "My Resume", href: "/dashboard/my-resume", icon: FileUser, gradient: "from-green-500/20 to-green-500/10", iconColor: "text-green-600 dark:text-green-400" },
+    { title: "ATS Score", href: "/dashboard/ats-score", icon: BarChart3, gradient: "from-purple-500/20 to-purple-500/10", iconColor: "text-purple-600 dark:text-purple-400" },
+    { title: "Subscriptions", href: "/dashboard/subscriptions", icon: CreditCard, gradient: "from-indigo-500/20 to-indigo-500/10", iconColor: "text-indigo-600 dark:text-indigo-400" },
+    { title: "Referrals", href: "/dashboard/referrals", icon: Users, gradient: "from-cyan-500/20 to-cyan-500/10", iconColor: "text-cyan-600 dark:text-cyan-400" },
+    { title: "Notifications", href: "/dashboard/notifications", icon: Bell, gradient: "from-violet-500/20 to-violet-500/10", iconColor: "text-violet-600 dark:text-violet-400" },
+    { title: "Devices", href: "/dashboard/devices", icon: Monitor, gradient: "from-slate-500/20 to-slate-500/10", iconColor: "text-slate-600 dark:text-slate-400" },
 ];
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
@@ -113,7 +113,13 @@ const StatCard = ({ title, value, sub, icon: Icon, gradient, iconColor, href, lo
 );
 
 // ── Custom tooltips ───────────────────────────────────────────────────────────
-const AreaTip = ({ active, payload, label }: any) => {
+interface AreaTipProps {
+    active?: boolean;
+    payload?: Array<{ value: number }>;
+    label?: string | number;
+}
+
+const AreaTip = ({ active, payload, label }: AreaTipProps) => {
     if (!active || !payload?.length) return null;
     return (
         <div className="bg-background/95 backdrop-blur border border-border/60 rounded-xl shadow-xl px-4 py-3 text-sm">
@@ -123,7 +129,12 @@ const AreaTip = ({ active, payload, label }: any) => {
     );
 };
 
-const PieTip = ({ active, payload }: any) => {
+interface PieTipProps {
+    active?: boolean;
+    payload?: Array<{ name: string; value: number; payload: { fill: string } }>;
+}
+
+const PieTip = ({ active, payload }: PieTipProps) => {
     if (!active || !payload?.length) return null;
     return (
         <div className="bg-background/95 backdrop-blur border border-border/60 rounded-xl shadow-xl px-4 py-3 text-sm">
@@ -151,7 +162,7 @@ const MILESTONES = [
 
 // ── Main component ────────────────────────────────────────────────────────────
 interface UserDashboardContentProps {
-    userInfo: IUserWithDetails;
+    userInfo: UserInfo;
 }
 
 const UserDashboardContent = ({ userInfo }: UserDashboardContentProps) => {

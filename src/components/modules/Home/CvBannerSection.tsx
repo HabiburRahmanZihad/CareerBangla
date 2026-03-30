@@ -64,8 +64,14 @@ export default function CvBannerSection() {
                             <div className="flex items-center justify-center">
                                 <div className="flex -space-x-3">
                                     {[32, 44, 68, 75].map((num, idx) => (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img key={idx} src={`https://randomuser.me/api/portraits/${idx % 2 === 0 ? 'men' : 'women'}/${num}.jpg`} alt="Candidate" className="h-10 w-10 rounded-full border-2 border-background object-cover shadow-sm transition-transform hover:-translate-y-1 hover:z-30 relative" />
+                                        <Image
+                                            key={idx}
+                                            src={`https://randomuser.me/api/portraits/${idx % 2 === 0 ? 'men' : 'women'}/${num}.jpg`}
+                                            alt="Candidate"
+                                            width={40}
+                                            height={40}
+                                            className="rounded-full border-2 border-background object-cover shadow-sm transition-transform hover:-translate-y-1 hover:z-30 relative"
+                                        />
                                     ))}
                                 </div>
                                 <div className="ml-2 flex h-10 w-10 z-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-foreground text-background shadow-md transition-all hover:rotate-90 hover:scale-110 hover:bg-primary">

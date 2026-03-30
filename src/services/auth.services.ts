@@ -174,7 +174,7 @@ export async function changePassword(payload: IChangePasswordPayload) {
     return serverHttpClient.post("/auth/change-password", payload);
 }
 
-export async function updateMyProfile(data: { name?: string; phone?: string }) {
+export async function updateMyProfile(data: { name?: string; phone?: string; country?: string }) {
     logger.update("Updating profile", { fields: Object.keys(data) });
     return serverHttpClient.patch<UserInfo>("/auth/update-profile", data);
 }

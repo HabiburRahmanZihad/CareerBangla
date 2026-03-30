@@ -88,12 +88,27 @@ export default function AppDownloadSection() {
                             {/* Trust Stats */}
                             <div className="mt-10 flex w-full items-center justify-center gap-4 border-t border-white/10 pt-8 lg:justify-start">
                                 <div className="flex -space-x-3">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" className="h-10 w-10 rounded-full border-2 border-slate-950 object-cover shadow-md" />
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User" className="h-10 w-10 rounded-full border-2 border-slate-950 object-cover shadow-md" />
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="User" className="h-10 w-10 rounded-full border-2 border-slate-950 object-cover shadow-md" />
+                                    <Image
+                                        src="https://randomuser.me/api/portraits/men/32.jpg"
+                                        alt="User"
+                                        width={40}
+                                        height={40}
+                                        className="rounded-full border-2 border-slate-950 object-cover shadow-md"
+                                    />
+                                    <Image
+                                        src="https://randomuser.me/api/portraits/women/44.jpg"
+                                        alt="User"
+                                        width={40}
+                                        height={40}
+                                        className="rounded-full border-2 border-slate-950 object-cover shadow-md"
+                                    />
+                                    <Image
+                                        src="https://randomuser.me/api/portraits/women/68.jpg"
+                                        alt="User"
+                                        width={40}
+                                        height={40}
+                                        className="rounded-full border-2 border-slate-950 object-cover shadow-md"
+                                    />
                                     <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-950 bg-slate-800 text-xs font-bold text-white shadow-md">
                                         9k+
                                     </div>

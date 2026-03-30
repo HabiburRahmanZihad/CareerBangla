@@ -10,6 +10,7 @@ import { getAllRecruiters } from "@/services/recruiter.services";
 import { IRecruiterProfile } from "@/types/user.types";
 import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, CheckSquare2, Clock, Eye, Grid3x3, List, RefreshCw, Search, TrendingUp } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import RecruiterApplicationsDetailsPage from "./RecruiterApplicationsDetailsPage";
 
@@ -222,10 +223,12 @@ const RecruiterApplicationsMain = () => {
                                     {/* Recruiter Info with Avatar */}
                                     <div className="flex items-center gap-3 sm:col-span-2 lg:col-span-1 min-w-0">
                                         {recruiter.profilePhoto ? (
-                                            <img
+                                            <Image
                                                 src={recruiter.profilePhoto}
                                                 alt={recruiter.name}
-                                                className="h-10 w-10 rounded-full object-cover border border-border/40 shrink-0"
+                                                width={40}
+                                                height={40}
+                                                className="rounded-full object-cover border border-border/40 shrink-0"
                                             />
                                         ) : (
                                             <div className="h-10 w-10 rounded-full bg-linear-to-br from-primary to-orange-600 flex items-center justify-center text-white font-semibold text-sm shrink-0">
@@ -292,10 +295,12 @@ const RecruiterApplicationsMain = () => {
                             <CardHeader className="pb-3 -mt-8 relative z-10">
                                 <div className="flex items-center justify-between gap-2 mb-2">
                                     {recruiter.profilePhoto ? (
-                                        <img
+                                        <Image
                                             src={recruiter.profilePhoto}
                                             alt={recruiter.name}
-                                            className="h-12 w-12 rounded-full object-cover border-2 border-background"
+                                            width={48}
+                                            height={48}
+                                            className="rounded-full object-cover border-2 border-background"
                                         />
                                     ) : (
                                         <div className="h-12 w-12 rounded-full bg-linear-to-br from-primary to-orange-600 flex items-center justify-center text-white font-bold text-base border-2 border-background">

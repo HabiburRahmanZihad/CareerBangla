@@ -1,0 +1,65 @@
+{
+    "buildCommand": "pnpm build",
+    "devCommand": "pnpm dev",
+    "installCommand": "pnpm install --frozen-lockfile",
+    "framework": "nextjs",
+    "regions": [
+        "iad1",
+        "sfo1",
+        "lhr1"
+    ],
+    "env": {
+        "NEXT_PUBLIC_API_BASE_URL": {
+            "description": "API base URL for production",
+            "required": true
+        }
+    },
+    "git": {
+        "deploymentEnabled": true
+    },
+    "crons": [],
+    "trailingSlash": false,
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=3600, must-revalidate"
+                },
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                },
+                {
+                    "key": "X-Frame-Options",
+                    "value": "SAMEORIGIN"
+                },
+                {
+                    "key": "X-XSS-Protection",
+                    "value": "1; mode=block"
+                },
+                {
+                    "key": "Referrer-Policy",
+                    "value": "strict-origin-when-cross-origin"
+                }
+            ]
+        },
+        {
+            "source": "/static/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
+                }
+            ]
+        }
+    ],
+    "redirects": [],
+    "rewrites": [
+        {
+            "source": "/api/(.*)",
+            "destination": "/api/$1"
+        }
+    ]
+}

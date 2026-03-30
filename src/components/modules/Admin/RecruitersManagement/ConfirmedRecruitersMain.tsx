@@ -1,18 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { swalConfirm } from "@/lib/swal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { swalConfirm } from "@/lib/swal";
 import { changeUserStatus } from "@/services/admin.services";
 import { getAllRecruiters } from "@/services/recruiter.services";
 import { IRecruiterProfile } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Eye, Grid3x3, List, RefreshCw } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import ConfirmedRecruitersDetailsPage from "./ConfirmedRecruitersDetailsPage";
@@ -236,10 +237,12 @@ const ConfirmedRecruitersMain = () => {
                                 <CardHeader className="pb-3">
                                     <div className="flex items-start justify-between mb-2">
                                         {recruiter.profilePhoto ? (
-                                            <img
+                                            <Image
                                                 src={recruiter.profilePhoto}
                                                 alt={recruiter.name}
-                                                className="h-10 w-10 rounded-full object-cover"
+                                                width={40}
+                                                height={40}
+                                                className="rounded-full object-cover"
                                             />
                                         ) : (
                                             <div className="h-10 w-10 rounded-full bg-linear-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-semibold">
@@ -279,10 +282,18 @@ const ConfirmedRecruitersMain = () => {
                                             size="sm"
                                             variant={userStatus === "ACTIVE" ? "destructive" : "default"}
                                             className="flex-1"
-                                            onClick={() => setStatusConfirmId({
-                                                recruiterId: recruiter.userId,
-                                                newStatus: userStatus === "ACTIVE" ? "BLOCKED" : "ACTIVE"
-                                            })}
+                                            onClick={async () => {
+                                                const confirmed = await swalConfirm({
+                                                    title: userStatus === "ACTIVE" ? "Block Recruiter?" : "Unblock Recruiter?",
+                                                    text: `Are you sure you want to ${userStatus === "ACTIVE" ? "block" : "unblock"} this recruiter?`,
+                                                });
+                                                if (confirmed) {
+                                                    await doUpdateStatus({
+                                                        userId: recruiter.userId,
+                                                        status: userStatus === "ACTIVE" ? "BLOCKED" : "ACTIVE"
+                                                    });
+                                                }
+                                            }}
                                         >
                                             {userStatus === "ACTIVE" ? "Block" : "Unblock"}
                                         </Button>
