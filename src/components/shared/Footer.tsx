@@ -1,62 +1,49 @@
 import Image from "next/image";
 import Link from "next/link";
 
+const footerLinks = [
+    { label: "Home", href: "/" },
+    { label: "Jobs", href: "/jobs" },
+    { label: "About Us", href: "/about-us" },
+    { label: "Resources", href: "/career-resources" },
+    { label: "Contact", href: "/contact" },
+];
+
 const Footer = () => {
     return (
-        <footer className="border-t bg-background">
-            <div className="container mx-auto px-4 py-12">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    {/* Brand */}
-                    <div className="space-y-3">
-                        <Link href="/" className="flex items-center gap-2">
+        <footer className="border-t border-border/70 bg-background">
+            <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+                <div className="flex flex-col items-center gap-5 rounded-[1.75rem] border border-border/70 bg-card px-5 py-8 text-center shadow-sm">
+                    <Link href="/" className="inline-flex items-center">
+                        <Image
+                            src="/carrerBanglalogo.png"
+                            alt="CareerBangla"
+                            width={158}
+                            height={48}
+                            priority
+                            className="object-contain"
+                        />
+                    </Link>
 
-                            <Image
-                                src="/carrerBanglalogo.png"
-                                alt="CareerBangla"
-                                width={158}
-                                height={48}
-                                priority
-                                className="object-contain"
-                            />
-                        </Link>
-                        <p className="text-sm text-muted-foreground">
-                            Your trusted job portal platform in Bangladesh. Connect with top recruiters and find your dream career.
-                        </p>
+                    <p className="max-w-xl text-sm leading-7 text-muted-foreground">
+                        CareerBangla helps professionals discover jobs and connect with trusted employers in Bangladesh.
+                    </p>
+
+                    <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+                        {footerLinks.map((link) => (
+                            <Link
+                                key={link.label}
+                                href={link.href}
+                                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
                     </div>
 
-                    {/* Job Seekers */}
-                    <div className="space-y-3">
-                        <h4 className="text-sm font-semibold">For Job Seekers</h4>
-                        <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><Link href="/jobs" className="hover:text-primary transition-colors">Browse Jobs</Link></li>
-                            <li><Link href="/register" className="hover:text-primary transition-colors">Create Account</Link></li>
-                            <li><Link href="/dashboard/my-resume" className="hover:text-primary transition-colors">Build Resume</Link></li>
-                        </ul>
+                    <div className="w-full border-t border-border/70 pt-4 text-sm text-muted-foreground">
+                        <p>&copy; {new Date().getFullYear()} CareerBangla. All rights reserved.</p>
                     </div>
-
-                    {/* Recruiters */}
-                    <div className="space-y-3">
-                        <h4 className="text-sm font-semibold">For Recruiters</h4>
-                        <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><Link href="/register" className="hover:text-primary transition-colors">Post a Job</Link></li>
-                            <li><Link href="/register" className="hover:text-primary transition-colors">Search Candidates</Link></li>
-                            <li><Link href="/register" className="hover:text-primary transition-colors">Subscription Plans</Link></li>
-                        </ul>
-                    </div>
-
-                    {/* Legal */}
-                    <div className="space-y-3">
-                        <h4 className="text-sm font-semibold">Company</h4>
-                        <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><Link href="/about-us" className="hover:text-primary transition-colors">About Us</Link></li>
-                            <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
-                            <li><Link href="/career-resources" className="hover:text-primary transition-colors">Career Resources</Link></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-                    <p>&copy; {new Date().getFullYear()} CareerBangla. All rights reserved.</p>
                 </div>
             </div>
         </footer>
