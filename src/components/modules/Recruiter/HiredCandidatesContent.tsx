@@ -65,7 +65,7 @@ interface PaginationMeta {
 
 function HiredCandidatesSkeleton() {
     return (
-        <div className="container mx-auto space-y-5 py-8">
+        <div className="container mx-auto space-y-5 px-4 py-8 sm:px-6 lg:px-8">
             <div className="rounded-[2rem] border border-border/60 bg-card p-5 shadow-sm sm:p-6">
                 <div className="grid gap-5 lg:grid-cols-[1fr_0.85fr] lg:items-center">
                     <div className="space-y-3">
@@ -114,7 +114,7 @@ function HiredCandidatesSkeleton() {
 
 function EmptyState({ isFiltered }: { isFiltered: boolean }) {
     return (
-        <div className="container mx-auto rounded-[1.8rem] border border-dashed border-border/60 bg-card px-6 py-16 text-center shadow-sm">
+        <div className="rounded-[1.8rem] border border-dashed border-border/60 bg-card px-6 py-16 text-center shadow-sm">
             <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-3xl bg-muted/50">
                 <Users className="h-8 w-8 text-muted-foreground/40" />
             </div>
@@ -341,7 +341,7 @@ const HiredCandidatesContent = () => {
     }
 
     return (
-        <div className="container! mx-auto space-y-5 py-8">
+        <div className="container mx-auto space-y-5 px-4 py-8 sm:px-6 lg:px-8">
             <section className="rounded-[2rem] border border-border/60 bg-card/85 p-5 shadow-[0_30px_70px_-45px_rgba(15,23,42,0.45)] backdrop-blur sm:p-6">
                 <div className="grid gap-5 lg:grid-cols-[1fr_0.9fr] lg:items-center">
                     <div>
