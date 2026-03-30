@@ -18,10 +18,10 @@ export default function AppDownloadSection() {
     };
 
     return (
-        <section className="relative w-full overflow-hidden bg-background py-16 md:py-24">
+        <section className="relative container mx-auto overflow-hidden bg-background py-16 md:py-24">
 
 
-            <div className="container relative z-10 mx-auto px-4 md:px-6">
+            <div className="container relative z-10 mx-auto px-4 md:px-0">
                 {/* Main Card Container */}
                 <div className="group relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-slate-950 px-6 py-12 shadow-[0_0_80px_-20px_rgba(var(--primary),0.3)] md:px-12 md:py-16 lg:px-20 lg:py-20">
 
