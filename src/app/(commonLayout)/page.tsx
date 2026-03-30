@@ -1,5 +1,6 @@
 import AppDownloadSection from "@/components/modules/Home/AppDownloadSection";
 import CvBannerSection from "@/components/modules/Home/CvBannerSection";
+import EmployerCandidateBanner from "@/components/modules/Home/EmployerCandidateBanner";
 import TopCategoriesSection from "@/components/modules/Home/TopCategoriesSection";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -125,6 +126,9 @@ export default function Home() {
 
             {/* CV Banner Section */}
             <CvBannerSection />
+
+            {/* Employer / Candidate Banner */}
+            <EmployerCandidateBanner />
 
             {/* App Download Section */}
             <AppDownloadSection />
