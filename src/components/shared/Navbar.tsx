@@ -19,7 +19,9 @@ const navLinks = [
     { name: "Home", href: "/" },
     { name: "Jobs", href: "/jobs" },
     { name: "About Us", href: "/about-us" },
+    { name: "Resources", href: "/career-resources" },
     { name: "Hired Candidates", href: "/hired-candidates" },
+    { name: "Contact", href: "/contact" },
 ];
 
 export default function Navbar({ user }: NavbarProps) {
@@ -42,7 +44,7 @@ export default function Navbar({ user }: NavbarProps) {
                         />
 
                         {/* desktop nav */}
-                        <div className="hidden items-center gap-8 lg:flex">
+                        <div className="hidden items-center gap-6 lg:flex">
                             {navLinks.map((link) => (
                                 <Link
                                     key={link.name}
