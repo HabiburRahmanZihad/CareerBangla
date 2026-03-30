@@ -4,9 +4,7 @@
     "installCommand": "pnpm install --frozen-lockfile",
     "framework": "nextjs",
     "regions": [
-        "iad1",
-        "sfo1",
-        "lhr1"
+        "iad1"
     ],
     "env": {},
     "git": {
