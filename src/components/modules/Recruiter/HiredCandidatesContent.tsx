@@ -12,12 +12,14 @@ import {
     Briefcase,
     Building2,
     Calendar,
+    CheckCircle2,
     ChevronLeft,
     ChevronRight,
     Download,
     Mail,
     Phone,
     Search,
+    ShieldCheck,
     TrendingUp,
     User,
     Users,
@@ -26,8 +28,6 @@ import {
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
-
-// ─── Interfaces ───────────────────────────────────────────────────────────────
 
 interface HiredCandidate {
     id: string;
@@ -63,100 +63,72 @@ interface PaginationMeta {
     totalPages: number;
 }
 
-// ─── Loading Skeleton ─────────────────────────────────────────────────────────
-
 function HiredCandidatesSkeleton() {
     return (
-        <div className="space-y-5 pb-8 animate-pulse container mx-auto">
-            {/* Header */}
-            <div className="rounded-2xl border border-border/40 bg-card overflow-hidden">
-                <div className="h-1.5 w-full bg-linear-to-r from-emerald-500 via-teal-400 to-emerald-600" />
-                <div className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                        <Skeleton className="h-12 w-12 rounded-2xl shrink-0" />
-                        <div className="space-y-2">
-                            <Skeleton className="h-5 w-40 rounded-md" />
-                            <Skeleton className="h-3.5 w-64 rounded-md" />
-                        </div>
+        <div className="container mx-auto space-y-5 py-8">
+            <div className="rounded-[2rem] border border-border/60 bg-card p-5 shadow-sm sm:p-6">
+                <div className="grid gap-5 lg:grid-cols-[1fr_0.85fr] lg:items-center">
+                    <div className="space-y-3">
+                        <Skeleton className="h-6 w-28 rounded-full" />
+                        <Skeleton className="h-10 w-80 rounded-xl" />
+                        <Skeleton className="h-4 w-full max-w-2xl rounded-xl" />
+                        <Skeleton className="h-4 w-3/4 rounded-xl" />
                     </div>
-                    <Skeleton className="h-7 w-24 rounded-xl" />
+                    <div className="grid grid-cols-1 gap-3 xs:grid-cols-3">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="rounded-2xl border border-border/50 bg-background p-4">
+                                <Skeleton className="h-8 w-16 rounded-lg" />
+                                <Skeleton className="mt-2 h-3 w-24 rounded-lg" />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[1, 2, 3].map((i) => (
-                    <div key={i} className="rounded-2xl border border-border/50 bg-card p-5 flex items-center gap-4">
-                        <Skeleton className="h-11 w-11 rounded-xl shrink-0" />
-                        <div className="space-y-2">
-                            <Skeleton className="h-6 w-12 rounded-md" />
-                            <Skeleton className="h-3 w-24 rounded-md" />
+            <div className="rounded-[1.6rem] border border-border/60 bg-card p-4 shadow-sm">
+                <Skeleton className="h-11 w-full rounded-xl" />
+            </div>
+
+            <div className="space-y-3">
+                {Array.from({ length: 5 }).map((_, index) => (
+                    <div
+                        key={index}
+                        className="rounded-[1.6rem] border border-border/60 bg-card p-5 shadow-sm"
+                    >
+                        <div className="flex flex-col gap-4 sm:flex-row">
+                            <Skeleton className="h-16 w-16 rounded-2xl shrink-0" />
+                            <div className="flex-1 space-y-2">
+                                <Skeleton className="h-5 w-48 rounded-lg" />
+                                <Skeleton className="h-4 w-40 rounded-lg" />
+                                <Skeleton className="h-4 w-64 rounded-lg" />
+                                <Skeleton className="h-9 w-56 rounded-xl" />
+                            </div>
+                            <Skeleton className="h-9 w-24 rounded-xl" />
                         </div>
                     </div>
                 ))}
             </div>
-
-            {/* Search */}
-            <Skeleton className="h-11 w-full rounded-xl" />
-
-            {/* Cards */}
-            {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="rounded-2xl border border-border/40 bg-card overflow-hidden">
-                    <div className="p-5 flex flex-col sm:flex-row gap-4">
-                        <Skeleton className="h-14 w-14 rounded-2xl shrink-0" />
-                        <div className="flex-1 space-y-2">
-                            <div className="flex items-center gap-2">
-                                <Skeleton className="h-5 w-36 rounded-md" />
-                                <Skeleton className="h-5 w-14 rounded-full" />
-                            </div>
-                            <Skeleton className="h-3.5 w-48 rounded-md" />
-                            <div className="flex gap-4">
-                                <Skeleton className="h-3.5 w-40 rounded-md" />
-                                <Skeleton className="h-3.5 w-28 rounded-md" />
-                            </div>
-                            <Skeleton className="h-3.5 w-56 rounded-md mt-1" />
-                        </div>
-                        <div className="flex flex-row sm:flex-col items-center sm:items-end gap-3 shrink-0">
-                            <Skeleton className="h-8 w-20 rounded-xl" />
-                        </div>
-                    </div>
-                    <div className="border-t border-border/30 bg-muted/30 px-5 py-3 flex flex-wrap gap-6">
-                        <Skeleton className="h-8 w-28 rounded-md" />
-                        <Skeleton className="h-8 w-32 rounded-md" />
-                        <Skeleton className="h-8 w-24 rounded-md" />
-                    </div>
-                </div>
-            ))}
         </div>
     );
 }
 
-// ─── Empty State ──────────────────────────────────────────────────────────────
-
 function EmptyState({ isFiltered }: { isFiltered: boolean }) {
     return (
-        <div className="flex flex-col items-center justify-center py-20 rounded-2xl border border-dashed border-border/60 bg-card text-center container mx-auto">
-            <div className="relative mb-5">
-                <div className="h-20 w-20 rounded-3xl bg-muted/50 border border-border/40 flex items-center justify-center">
-                    <Users className="h-9 w-9 text-muted-foreground/40" />
-                </div>
-                <div className="absolute -top-1.5 -right-1.5 h-6 w-6 rounded-full bg-muted border border-border/50 flex items-center justify-center">
-                    <span className="text-[10px] font-black text-muted-foreground">0</span>
-                </div>
+        <div className="container mx-auto rounded-[1.8rem] border border-dashed border-border/60 bg-card px-6 py-16 text-center shadow-sm">
+            <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-3xl bg-muted/50">
+                <Users className="h-8 w-8 text-muted-foreground/40" />
             </div>
-            <h3 className="text-base font-bold text-foreground mb-1">
-                {isFiltered ? "No results found" : "No hired candidates yet"}
+            <h3 className="mt-5 text-lg font-black text-foreground">
+                {isFiltered ? "No matching candidates found" : "No hired candidates yet"}
             </h3>
-            <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+            <p className="mx-auto mt-2 max-w-md text-sm leading-7 text-muted-foreground">
                 {isFiltered
-                    ? "Try adjusting your search to find what you're looking for."
-                    : "Candidates you hire will appear here with their company and designation details."}
+                    ? "Try a different candidate name or email to narrow the results."
+                    : "Candidates who have been hired will appear here with their hiring details and contact information."}
             </p>
         </div>
     );
 }
-
-// ─── Candidate Card ───────────────────────────────────────────────────────────
 
 function CandidateCard({
     candidate,
@@ -170,137 +142,145 @@ function CandidateCard({
     const title = candidate.user?.resume?.professionalTitle;
     const email = candidate.user?.email;
     const phone = candidate.user?.resume?.contactNumber;
-    const hasHiredInfo = candidate.hiredCompany || candidate.hiredDesignation || candidate.hiredDate;
+    const appliedAgo = candidate.createdAt
+        ? formatDistanceToNow(new Date(candidate.createdAt), { addSuffix: true })
+        : null;
 
     return (
-        <div className="group rounded-2xl border border-border/40 bg-card overflow-hidden hover:shadow-lg hover:border-emerald-200 dark:hover:border-emerald-800/40 transition-all duration-300 container mx-auto">
-
-            {/* Main row */}
-            <div className="p-5 flex flex-col sm:flex-row gap-4">
-
-                {/* Avatar */}
-                <div className="relative shrink-0 self-start">
-                    <div className="relative h-14 w-14 rounded-2xl overflow-hidden bg-emerald-500/10 ring-2 ring-emerald-500/20">
-                        {photo ? (
-                            <Image
-                                src={photo}
-                                alt={name}
-                                fill
-                                className="object-cover"
-                            />
-                        ) : (
-                            <div className="h-full w-full flex items-center justify-center">
-                                <User className="h-6 w-6 text-emerald-500/60" />
-                            </div>
-                        )}
-                    </div>
-                    {/* Hired indicator dot */}
-                    <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-emerald-500 border-2 border-card" />
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <h3 className="text-base font-bold text-foreground truncate">{name}</h3>
-                        <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-black px-2 py-0.5 rounded-full">
-                            HIRED
-                        </Badge>
+        <article className="rounded-[1.6rem] border border-border/60 bg-card p-5 shadow-sm transition-all duration-300 hover:border-primary/25 hover:shadow-lg sm:p-6">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex min-w-0 gap-4">
+                    <div className="relative shrink-0">
+                        <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-border/60 bg-muted/40">
+                            {photo ? (
+                                <Image
+                                    src={photo}
+                                    alt={name}
+                                    fill
+                                    className="object-cover"
+                                />
+                            ) : (
+                                <div className="flex h-full w-full items-center justify-center">
+                                    <User className="h-6 w-6 text-muted-foreground/50" />
+                                </div>
+                            )}
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-emerald-500">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+                        </div>
                     </div>
 
-                    {title && (
-                        <p className="text-xs text-muted-foreground mb-2 font-medium">{title}</p>
-                    )}
+                    <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="truncate text-lg font-black tracking-tight text-foreground">
+                                {name}
+                            </h3>
+                            <Badge className="border border-emerald-500/20 bg-emerald-500/10 text-[10px] font-black text-emerald-600 dark:text-emerald-400">
+                                HIRED
+                            </Badge>
+                        </div>
 
-                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                        {email && (
-                            <span className="flex items-center gap-1.5 min-w-0">
-                                <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
-                                <span className="truncate">{email}</span>
-                            </span>
+                        {title && (
+                            <p className="mt-1 text-sm font-medium text-muted-foreground">
+                                {title}
+                            </p>
                         )}
-                        {phone && (
-                            <span className="flex items-center gap-1.5">
-                                <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
-                                {phone}
-                            </span>
-                        )}
-                    </div>
 
-                    {/* Job applied for */}
-                    {candidate.job?.title && (
-                        <div className="mt-3 inline-flex items-center gap-1.5 bg-muted/50 border border-border/50 rounded-lg px-2.5 py-1.5 text-xs">
-                            <Briefcase className="h-3 w-3 shrink-0 text-muted-foreground/60" />
-                            <span className="font-semibold text-foreground truncate">{candidate.job.title}</span>
-                            {candidate.job?.recruiter?.companyName && (
-                                <span className="text-muted-foreground">
-                                    @ {candidate.job.recruiter.companyName}
+                        <div className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+                            {email && (
+                                <span className="flex min-w-0 items-center gap-2">
+                                    <Mail className="h-4 w-4 shrink-0 text-muted-foreground/60" />
+                                    <span className="truncate">{email}</span>
+                                </span>
+                            )}
+                            {phone && (
+                                <span className="flex items-center gap-2">
+                                    <Phone className="h-4 w-4 shrink-0 text-muted-foreground/60" />
+                                    <span>{phone}</span>
                                 </span>
                             )}
                         </div>
-                    )}
+
+                        {candidate.job?.title && (
+                            <div className="mt-4 inline-flex max-w-full items-center gap-2 rounded-xl border border-border/60 bg-background px-3 py-2 text-xs font-semibold text-foreground/85">
+                                <Briefcase className="h-3.5 w-3.5 shrink-0 text-primary" />
+                                <span className="truncate">{candidate.job.title}</span>
+                                {candidate.job?.recruiter?.companyName && (
+                                    <span className="truncate text-muted-foreground">
+                                        @ {candidate.job.recruiter.companyName}
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* Actions column */}
-                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 shrink-0">
-                    {candidate.createdAt && (
-                        <div className="text-right">
-                            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-muted-foreground/40">
+                <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
+                    {appliedAgo && (
+                        <div className="rounded-xl border border-border/60 bg-background px-3 py-2 text-left lg:text-right">
+                            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/60">
                                 Applied
                             </p>
-                            <p className="text-xs text-muted-foreground">
-                                {formatDistanceToNow(new Date(candidate.createdAt), { addSuffix: true })}
+                            <p className="mt-1 text-xs font-semibold text-foreground/80">
+                                {appliedAgo}
                             </p>
                         </div>
                     )}
+
                     <Button
                         variant="outline"
                         size="sm"
-                        className="rounded-xl border-border/60 hover:border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all text-xs font-semibold gap-1.5 h-8 px-3"
+                        className="h-9 rounded-xl border-border/60 px-4 text-xs font-semibold"
                         onClick={() => onDownloadCV(candidate.user?.id || "", name)}
                     >
-                        <Download className="h-3.5 w-3.5" />
-                        CV
+                        <Download className="mr-1.5 h-3.5 w-3.5" />
+                        Download CV
                     </Button>
                 </div>
             </div>
 
-            {/* Bottom strip: hired details */}
-            {hasHiredInfo && (
-                <div className="border-t border-emerald-500/10 bg-emerald-500/5 dark:bg-emerald-900/10 px-5 py-3 flex flex-wrap gap-x-6 gap-y-2.5">
-                    {candidate.hiredCompany && (
-                        <div className="flex items-center gap-2">
-                            <Building2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+            <div className="mt-5 grid gap-3 border-t border-border/50 pt-5 sm:grid-cols-2 xl:grid-cols-3">
+                {candidate.hiredCompany && (
+                    <div className="rounded-2xl border border-border/60 bg-background px-4 py-3">
+                        <div className="flex items-start gap-3">
+                            <Building2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                             <div>
-                                <p className="text-[9px] font-black tracking-[0.18em] uppercase text-emerald-600/50 dark:text-emerald-400/40 leading-none mb-0.5">
+                                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/60">
                                     Hired at
                                 </p>
-                                <p className="text-xs font-semibold text-foreground leading-none">
+                                <p className="mt-1 text-sm font-semibold text-foreground">
                                     {candidate.hiredCompany}
                                 </p>
                             </div>
                         </div>
-                    )}
-                    {candidate.hiredDesignation && (
-                        <div className="flex items-center gap-2">
-                            <Award className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                    </div>
+                )}
+
+                {candidate.hiredDesignation && (
+                    <div className="rounded-2xl border border-border/60 bg-background px-4 py-3">
+                        <div className="flex items-start gap-3">
+                            <Award className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                             <div>
-                                <p className="text-[9px] font-black tracking-[0.18em] uppercase text-emerald-600/50 dark:text-emerald-400/40 leading-none mb-0.5">
+                                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/60">
                                     Designation
                                 </p>
-                                <p className="text-xs font-semibold text-foreground leading-none">
+                                <p className="mt-1 text-sm font-semibold text-foreground">
                                     {candidate.hiredDesignation}
                                 </p>
                             </div>
                         </div>
-                    )}
-                    {candidate.hiredDate && (
-                        <div className="flex items-center gap-2">
-                            <Calendar className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                    </div>
+                )}
+
+                {candidate.hiredDate && (
+                    <div className="rounded-2xl border border-border/60 bg-background px-4 py-3">
+                        <div className="flex items-start gap-3">
+                            <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
                             <div>
-                                <p className="text-[9px] font-black tracking-[0.18em] uppercase text-emerald-600/50 dark:text-emerald-400/40 leading-none mb-0.5">
+                                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/60">
                                     Hired on
                                 </p>
-                                <p className="text-xs font-semibold text-foreground leading-none">
+                                <p className="mt-1 text-sm font-semibold text-foreground">
                                     {new Date(candidate.hiredDate).toLocaleDateString("en-US", {
                                         year: "numeric",
                                         month: "short",
@@ -309,14 +289,12 @@ function CandidateCard({
                                 </p>
                             </div>
                         </div>
-                    )}
-                </div>
-            )}
-        </div>
+                    </div>
+                )}
+            </div>
+        </article>
     );
 }
-
-// ─── Main Component ───────────────────────────────────────────────────────────
 
 const HiredCandidatesContent = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -340,17 +318,16 @@ const HiredCandidatesContent = () => {
         totalPages: 0,
     };
 
-    // Computed stats from current page data
     const uniqueCompanies = new Set(
-        candidates.map((c) => c.hiredCompany).filter(Boolean)
+        candidates.map((candidate) => candidate.hiredCompany).filter(Boolean)
     ).size;
 
     const latestHireDate = candidates
-        .filter((c) => c.hiredDate)
-        .map((c) => new Date(c.hiredDate!))
+        .filter((candidate) => candidate.hiredDate)
+        .map((candidate) => new Date(candidate.hiredDate!))
         .sort((a, b) => b.getTime() - a.getTime())[0];
 
-    const handleDownloadCV = (candidateId: string, candidateName: string) => {
+    const handleDownloadCV = (_candidateId: string, candidateName: string) => {
         toast.info(`CV download for ${candidateName} coming soon`);
     };
 
@@ -359,128 +336,141 @@ const HiredCandidatesContent = () => {
         setPage(1);
     };
 
-    if (isLoading) return <HiredCandidatesSkeleton />;
+    if (isLoading) {
+        return <HiredCandidatesSkeleton />;
+    }
 
     return (
-        <div className="container mx-auto space-y-5 py-8">
-
-            {/* ── Page Header ── */}
-            <div className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm">
-                {/* Accent bar */}
-                <div className="h-1 w-full bg-linear-to-r from-emerald-500 via-teal-400 to-emerald-600" />
-                <div className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-2xl bg-linear-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-sm shadow-emerald-500/20 shrink-0">
-                            <Users className="h-6 w-6 text-white" />
-                        </div>
-                        <div>
-                            <h1 className="text-lg font-bold text-foreground leading-tight">
-                                Hired Candidates
-                            </h1>
-                            <p className="text-sm text-muted-foreground mt-0.5">
-                                Candidates you&apos;ve hired with their company and role details
-                            </p>
-                        </div>
-                    </div>
-                    {meta.total > 0 && (
-                        <div className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1.5 shrink-0">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                                {meta.total} Total
-                            </span>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* ── Stats Row ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {/* Total Hired */}
-                <div className="rounded-2xl border border-border/50 bg-card p-5 flex items-center gap-4 hover:shadow-md transition-shadow duration-200">
-                    <div className="h-11 w-11 rounded-xl bg-linear-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-sm shadow-emerald-500/20 shrink-0">
-                        <Users className="h-5 w-5 text-white" />
-                    </div>
+        <div className="container! mx-auto space-y-5 py-8">
+            <section className="rounded-[2rem] border border-border/60 bg-card/85 p-5 shadow-[0_30px_70px_-45px_rgba(15,23,42,0.45)] backdrop-blur sm:p-6">
+                <div className="grid gap-5 lg:grid-cols-[1fr_0.9fr] lg:items-center">
                     <div>
-                        <p className="text-2xl font-bold text-foreground leading-none mb-0.5">
-                            {meta.total}
+                        <span className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-primary">
+                            Hiring Outcomes
+                        </span>
+                        <h1 className="mt-5 text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+                            Hired candidates at a glance
+                        </h1>
+                        <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+                            Review the candidates you have hired, track who joined which company,
+                            and keep a clean overview of hiring outcomes without digging through
+                            scattered records.
                         </p>
-                        <p className="text-xs text-muted-foreground font-medium">Total Hired</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 xs:grid-cols-3">
+                        <div className="rounded-2xl border border-border/60 bg-background p-4 shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                                    <Users className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-black tracking-tight text-foreground">
+                                        {meta.total}
+                                    </p>
+                                    <p className="text-xs font-semibold text-muted-foreground">
+                                        Total hired
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-border/60 bg-background p-4 shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                                    <Building2 className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-black tracking-tight text-foreground">
+                                        {uniqueCompanies || "0"}
+                                    </p>
+                                    <p className="text-xs font-semibold text-muted-foreground">
+                                        Companies
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-border/60 bg-background p-4 shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                                    <TrendingUp className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-black tracking-tight text-foreground">
+                                        {latestHireDate
+                                            ? latestHireDate.toLocaleDateString("en-US", {
+                                                month: "short",
+                                                day: "numeric",
+                                            })
+                                            : "N/A"}
+                                    </p>
+                                    <p className="text-xs font-semibold text-muted-foreground">
+                                        Latest hire
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </section>
 
-                {/* Unique Companies (from current page) */}
-                <div className="rounded-2xl border border-border/50 bg-card p-5 flex items-center gap-4 hover:shadow-md transition-shadow duration-200">
-                    <div className="h-11 w-11 rounded-xl bg-linear-to-br from-blue-500 to-indigo-500 flex items-center justify-center shadow-sm shadow-blue-500/20 shrink-0">
-                        <Building2 className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                        <p className="text-2xl font-bold text-foreground leading-none mb-0.5">
-                            {uniqueCompanies || "—"}
+            <section className="rounded-[1.6rem] border border-border/60 bg-card p-4 shadow-sm sm:p-5">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="max-w-xl">
+                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">
+                            Candidate Search
                         </p>
-                        <p className="text-xs text-muted-foreground font-medium">Companies (this page)</p>
+                        <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                            Search by candidate name or email to quickly locate a hiring record.
+                        </p>
+                    </div>
+
+                    <div className="relative w-full lg:max-w-md">
+                        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
+                        <Input
+                            placeholder="Search candidates..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setPage(1);
+                            }}
+                            className="h-11 rounded-xl border-border/60 bg-background pl-10 pr-10 text-sm"
+                        />
+                        {searchTerm && (
+                            <button
+                                type="button"
+                                aria-label="Clear search"
+                                onClick={clearSearch}
+                                className="absolute right-3.5 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted-foreground/20"
+                            >
+                                <X className="h-3 w-3 text-muted-foreground" />
+                            </button>
+                        )}
                     </div>
                 </div>
+            </section>
 
-                {/* Latest Hire */}
-                <div className="rounded-2xl border border-border/50 bg-card p-5 flex items-center gap-4 hover:shadow-md transition-shadow duration-200">
-                    <div className="h-11 w-11 rounded-xl bg-linear-to-br from-violet-500 to-purple-500 flex items-center justify-center shadow-sm shadow-violet-500/20 shrink-0">
-                        <TrendingUp className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-bold text-foreground leading-none mb-0.5">
-                            {latestHireDate
-                                ? latestHireDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-                                : "—"}
-                        </p>
-                        <p className="text-xs text-muted-foreground font-medium">Latest hire date</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* ── Search ── */}
-            <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 pointer-events-none" />
-                <Input
-                    placeholder="Search by candidate name or email..."
-                    value={searchTerm}
-                    onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        setPage(1);
-                    }}
-                    className="pl-10 pr-10 h-11 rounded-xl border-border/60 bg-card focus:border-emerald-500/50 focus:ring-emerald-500/20 text-sm"
-                />
-                {searchTerm && (
-                    <button
-                        type="button"
-                        aria-label="Clear search"
-                        onClick={clearSearch}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-muted hover:bg-muted-foreground/20 flex items-center justify-center transition-colors"
-                    >
-                        <X className="h-3 w-3 text-muted-foreground" />
-                    </button>
-                )}
-            </div>
-
-            {/* ── Results summary ── */}
             {!isLoading && candidates.length > 0 && (
-                <div className="flex items-center justify-between text-xs text-muted-foreground px-0.5">
+                <div className="flex flex-col gap-2 px-1 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
                     <span>
                         Showing{" "}
                         <span className="font-semibold text-foreground">
-                            {(meta.page - 1) * meta.limit + 1}–
+                            {(meta.page - 1) * meta.limit + 1}-
                             {Math.min(meta.page * meta.limit, meta.total)}
                         </span>{" "}
-                        of <span className="font-semibold text-foreground">{meta.total}</span> candidates
+                        of <span className="font-semibold text-foreground">{meta.total}</span>{" "}
+                        hired candidates
                     </span>
                     {searchTerm && (
-                        <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-primary">
+                            <ShieldCheck className="h-3.5 w-3.5" />
                             Filtered by &quot;{searchTerm}&quot;
                         </span>
                     )}
                 </div>
             )}
 
-            {/* ── Content ── */}
             {candidates.length === 0 ? (
                 <EmptyState isFiltered={!!searchTerm} />
             ) : (
@@ -495,52 +485,54 @@ const HiredCandidatesContent = () => {
                 </div>
             )}
 
-            {/* ── Pagination ── */}
             {meta.totalPages > 1 && (
-                <div className="flex items-center justify-between gap-2 pt-2">
+                <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setPage(Math.max(1, page - 1))}
                         disabled={page === 1}
-                        className="rounded-xl border-border/60 gap-1.5 h-9 px-4 text-xs font-semibold disabled:opacity-40"
+                        className="h-10 rounded-xl border-border/60 px-4 text-xs font-semibold"
                     >
-                        <ChevronLeft className="h-3.5 w-3.5" />
+                        <ChevronLeft className="mr-1.5 h-3.5 w-3.5" />
                         Previous
                     </Button>
 
-                    {/* Page pills */}
-                    <div className="flex items-center gap-1.5">
-                        {Array.from({ length: meta.totalPages }, (_, i) => i + 1)
-                            .filter((p) =>
-                                p === 1 ||
-                                p === meta.totalPages ||
-                                Math.abs(p - page) <= 1
+                    <div className="flex flex-wrap items-center justify-center gap-1.5">
+                        {Array.from({ length: meta.totalPages }, (_, index) => index + 1)
+                            .filter(
+                                (candidatePage) =>
+                                    candidatePage === 1 ||
+                                    candidatePage === meta.totalPages ||
+                                    Math.abs(candidatePage - page) <= 1
                             )
-                            .reduce<(number | "...")[]>((acc, p, idx, arr) => {
-                                if (idx > 0 && (arr[idx - 1] as number) < p - 1) {
+                            .reduce<(number | "...")[]>((acc, candidatePage, index, arr) => {
+                                if (index > 0 && (arr[index - 1] as number) < candidatePage - 1) {
                                     acc.push("...");
                                 }
-                                acc.push(p);
+                                acc.push(candidatePage);
                                 return acc;
                             }, [])
-                            .map((p, idx) =>
-                                p === "..." ? (
-                                    <span key={`dots-${idx}`} className="text-xs text-muted-foreground/50 px-1">
-                                        ···
+                            .map((candidatePage, index) =>
+                                candidatePage === "..." ? (
+                                    <span
+                                        key={`dots-${index}`}
+                                        className="px-1 text-xs text-muted-foreground/50"
+                                    >
+                                        ...
                                     </span>
                                 ) : (
                                     <button
                                         type="button"
-                                        key={p}
-                                        aria-label={`Go to page ${p}`}
-                                        onClick={() => setPage(p as number)}
-                                        className={`h-8 min-w-8 px-2.5 rounded-lg text-xs font-bold transition-all ${page === p
-                                                ? "bg-emerald-500 text-white shadow-sm shadow-emerald-500/25"
-                                                : "bg-card border border-border/60 text-muted-foreground hover:border-emerald-500/30 hover:text-emerald-600 dark:hover:text-emerald-400"
+                                        key={candidatePage}
+                                        aria-label={`Go to page ${candidatePage}`}
+                                        onClick={() => setPage(candidatePage as number)}
+                                        className={`h-9 min-w-9 rounded-lg px-3 text-xs font-bold transition-all ${page === candidatePage
+                                            ? "bg-primary text-primary-foreground"
+                                            : "border border-border/60 bg-card text-muted-foreground hover:border-primary/25 hover:text-primary"
                                             }`}
                                     >
-                                        {p}
+                                        {candidatePage}
                                     </button>
                                 )
                             )}
@@ -551,10 +543,10 @@ const HiredCandidatesContent = () => {
                         size="sm"
                         onClick={() => setPage(Math.min(meta.totalPages, page + 1))}
                         disabled={page === meta.totalPages}
-                        className="rounded-xl border-border/60 gap-1.5 h-9 px-4 text-xs font-semibold disabled:opacity-40"
+                        className="h-10 rounded-xl border-border/60 px-4 text-xs font-semibold"
                     >
                         Next
-                        <ChevronRight className="h-3.5 w-3.5" />
+                        <ChevronRight className="ml-1.5 h-3.5 w-3.5" />
                     </Button>
                 </div>
             )}
