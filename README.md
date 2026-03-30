@@ -1,224 +1,269 @@
-# CareerBangla - Frontend ✅ Production Ready
+<div align="center">
+  <img src="public/carrerBanglalogo.png" alt="CareerBangla Logo" width="220" />
+  <h1>CAREERBANGLA FRONTEND</h1>
+  <p><strong>Modern job platform frontend for job seekers, recruiters, and admins, built with Next.js 16 App Router.</strong></p>
 
-A modern job portal platform built with Next.js 16, connecting job seekers with recruiters through a coin-based credit economy.
+  <p>
+    <img src="https://img.shields.io/badge/Next.js-16.1.6-000000?style=for-the-badge&logo=next.js" alt="Next.js" />
+    <img src="https://img.shields.io/badge/React-19.2.3-20232A?style=for-the-badge&logo=react" alt="React" />
+    <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-4.x-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind CSS" />
+    <img src="https://img.shields.io/badge/TanStack_Query-5.x-FF4154?style=for-the-badge&logo=reactquery" alt="TanStack Query" />
+    <img src="https://img.shields.io/badge/shadcn/ui-Radix%20UI-111111?style=for-the-badge" alt="shadcn ui" />
+  </p>
+</div>
 
-**Status**: ✅ Production Ready | Build: Stable | Errors: Fixed | Performance: Optimized
+---
 
-## Tech Stack
+## Introduction
 
-- **Framework:** Next.js 16 (App Router, Server Components, Server Actions)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS + shadcn/ui
-- **State Management:** TanStack React Query v5 (server state), TanStack React Form (forms)
-- **Validation:** Zod v4
-- **HTTP Client:** Axios (custom wrapper with auto token refresh, error interceptors ✅)
-- **Auth:** JWT (cookie-based) with middleware route protection ✅
-- **Error Handling:** Error boundaries with production-ready UI ✅
-- **Icons:** Lucide React
-- **Notifications:** Sonner (toast)
+CareerBangla Frontend is the client application for the CareerBangla hiring platform. It delivers the public marketing pages, job discovery experience, secure authentication flows, and role-based dashboards for users, recruiters, admins, and super admins.
 
-## Quick Start
+This frontend is built around:
 
-```bash
-# Install dependencies
-pnpm install
+- Next.js 16 App Router with server and client component composition
+- protected route handling through `src/proxy.ts`
+- API integration through typed service modules in `src/services`
+- role-aware dashboard layouts for job seekers, recruiters, and admins
+- rich UI built with Tailwind CSS, Radix primitives, and shadcn/ui components
 
-# Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your configuration
+---
 
-# Development server
-pnpm dev
-# Opens http://localhost:3000
+## Technical Core
 
-# Build for production
-pnpm build
+### Stack
 
-# Production server
-NODE_ENV=production pnpm start
-```
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| Framework | `Next.js 16.1.6` | App Router, layouts, server rendering, route groups |
+| UI | `React 19` | Interactive frontend and dashboard experience |
+| Language | `TypeScript` | Type-safe components, services, and state |
+| Styling | `Tailwind CSS 4` | Utility-first styling and theme tokens |
+| UI Primitives | `Radix UI` + `shadcn/ui` | Accessible low-level and composed UI components |
+| Data Fetching | `TanStack React Query` | Server state, caching, and mutation management |
+| Forms | `TanStack React Form` + `React Hook Form` | Form state, validation, and controlled workflows |
+| Validation | `Zod` | Frontend-safe schema validation |
+| Charts | `Recharts` | Dashboard visualizations |
+| Notifications | `Sonner` | Toasts and action feedback |
+| Theming | `next-themes` | Theme management |
+| Export Utilities | `html2canvas` + `jsPDF` | Resume/profile PDF generation |
 
-## Production Deployment
+### Architecture
 
-For complete deployment guide, see: **[PRODUCTION_DEPLOYMENT.md](../PRODUCTION_DEPLOYMENT.md)**
-
-Deploy to: Vercel, Netlify, or any Node.js hosting
-
-```bash
-# Deploy to Vercel
-vercel deploy --prod
-
-# Or to Netlify
-netlify deploy --prod
-
-# Don't forget to set environment variables in platform UI!
-NEXT_PUBLIC_API_BASE_URL=https://api.careerbangla.com/api/v1
-JWT_ACCESS_SECRET=<your-secret>
-```
-
-## Features
-
-### Public Pages ✅
-
-- Home page with hero, stats, and features
-- Job listing with advanced filters (search, type, experience, location, category)
-- Pagination and sorting
-- Job detail pages with comprehensive company info
-- Error boundaries on all pages
-
-### Authentication ✅
-
-- Login / Register with Google OAuth
-- Email verification (6-digit OTP)
-- Forgot password / Reset password flow
-- Auto token refresh via middleware ✅
-- Secure cookie management
-- Fast redirects after login ✅
-
-### User (Job Seeker) Dashboard ✅
-
-- Profile overview with coin balance and completion progress
-- Resume builder with ATS score checker
-- Job applications tracker with status badges
-- Wallet with transaction history
-- Subscription plans (Stripe integration)
-- Notifications center
-
-### Recruiter Dashboard ✅
-
-- Dashboard with job/application stats
-- Post jobs (requires verification + 100% profile + 20 coins)
-- Manage posted jobs (edit/delete)
-- Review applications and change status
-- Search candidates (10 coins per view)
-- Wallet and subscriptions
-
-### Admin Dashboard ✅
-
-- Platform stats (users, jobs, applications, revenue)
-- User management (status/role changes)
-- Recruiter management (approve/reject verification)
-- Jobs management (view all platform jobs)
-- Applications management (view all applications)
-- Categories management (create/delete job categories)
-- Coupons management (create/delete discount coupons)
-- Subscriptions management (view plans)
-
-### Coin System
-
-| Action                                 | Cost     |
-| -------------------------------------- | -------- |
-| Apply to job                           | 5 coins  |
-| View candidate profile                 | 10 coins |
-| Update resume (after first completion) | 15 coins |
-| Post a job                             | 20 coins |
-
-### Guards & Validations
-
-- **User:** Cannot apply unless profileCompletion === 100 and has sufficient coins
-- **Recruiter:** Cannot post jobs unless isVerified === true, profileCompletion === 100, and has sufficient coins
-- **Routes:** Role-based middleware protection with automatic redirects
-- **Forms:** Zod validation on all inputs with inline error display
-
-## Project Structure
-
-```
+```text
 src/
-├── app/                          # Next.js App Router
-│   ├── (commonLayout)/           # Public pages (home, jobs, auth)
-│   ├── (dashboardLayout)/        # Protected dashboard pages
-│   │   ├── (commonProtectedLayout)/  # Shared (profile, password)
-│   │   ├── (userRouteGroup)/     # User dashboard
-│   │   ├── recruiter/            # Recruiter dashboard
-│   │   └── admin/                # Admin dashboard
-│   ├── layout.tsx                # Root layout
-│   ├── error.tsx                 # Error boundary
-│   └── not-found.tsx             # 404 page
+├── app/                         # App Router, route groups, layouts, error/loading states
+│   ├── (authLayout)/            # login, register, verify-email, forgot/reset password
+│   ├── (commonLayout)/          # home, jobs, pricing, about-us, hired-candidates
+│   ├── (dashboardLayout)/       # protected role-based dashboard areas
+│   └── api/                     # route handlers if needed
 ├── components/
-│   ├── modules/                  # Feature components
-│   │   ├── Admin/                # Admin management components
-│   │   ├── Auth/                 # Auth forms
-│   │   ├── Dashboard/            # User dashboard components
-│   │   ├── Dashboord/            # Layout components (sidebar, navbar)
-│   │   ├── Jobs/                 # Job listing/details
-│   │   └── Recruiter/            # Recruiter components
-│   ├── shared/                   # Reusable components
-│   └── ui/                       # shadcn/ui primitives
-├── hooks/                        # Custom React hooks
-├── lib/                          # Utilities (auth, http, tokens, nav)
-├── providers/                    # React Query provider
-├── services/                     # API service layer (server actions)
-├── types/                        # TypeScript type definitions
-├── zod/                          # Zod validation schemas
-└── proxy.ts                      # Middleware (auth, routing, token refresh)
+│   ├── modules/                 # feature-rich sections by domain
+│   ├── shared/                  # navbar, footer, reusable app components
+│   └── ui/                      # shadcn/ui primitives
+├── constants/                   # shared static config
+├── hooks/                       # reusable hooks
+├── lib/                         # auth utils, env config, axios clients, helpers
+├── providers/                   # Query provider and app-wide providers
+├── services/                    # server/client API service wrappers
+├── types/                       # TypeScript model definitions
+├── zod/                         # form and payload validation schemas
+└── proxy.ts                     # middleware-style route protection and redirects
 ```
 
-## Getting Started
+---
 
-### Prerequisites
+## Product Areas
 
-- Node.js 18+ or Bun
-- CareerBangla backend running on `http://localhost:5000`
+### Public experience
 
-### Setup
+- marketing-driven landing page
+- public job listing with search and filtering
+- job details page
+- pricing page
+- about page
+- hired candidates showcase
+
+### Authentication
+
+- login and registration flows
+- recruiter registration flow
+- Google login support
+- email verification
+- forgot password and reset password
+- device/session management flows
+
+### User dashboard
+
+- profile management
+- resume builder
+- ATS score experience
+- application tracking
+- notifications
+- referrals
+- subscriptions
+
+### Recruiter dashboard
+
+- recruiter dashboard statistics
+- post and manage jobs
+- review applicants
+- search candidates
+- hired candidates access
+- subscription management
+
+### Admin dashboard
+
+- platform dashboard overview
+- user management
+- recruiter review and moderation
+- job moderation and pending job review
+- applications management
+- coupons and subscriptions management
+- payment subscription tracking
+- analytics and tracking dashboards
+
+---
+
+## Frontend Capabilities
+
+### Route protection and auth flow
+
+The frontend uses [proxy.ts](./src/proxy.ts) to:
+
+- redirect authenticated users away from auth pages when appropriate
+- protect dashboard routes based on session cookies
+- enforce email verification flow
+- guide users to the correct dashboard by role
+
+### Backend integration
+
+The service layer lives in `src/services` and includes:
+
+- `auth.services.ts`
+- `job.services.ts`
+- `application.services.ts`
+- `resume.services.ts`
+- `subscription.services.ts`
+- `notification.services.ts`
+- `recruiter.services.ts`
+- `admin.services.ts`
+- `coupon.services.ts`
+- `referral.services.ts`
+- `tracking.services.ts`
+- `stats.services.ts`
+
+### Interactive modules
+
+- dashboard charts with Recharts
+- advanced forms with TanStack Form and validation
+- PDF export for resume and profile-related flows
+- live feedback with Sonner toasts
+- responsive layouts across public and dashboard pages
+
+---
+
+## Local Setup
+
+### 1. Prerequisites
+
+- Node.js 22+ recommended
+- `pnpm`
+- Bun available on your machine because project scripts use `bun --bun`
+- CareerBangla backend running locally or deployed
+
+### 2. Install dependencies
 
 ```bash
-# Install dependencies
-bun install
+pnpm install
+```
 
-# Configure environment
+### 3. Configure environment variables
+
+```bash
 cp .env.example .env.local
 ```
 
-### Environment Variables
+Minimum local variables:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
+JWT_ACCESS_SECRET=your_access_token_secret_min_32_chars_long
+```
+
+Optional payment variable:
+
+```env
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_publishable_key
+```
+
+### 4. Start development server
+
+```bash
+pnpm dev
+```
+
+### 5. Build for production
+
+```bash
+pnpm build
+pnpm start
+```
+
+Open `http://localhost:3000` in your browser.
+
+---
+
+## Deployment
+
+### Vercel
+
+This project includes [vercel.json](./vercel.json) with:
+
+- install command: `pnpm install --frozen-lockfile`
+- build command: `pnpm build`
+- dev command: `pnpm dev`
+- framework: `nextjs`
+- region: `iad1`
+- security and cache headers
+
+### Production checklist
+
+1. Set `NEXT_PUBLIC_API_BASE_URL` to your production backend API.
+2. Set `JWT_ACCESS_SECRET` to match the backend JWT secret.
+3. Add any payment-related public keys required by your production flow.
+4. Ensure the backend CORS configuration allows the deployed frontend domain.
+5. Verify auth cookies, redirect URLs, and callback URLs in production.
+
+---
+
+## Environment Reference
+
+The frontend currently uses environment values like:
 
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
 JWT_ACCESS_SECRET=your_access_token_secret
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_publishable_key
 ```
 
-### Run
+See [`.env.example`](./.env.example) for the template used by this project.
 
-```bash
-# Development
-bun dev
+---
 
-# Build
-bun run build
+## Project Highlights
 
-# Production
-bun start
-```
+- built on Next.js 16 App Router
+- role-based dashboards for `USER`, `RECRUITER`, `ADMIN`, and `SUPER_ADMIN`
+- middleware-style redirect control through `src/proxy.ts`
+- typed service-based communication with the backend
+- dashboard analytics, resume workflows, referrals, subscriptions, and notifications
+- polished component system using Tailwind CSS, Radix UI, and shadcn/ui
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+---
 
-## API Integration
+## Author
 
-All API calls go through `src/lib/axios/httpClient.ts` which provides:
+Developed by **[Habibur Rahman Zihad](https://habibur-rahman-zihad.vercel.app/)**.
 
-- Automatic cookie-based token injection
-- Proactive token refresh (5-minute threshold)
-- Consistent error handling
-
-Services are server actions (`"use server"`) in `src/services/`:
-
-- `auth.services.ts` - Authentication
-- `job.services.ts` - Jobs CRUD + categories
-- `application.services.ts` - Job applications
-- `resume.services.ts` - Resume + ATS score
-- `wallet.services.ts` - Wallet + transactions
-- `subscription.services.ts` - Plans + purchases
-- `notification.services.ts` - Notifications
-- `recruiter.services.ts` - Recruiter profiles
-- `admin.services.ts` - Admin operations
-- `coupon.services.ts` - Coupon management
-- `stats.services.ts` - Dashboard statistics
-
-## Role-Based Access
-
-| Role        | Dashboard Route        | Key Permissions                                     |
-| ----------- | ---------------------- | --------------------------------------------------- |
-| USER        | `/dashboard`           | Apply to jobs, manage resume, view ATS score        |
-| RECRUITER   | `/recruiter/dashboard` | Post jobs, manage applications, search candidates   |
-| ADMIN       | `/admin/dashboard`     | Manage users, recruiters, jobs, categories, coupons |
-| SUPER_ADMIN | `/admin/dashboard`     | All admin permissions                               |
+Licensed under the **ISC License**.
