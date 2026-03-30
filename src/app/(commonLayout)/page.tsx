@@ -1,3 +1,4 @@
+import AppDownloadSection from "@/components/modules/Home/AppDownloadSection";
 import TopCategoriesSection from "@/components/modules/Home/TopCategoriesSection";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -120,6 +121,9 @@ export default function Home() {
 
             {/* Top Categories Section */}
             <TopCategoriesSection />
+
+            {/* App Download Section */}
+            <AppDownloadSection />
 
             {/* CTA Section */}
             <section className="py-20 bg-primary/5">
