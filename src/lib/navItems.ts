@@ -109,7 +109,7 @@ export const adminNavItems: NavSection[] = [
                 icon: "Clock",
             },
             {
-                title: "Applications",
+                title: "Job Applications",
                 href: "/admin/dashboard/applications-management",
                 icon: "FileText",
             },
@@ -119,17 +119,17 @@ export const adminNavItems: NavSection[] = [
                 icon: "Tag",
             },
             {
-                title: "Subscriptions",
+                title: "Manage Subscriptions",
                 href: "/admin/dashboard/subscriptions-management",
                 icon: "CreditCard",
             },
             {
-                title: "Payment Subscriptions",
+                title: "Subscriptions Payment",
                 href: "/admin/dashboard/payment-subscriptions",
                 icon: "DollarSign",
             },
             {
-                title: "Coupons",
+                title: "Coupons Management",
                 href: "/admin/dashboard/coupons-management",
                 icon: "Ticket",
             },
