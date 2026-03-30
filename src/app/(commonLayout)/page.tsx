@@ -21,8 +21,8 @@ export default function Home() {
             <CvBannerSection />
             <EmployerCandidateBanner />
             <KeyHighlightsSection />
-            <TestimonialsSection />
             <AppDownloadSection />
+            <TestimonialsSection />
             <CtaSection />
         </div>
     );
