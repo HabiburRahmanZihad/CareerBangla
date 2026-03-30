@@ -14,14 +14,14 @@ export default function Home() {
     return (
         <div className="overflow-x-hidden">
             <HeroSection />
-            <HowItWorksSection />
             <WhyChooseSection />
+            <HowItWorksSection />
             <PlatformFeaturesSection />
-            <KeyHighlightsSection />
-            <TestimonialsSection />
             <TopCategoriesSection />
             <CvBannerSection />
             <EmployerCandidateBanner />
+            <KeyHighlightsSection />
+            <TestimonialsSection />
             <AppDownloadSection />
             <CtaSection />
         </div>
