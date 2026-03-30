@@ -64,18 +64,16 @@ const TopCategoriesSection = async () => {
 
 
             <div className="container relative z-10 mx-auto  px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-16 relative">
-                    {/* Description */}
-                    <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 mx-auto w-fit">
-                        Explore opportunities across top industries and find the role that fits you best.
-                    </div>
-
-                    <h2 className="text-4xl lg:text-5xl font-extrabold mb-4 text-foreground tracking-tight">
-                        Browse by <span className="text-primary relative inline-block">
-                            Category
-                            <svg className="absolute -bottom-2 left-0 w-full h-3 text-primary/30" viewBox="0 0 100 12" preserveAspectRatio="none"><path d="M0,10 Q50,-10 100,10" stroke="currentColor" strokeWidth="4" fill="transparent" /></svg>
-                        </span>
+                <div className="text-center mb-12 relative flex flex-col items-center gap-2.5">
+                    <span className="text-[11px] font-bold tracking-[0.22em] uppercase text-primary">
+                        Categories
+                    </span>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-snug max-w-xl">
+                        Browse by Industry
                     </h2>
+                    <p className="text-sm sm:text-[15px] text-muted-foreground leading-relaxed max-w-xl">
+                        Explore opportunities across top industries and find the role that fits you best.
+                    </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 sm:gap-6 sm:grid-cols-3 lg:grid-cols-6">

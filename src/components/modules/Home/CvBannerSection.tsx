@@ -91,23 +91,27 @@ export default function CvBannerSection() {
                         </div>
                     </div>
 
-                    {/* RIGHT SIDE: Typography & Boss Level CTA */}
+                    {/* RIGHT SIDE: Typography & CTA */}
                     <div className="relative z-10 mx-auto max-w-xl lg:mx-0 lg:max-w-none text-center lg:text-left mt-8 lg:mt-0 flex flex-col justify-center h-full">
 
+                        <span className="mb-3 block text-[11px] font-bold tracking-[0.22em] uppercase text-primary text-center lg:text-left">
+                            Resume Builder
+                        </span>
 
-                        {/* Spectacular Headline */}
-                        <h2 className="text-4xl font-extrabold leading-[1.15] tracking-tight text-foreground sm:text-5xl lg:text-6xl xl:text-[4rem]">
-                            A Professional <span className="relative inline-block text-primary">
+                        {/* Headline */}
+                        <h2 className="text-2xl sm:text-3xl font-bold leading-snug tracking-tight text-foreground">
+                            A Professional{" "}
+                            <span className="relative inline-block text-primary">
                                 CV
-                                <svg className="absolute -bottom-2 left-0 w-full h-3 text-primary/30" viewBox="0 0 100 12" preserveAspectRatio="none"><path d="M0,10 Q50,-10 100,10" stroke="currentColor" strokeWidth="4" fill="transparent" /></svg>
-                            </span> <br className="hidden sm:block" />
-                            is your ticket to the <br className="hidden lg:block" />
-                            <span className="mt-2 block animate-linear-x bg-linear-to-r from-primary via-amber-500 to-primary bg-size-[200%_auto] bg-clip-text text-transparent pb-2">
+                                <svg className="absolute -bottom-1 left-0 w-full h-2.5 text-primary/30" viewBox="0 0 100 12" preserveAspectRatio="none"><path d="M0,10 Q50,-10 100,10" stroke="currentColor" strokeWidth="4" fill="transparent" /></svg>
+                            </span>{" "}
+                            is your ticket to the{" "}
+                            <span className="animate-linear-x bg-linear-to-r from-primary via-amber-500 to-primary bg-size-[200%_auto] bg-clip-text text-transparent">
                                 dream job
                             </span>
                         </h2>
 
-                        <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
+                        <p className="mt-4 text-sm sm:text-base leading-relaxed text-muted-foreground">
                             Start searching for jobs by attending career fairs, using customized job boards, or directly reaching out to top recruiters in your targeted network.
                         </p>
 

@@ -27,11 +27,11 @@ export default function EmployerCandidateBanner() {
                             Hiring Solutions
                         </span>
 
-                        <h3 className="mb-4 text-3xl font-extrabold tracking-tight text-primary-foreground sm:text-4xl lg:text-[2.35rem]">
+                        <h3 className="mb-4 text-2xl font-bold tracking-tight text-primary-foreground sm:text-3xl">
                             Employers
                         </h3>
 
-                        <p className="mb-7 max-w-sm text-sm leading-7 text-primary-foreground/90 sm:mb-8 sm:text-base sm:leading-8">
+                        <p className="mb-7 max-w-sm text-sm leading-relaxed text-primary-foreground/90 sm:mb-8">
                             Post jobs, manage applications, and find top talent with our comprehensive recruiting platform. Reach qualified candidates across Bangladesh.
                         </p>
 
@@ -68,11 +68,11 @@ export default function EmployerCandidateBanner() {
                             Career Growth
                         </span>
 
-                        <h3 className="mb-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-[2.35rem]">
+                        <h3 className="mb-4 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                             Candidate
                         </h3>
 
-                        <p className="mb-7 max-w-sm text-sm leading-7 text-foreground/70 sm:mb-8 sm:text-base sm:leading-8">
+                        <p className="mb-7 max-w-sm text-sm leading-relaxed text-foreground/70 sm:mb-8">
                             Build your ATS-optimized resume, discover your ideal job matches, and connect with top employers. Your career journey starts here.
                         </p>
 

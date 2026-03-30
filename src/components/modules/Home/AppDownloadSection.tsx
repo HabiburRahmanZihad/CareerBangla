@@ -39,16 +39,20 @@ export default function AppDownloadSection() {
                         {/* LEFT SIDE: Typography & CTA */}
                         <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
 
+                            <span className="mb-3 text-[11px] font-bold tracking-[0.22em] uppercase text-primary">
+                                Mobile App
+                            </span>
+
                             {/* Headline */}
-                            <h2 className="text-4xl font-extrabold tracking-tight text-white md:text-5xl lg:text-6xl">
-                                Your Dream Job, <br className="hidden md:block" />
+                            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                                Your Dream Job,{" "}
                                 <span className="animate-gradient-x bg-linear-to-r from-primary via-orange-400 to-primary bg-size-[200%_auto] bg-clip-text text-transparent">
                                     Now in Your Pocket.
                                 </span>
                             </h2>
 
                             {/* Description */}
-                            <p className="mt-6 max-w-120 text-base leading-relaxed text-slate-300 md:text-lg">
+                            <p className="mt-4 max-w-lg text-sm sm:text-base leading-relaxed text-slate-300">
                                 Access thousands of job opportunities, track applications instantly, and get hired faster with the new CareerBangla app. Fast, secure, and always accessible.
                             </p>
 
