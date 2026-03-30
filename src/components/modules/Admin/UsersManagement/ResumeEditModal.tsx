@@ -51,7 +51,7 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
         try {
             setIsSaving(true);
             await onSave(localResume);
-            handleOpenChange(false);
+            setIsEditing(false);
             toast.success("Resume updated successfully");
         } catch (error) {
             console.error("Failed to save resume:", error);
@@ -141,7 +141,27 @@ export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading 
                                 <Download className="h-4 w-4 mr-2" />
                                 {isDownloading ? "Downloading..." : "Download"}
                             </Button>
-                            {!isEditing && (
+                            {isEditing ? (
+                                <>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={handleCancel}
+                                        disabled={isSaving}
+                                        className="rounded-lg border-border/40 hover:bg-muted/50"
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        onClick={handleSave}
+                                        disabled={isSaving}
+                                        className="rounded-lg bg-green-600 hover:bg-green-700"
+                                    >
+                                        {isSaving ? "Saving..." : "Save"}
+                                    </Button>
+                                </>
+                            ) : (
                                 <Button
                                     size="sm"
                                     onClick={() => setIsEditing(true)}
