@@ -19,10 +19,9 @@ interface ResumeEditModalProps {
     onOpenChange: (open: boolean) => void;
     resume: IResume | null | undefined;
     onSave: (resume: Partial<IResume>) => Promise<void>;
-    isLoading?: boolean;
 }
 
-export const ResumeEditModal = ({ open, onOpenChange, resume, onSave, isLoading }: ResumeEditModalProps) => {
+export const ResumeEditModal = ({ open, onOpenChange, resume, onSave }: ResumeEditModalProps) => {
     const [activeTab, setActiveTab] = useState<"basic" | "skills" | "experience" | "education" | "certifications" | "projects" | "languages" | "awards" | "references">("basic");
     const [localResume, setLocalResume] = useState<Partial<IResume>>(resume || {});
     const [isEditing, setIsEditing] = useState(false);

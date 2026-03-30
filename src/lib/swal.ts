@@ -71,29 +71,103 @@ export const swalInput = (opts: {
     confirmText?: string;
     cancelText?: string;
     danger?: boolean;
-}): Promise<SweetAlertResult<string>> =>
-    Swal.fire<string>({
+}): Promise<SweetAlertResult<string>> => {
+    const isDanger = opts.danger ?? false;
+
+    // Custom icon: coloured circle + SVG — avoids the bare "!" from SweetAlert2's
+    // built-in warning icon when its border is stripped by the base customClass.
+    const iconHtml = isDanger
+        ? `<div style="display:flex;align-items:center;justify-content:center;
+                width:60px;height:60px;border-radius:50%;
+                background:#fef2f2;border:2px solid #fecaca;margin:0 auto;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+                viewBox="0 0 24 24" fill="none" stroke="#dc2626"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18"/>
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+              <line x1="10" y1="11" x2="10" y2="17"/>
+              <line x1="14" y1="11" x2="14" y2="17"/>
+            </svg>
+           </div>`
+        : `<div style="display:flex;align-items:center;justify-content:center;
+                width:60px;height:60px;border-radius:50%;
+                background:#eff6ff;border:2px solid #bfdbfe;margin:0 auto;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+                viewBox="0 0 24 24" fill="none" stroke="#2563eb"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 16v-4"/><path d="M12 8h.01"/>
+            </svg>
+           </div>`;
+
+    const resetInputStyle = (input: HTMLElement) => {
+        input.style.boxShadow = "none";
+        input.style.outline = "none";
+        input.style.borderColor = "hsl(var(--border))";
+        input.style.backgroundColor = "hsl(var(--background))";
+        input.style.color = "hsl(var(--foreground))";
+        input.style.boxSizing = "border-box";
+        input.style.width = "100%";
+        input.style.maxWidth = "100%";
+    };
+
+    return Swal.fire<string>({
         ...base,
         title: opts.title,
         text: opts.text,
-        icon: "warning",
-        iconColor: opts.danger ? "hsl(var(--destructive))" : "hsl(var(--primary))",
+        iconHtml,
         input: "textarea",
         inputPlaceholder: opts.inputPlaceholder ?? "Enter reason...",
         inputAttributes: { rows: "3" },
         inputValidator: (value) => {
             if (!value || !value.trim()) return "Please provide a reason.";
         },
+        scrollbarPadding: false,
+        didOpen: () => {
+            // Fix popup overflow so the textarea can't bleed outside the modal
+            const popup = Swal.getPopup();
+            if (popup) {
+                popup.style.overflow = "hidden";
+                popup.style.boxSizing = "border-box";
+            }
+
+            const input = Swal.getInput();
+            if (input) {
+                resetInputStyle(input);
+                // Re-apply on focus/blur because SweetAlert2 re-applies its own
+                // border-color and box-shadow on these events
+                input.addEventListener("focus", () => resetInputStyle(input));
+                input.addEventListener("blur", () => resetInputStyle(input));
+            }
+        },
         customClass: {
             ...base.customClass,
-            input: "!rounded-xl !border !border-border/60 !bg-background !text-foreground !text-sm !p-3 !mt-2 !w-full focus:!ring-2 focus:!ring-primary/30 !resize-none",
-            confirmButton: base.customClass.confirmButton + (opts.danger ? " !bg-destructive !text-white hover:!opacity-90" : " !bg-primary !text-primary-foreground hover:!opacity-90"),
+            popup: base.customClass.popup + " !overflow-hidden",
+            icon: "!border-0 !mb-1 !shadow-none",
+            input: [
+                "!rounded-xl !border !border-border/60",
+                "!bg-background !text-foreground !text-sm",
+                "!p-3 !mt-2 !resize-none",
+                "!shadow-none !outline-none",
+                "!w-full !max-w-full !box-border",
+            ].join(" "),
+            confirmButton:
+                base.customClass.confirmButton +
+                (isDanger
+                    ? " !bg-destructive !text-white hover:!opacity-90"
+                    : " !bg-primary !text-primary-foreground hover:!opacity-90"),
+            validationMessage:
+                "!text-destructive !text-xs !bg-transparent !shadow-none !border-0 !p-0 !mt-1",
         },
         showCancelButton: true,
         confirmButtonText: opts.confirmText ?? "Confirm",
         cancelButtonText: opts.cancelText ?? "Cancel",
-        confirmButtonColor: opts.danger ? "hsl(var(--destructive))" : "hsl(var(--primary))",
+        confirmButtonColor: isDanger
+            ? "hsl(var(--destructive))"
+            : "hsl(var(--primary))",
     });
+};
 
 // ── Success toast ──────────────────────────────────────────────────────────
 export const swalSuccess = (title: string, text?: string) =>

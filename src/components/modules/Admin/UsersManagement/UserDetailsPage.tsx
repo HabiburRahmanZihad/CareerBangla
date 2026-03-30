@@ -631,7 +631,6 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
                 onOpenChange={setIsResumeEditModalOpen}
                 resume={user.resume}
                 onSave={handleUpdateResume}
-                isLoading={isUpdatingResume}
             />
         </div>
     );

@@ -99,7 +99,7 @@ export const adminNavItems: NavSection[] = [
         title: "Platform Management",
         items: [
             {
-                title: "Jobs",
+                title: "Manage Job",
                 href: "/admin/dashboard/jobs-management",
                 icon: "Briefcase",
             },
