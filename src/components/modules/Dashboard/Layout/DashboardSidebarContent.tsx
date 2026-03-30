@@ -34,7 +34,7 @@ const ROLE_LABEL: Record<string, string> = {
     SUPER_ADMIN: "Super Admin",
 };
 
-const DashboardSidebarContent = ({ dashboardHome, navItems, userInfo }: DashboardSidebarContentProps) => {
+const DashboardSidebarContent = ({ navItems, userInfo }: DashboardSidebarContentProps) => {
     const pathname = usePathname();
     const grad = avatarGradient(userInfo.name);
     const initial = userInfo.name.charAt(0).toUpperCase();
@@ -46,11 +46,8 @@ const DashboardSidebarContent = ({ dashboardHome, navItems, userInfo }: Dashboar
 
             {/* ── Logo ──────────────────────────────────────────────────── */}
             <div className="flex h-16 items-center px-5 border-b border-border/40 shrink-0">
-                <Link href={dashboardHome} className="flex items-center gap-2.5 group">
-                    <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm shadow-primary/30 group-hover:shadow-primary/50 transition-shadow">
-                        <span className="text-primary-foreground font-black text-sm">C</span>
-                    </div>
-                    <span className="text-lg font-black text-primary tracking-tight">CareerBangla</span>
+                <Link href="/" className="flex items-center gap-2.5 group">
+                    <span className="text-2xl font-black text-primary tracking-tight">CareerBangla</span>
                 </Link>
             </div>
 
