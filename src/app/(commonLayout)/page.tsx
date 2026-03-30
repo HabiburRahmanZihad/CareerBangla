@@ -1,4 +1,5 @@
 import AppDownloadSection from "@/components/modules/Home/AppDownloadSection";
+import CvBannerSection from "@/components/modules/Home/CvBannerSection";
 import TopCategoriesSection from "@/components/modules/Home/TopCategoriesSection";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -121,6 +122,9 @@ export default function Home() {
 
             {/* Top Categories Section */}
             <TopCategoriesSection />
+
+            {/* CV Banner Section */}
+            <CvBannerSection />
 
             {/* App Download Section */}
             <AppDownloadSection />
