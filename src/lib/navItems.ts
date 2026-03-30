@@ -104,7 +104,7 @@ export const adminNavItems: NavSection[] = [
                 icon: "Briefcase",
             },
             {
-                title: "Pending Approvals",
+                title: "Pending Job Approvals",
                 href: "/admin/dashboard/pending-jobs",
                 icon: "Clock",
             },
