@@ -1,127 +1,160 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { getDefaultDashboardRoute, UserRole } from "@/lib/authUtils";
+import NotificationDropdown from "@/components/modules/Dashboard/Layout/NotificationDropdown";
+import UserDropdown from "@/components/modules/Dashboard/Layout/UserDropdown";
+import { UserRole } from "@/lib/authUtils";
 import { cn } from "@/lib/utils";
+import { UserInfo } from "@/types/user.types";
 import { Briefcase, LogIn, Menu, UserPlus, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 interface NavbarProps {
-    user?: { name: string; role: string; image?: string } | null;
+    user?: UserInfo | null;
 }
 
 const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/jobs", label: "Jobs" },
-    { href: "/hired-candidates", label: "Hired Candidates" },
+    { name: "Home", href: "/" },
+    { name: "Jobs", href: "/jobs" },
+    { name: "Hired Candidates", href: "/hired-candidates" },
 ];
 
-const Navbar = ({ user }: NavbarProps) => {
+export default function Navbar({ user }: NavbarProps) {
     const pathname = usePathname();
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-            <div className="container mx-auto flex h-16 items-center justify-between px-4">
-                {/* Logo */}
-                <Link href="/" className="flex items-center gap-2">
-                    <Briefcase className="h-6 w-6 text-primary" />
-                    <span className="text-xl font-bold text-primary">CareerBangla</span>
-                </Link>
+        <header className="sticky top-0 z-999 w-full">
+            <div className="mx-auto container px-4 pt-4 sm:px-6 lg:px-8">
+                <nav className="glass glass-shadow glass-border rounded-2xl">
+                    <div className="flex h-19 items-center justify-between px-4 sm:px-6 lg:px-8">
+                        {/* logo */}
+                        <Link href="/" className="flex items-center gap-3">
+                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+                                <Briefcase className="h-5 w-5" />
+                            </div>
 
-                {/* Desktop Nav */}
-                <nav className="hidden md:flex items-center gap-6">
-                    {navLinks.map((link) => (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            className={cn(
-                                "text-sm font-medium transition-colors hover:text-primary",
-                                pathname === link.href ? "text-primary" : "text-muted-foreground"
-                            )}
-                        >
-                            {link.label}
+                            <div className="flex flex-col leading-none">
+                                <span className="text-lg font-extrabold tracking-tight text-foreground">
+                                    CareerBangla
+                                </span>
+                                <span className="text-xs font-medium text-muted-foreground">
+                                    Find your dream job
+                                </span>
+                            </div>
                         </Link>
-                    ))}
-                </nav>
 
-                {/* Actions */}
-                <div className="hidden md:flex items-center gap-3">
-                    {user ? (
-                        <Button asChild>
-                            <Link href={getDefaultDashboardRoute(user.role as UserRole)}>
-                                Dashboard
-                            </Link>
-                        </Button>
-                    ) : (
-                        <>
-                            <Button variant="outline" asChild>
-                                <Link href="/login">
-                                    <LogIn className="mr-2 h-4 w-4" />
-                                    Login
+                        {/* desktop nav */}
+                        <div className="hidden items-center gap-8 lg:flex">
+                            {navLinks.map((link) => (
+                                <Link
+                                    key={link.name}
+                                    href={link.href}
+                                    className={cn(
+                                        "group inline-flex items-center gap-1 text-[15px] font-semibold transition-colors duration-300",
+                                        pathname === link.href
+                                            ? "text-primary"
+                                            : "text-foreground/85 hover:text-primary"
+                                    )}
+                                >
+                                    <span>{link.name}</span>
                                 </Link>
-                            </Button>
-                            <Button asChild>
-                                <Link href="/register">
-                                    <UserPlus className="mr-2 h-4 w-4" />
-                                    Register
-                                </Link>
-                            </Button>
-                        </>
-                    )}
-                </div>
+                            ))}
+                        </div>
 
-                {/* Mobile Menu Toggle */}
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="md:hidden"
-                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                >
-                    {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                </Button>
-            </div>
-
-            {/* Mobile Menu */}
-            {mobileMenuOpen && (
-                <div className="md:hidden border-t bg-background p-4 space-y-3">
-                    {navLinks.map((link) => (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            className={cn(
-                                "block py-2 text-sm font-medium",
-                                pathname === link.href ? "text-primary" : "text-muted-foreground"
+                        {/* right buttons */}
+                        <div className="hidden items-center gap-3 lg:flex">
+                            {user ? (
+                                <>
+                                    <NotificationDropdown userRole={user.role as UserRole} />
+                                    <UserDropdown userInfo={user} />
+                                </>
+                            ) : (
+                                <>
+                                    <Link
+                                        href="/login"
+                                        className="inline-flex h-11 items-center justify-center rounded-full border border-border bg-white/50 px-6 text-sm font-semibold text-foreground transition-all duration-300 hover:border-primary/40 hover:text-primary dark:bg-slate-950/50"
+                                    >
+                                        <LogIn className="mr-2 h-4 w-4" />
+                                        Sign In
+                                    </Link>
+                                    <Link
+                                        href="/register"
+                                        className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-[0_10px_24px_rgba(255,107,26,0.22)] transition-all duration-300 hover:bg-accent"
+                                    >
+                                        <UserPlus className="mr-2 h-4 w-4" />
+                                        Join Now
+                                    </Link>
+                                </>
                             )}
-                            onClick={() => setMobileMenuOpen(false)}
+                        </div>
+
+                        {/* mobile button */}
+                        <button
+                            type="button"
+                            onClick={() => setMobileOpen(!mobileOpen)}
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-white/50 text-foreground transition-colors hover:text-primary dark:bg-slate-950/50 lg:hidden"
+                            aria-label="Toggle menu"
                         >
-                            {link.label}
-                        </Link>
-                    ))}
-                    <div className="pt-3 border-t space-y-2">
-                        {user ? (
-                            <Button asChild className="w-full">
-                                <Link href={getDefaultDashboardRoute(user.role as UserRole)}>
-                                    Dashboard
-                                </Link>
-                            </Button>
-                        ) : (
-                            <>
-                                <Button variant="outline" asChild className="w-full">
-                                    <Link href="/login">Login</Link>
-                                </Button>
-                                <Button asChild className="w-full">
-                                    <Link href="/register">Register</Link>
-                                </Button>
-                            </>
-                        )}
+                            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                        </button>
                     </div>
-                </div>
-            )}
+
+                    {/* mobile menu */}
+                    {mobileOpen && (
+                        <div className="border-t border-border/70 px-4 py-4 lg:hidden">
+                            <div className="flex flex-col gap-2">
+                                {navLinks.map((link) => (
+                                    <Link
+                                        key={link.name}
+                                        href={link.href}
+                                        onClick={() => setMobileOpen(false)}
+                                        className={cn(
+                                            "flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-colors duration-300",
+                                            pathname === link.href
+                                                ? "bg-primary/10 text-primary"
+                                                : "text-foreground/85 hover:bg-secondary hover:text-primary"
+                                        )}
+                                    >
+                                        <span>{link.name}</span>
+                                    </Link>
+                                ))}
+                            </div>
+
+                            <div className="mt-4 flex flex-col gap-3">
+                                {user ? (
+                                    <>
+                                        <div className="flex items-center gap-2 rounded-xl border border-border bg-white/60 px-4 py-3 dark:bg-slate-950/60">
+                                            <NotificationDropdown userRole={user.role as UserRole} />
+                                            <UserDropdown userInfo={user} />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Link
+                                            href="/login"
+                                            onClick={() => setMobileOpen(false)}
+                                            className="inline-flex h-11 items-center justify-center rounded-full border border-border bg-white/60 px-6 text-sm font-semibold text-foreground transition-all duration-300 hover:border-primary/40 hover:text-primary dark:bg-slate-950/60"
+                                        >
+                                            <LogIn className="mr-2 h-4 w-4" />
+                                            Sign In
+                                        </Link>
+                                        <Link
+                                            href="/register"
+                                            onClick={() => setMobileOpen(false)}
+                                            className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-all duration-300 hover:bg-accent"
+                                        >
+                                            <UserPlus className="mr-2 h-4 w-4" />
+                                            Join Now
+                                        </Link>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </nav>
+            </div>
         </header>
     );
-};
-
-export default Navbar;
+}
