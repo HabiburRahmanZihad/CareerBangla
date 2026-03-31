@@ -124,6 +124,11 @@ export const adminNavItems: NavSection[] = [
                 icon: "CreditCard",
             },
             {
+                title: "Payment Subscriptions",
+                href: "/admin/dashboard/payment-subscriptions",
+                icon: "DollarSign",
+            },
+            {
                 title: "Coupons Management",
                 href: "/admin/dashboard/coupons-management",
                 icon: "Ticket",
