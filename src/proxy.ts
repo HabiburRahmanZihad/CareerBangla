@@ -78,7 +78,7 @@ export async function proxy(request: NextRequest) {
         if (routerOwner === "ADMIN" || routerOwner === "RECRUITER" || routerOwner === "USER") {
             const effectiveRole = userRole === "SUPER_ADMIN" ? "ADMIN" : userRole;
             if (effectiveRole && routerOwner !== effectiveRole) {
-                return NextResponse.redirect(new URL(getDefaultDashboardRoute(userRole), request.url));
+                return NextResponse.redirect(new URL(getDefaultDashboardRoute(userRole || "USER"), request.url));
             }
         }
 
