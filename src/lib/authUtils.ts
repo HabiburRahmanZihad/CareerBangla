@@ -21,6 +21,11 @@ export const recruiterProtectedRoutes: RouteConfig = {
     exact: [],
 };
 
+export const superAdminProtectedRoutes: RouteConfig = {
+    exact: ["/admin/dashboard/payment-subscriptions"],
+    pattern: [],
+};
+
 export const adminProtectedRoutes: RouteConfig = {
     pattern: [/^\/admin\/dashboard/],
     exact: [],
@@ -39,6 +44,10 @@ export const isRouteMatches = (pathname: string, routes: RouteConfig) => {
 };
 
 export const getRouteOwner = (pathname: string): "SUPER_ADMIN" | "ADMIN" | "RECRUITER" | "USER" | "COMMON" | null => {
+    if (isRouteMatches(pathname, superAdminProtectedRoutes)) {
+        return "SUPER_ADMIN";
+    }
+
     if (isRouteMatches(pathname, recruiterProtectedRoutes)) {
         return "RECRUITER";
     }
@@ -73,15 +82,17 @@ export const getDefaultDashboardRoute = (role: UserRole) => {
 };
 
 export const isValidRedirectForRole = (redirectPath: string, role: UserRole) => {
-    const unifySuperAdminAndAdminRole = role === "SUPER_ADMIN" ? "ADMIN" : role;
-
-    const effectiveRole = unifySuperAdminAndAdminRole;
-
     const routeOwner = getRouteOwner(redirectPath);
 
     if (routeOwner === null || routeOwner === "COMMON") {
         return true;
     }
+
+    if (routeOwner === "SUPER_ADMIN") {
+        return role === "SUPER_ADMIN";
+    }
+
+    const effectiveRole = role === "SUPER_ADMIN" ? "ADMIN" : role;
 
     if (routeOwner === effectiveRole) {
         return true;
@@ -109,6 +120,10 @@ export const canAccessRoute = (pathname: string, userRole?: UserRole): boolean =
     // COMMON routes are accessible to all authenticated users
     if (routeOwner === "COMMON") {
         return true;
+    }
+
+    if (routeOwner === "SUPER_ADMIN") {
+        return userRole === "SUPER_ADMIN";
     }
 
     // Normalize SUPER_ADMIN to ADMIN for access control

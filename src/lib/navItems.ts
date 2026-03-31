@@ -124,11 +124,6 @@ export const adminNavItems: NavSection[] = [
                 icon: "CreditCard",
             },
             {
-                title: "Subscriptions Payment",
-                href: "/admin/dashboard/payment-subscriptions",
-                icon: "DollarSign",
-            },
-            {
                 title: "Coupons Management",
                 href: "/admin/dashboard/coupons-management",
                 icon: "Ticket",
@@ -142,6 +137,19 @@ export const adminNavItems: NavSection[] = [
                 title: "Notifications",
                 href: "/admin/dashboard/notifications",
                 icon: "Bell",
+            },
+        ],
+    },
+];
+
+export const superAdminNavItems: NavSection[] = [
+    {
+        title: "Super Admin",
+        items: [
+            {
+                title: "Subscriptions Payment",
+                href: "/admin/dashboard/payment-subscriptions",
+                icon: "DollarSign",
             },
         ],
     },
@@ -205,6 +213,8 @@ export const getNavItemsByRole = (role: UserRole): NavSection[] => {
 
     switch (role) {
         case "SUPER_ADMIN":
+            return [...commonNavItems, ...adminNavItems, ...superAdminNavItems];
+
         case "ADMIN":
             return [...commonNavItems, ...adminNavItems];
 

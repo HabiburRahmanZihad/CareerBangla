@@ -21,7 +21,7 @@ export async function proxy(request: NextRequest) {
             const decodedResult = jwtUtils.verifyToken(accessToken, envConfig.jwtAccessSecret);
             if (decodedResult.success && decodedResult.data) {
                 const role = decodedResult.data.role as UserRole;
-                userRole = role === "SUPER_ADMIN" ? "ADMIN" : role;
+                userRole = role;
 
                 if (decodedResult.data.emailVerified !== undefined) {
                     isEmailVerified = decodedResult.data.emailVerified;
@@ -69,8 +69,15 @@ export async function proxy(request: NextRequest) {
         // Rule: Role-based route mismatch -> redirect if we know the true role
         // If we don't know the role (no accessToken), we let them through and the 
         // Server Components will strictly validate via /auth/me and redirect if needed.
+        if (routerOwner === "SUPER_ADMIN") {
+            if (userRole && userRole !== "SUPER_ADMIN") {
+                return NextResponse.redirect(new URL(getDefaultDashboardRoute(userRole), request.url));
+            }
+        }
+
         if (routerOwner === "ADMIN" || routerOwner === "RECRUITER" || routerOwner === "USER") {
-            if (userRole && routerOwner !== userRole) {
+            const effectiveRole = userRole === "SUPER_ADMIN" ? "ADMIN" : userRole;
+            if (effectiveRole && routerOwner !== effectiveRole) {
                 return NextResponse.redirect(new URL(getDefaultDashboardRoute(userRole), request.url));
             }
         }
