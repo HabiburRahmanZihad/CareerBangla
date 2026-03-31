@@ -7,6 +7,12 @@ export async function proxy(request: NextRequest) {
     try {
         const { pathname } = request.nextUrl;
 
+        // This page has its own server-side and backend-level SUPER_ADMIN checks.
+        // Skipping proxy logic here avoids redirect/reload loops from repeated RSC requests.
+        if (pathname === "/admin/dashboard/payment-subscriptions") {
+            return NextResponse.next();
+        }
+
         // PRIMARY AUTH: better-auth.session_token
         const sessionToken = request.cookies.get("better-auth.session_token")?.value;
         const accessToken = request.cookies.get("accessToken")?.value;
