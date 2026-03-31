@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { recruiterRegisterAction } from "@/app/(authLayout)/register/recruiter/_action";
 import AppField from "@/components/shared/form/AppField";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { registerRecruiter } from "@/services/public-auth.services";
 import { IRecruiterRegisterPayload, recruiterRegisterZodSchema } from "@/zod/auth.validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
@@ -179,7 +179,7 @@ const ComprehensiveRecruiterRegisterForm = () => {
             });
             if (profilePhotoFile) formData.append("profilePhotoFile", profilePhotoFile);
             if (companyLogoFile) formData.append("companyLogoFile", companyLogoFile);
-            return recruiterRegisterAction(formData as any);
+            return registerRecruiter(formData);
         },
     });
 
