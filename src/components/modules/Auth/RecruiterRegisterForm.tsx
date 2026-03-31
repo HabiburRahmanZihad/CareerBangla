@@ -76,8 +76,6 @@ const RecruiterRegisterForm = () => {
 
             <CardContent>
                 <form
-                    method="POST"
-                    action="#"
                     noValidate
                     onSubmit={(e) => {
                         e.preventDefault();
@@ -174,6 +172,8 @@ const RecruiterRegisterForm = () => {
                                 isPending={isSubmitting || isPending}
                                 pendingLabel="Creating Account..."
                                 disabled={!canSubmit}
+                                type="button"
+                                onClick={() => form.handleSubmit()}
                             >
                                 Register as Recruiter
                             </AppSubmitButton>

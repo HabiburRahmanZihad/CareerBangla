@@ -1,4 +1,5 @@
 import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
+import envConfig from "@/lib/envConfig";
 import { logger } from "@/lib/logger";
 import { ApiErrorResponse } from "@/types/api.types";
 import { IRecruiterRegisterPayload, recruiterRegisterZodSchema } from "@/zod/auth.validation";
@@ -42,8 +43,9 @@ export const registerRecruiter = async (
         logger.create("Submitting recruiter registration");
 
         if (payload instanceof FormData) {
-            const response = await axios.post("/api/public/register-recruiter", payload, {
+            const response = await axios.post(`${envConfig.apiBaseUrl}/users/create-recruiter`, payload, {
                 timeout: 30000,
+                withCredentials: true,
             });
 
             return {
@@ -53,7 +55,7 @@ export const registerRecruiter = async (
         }
 
         const response = await axios.post(
-            "/api/public/register-recruiter",
+            `${envConfig.apiBaseUrl}/users/create-recruiter`,
             {
                 password: parsed.data.password,
                 recruiter: {
@@ -71,6 +73,7 @@ export const registerRecruiter = async (
             },
             {
                 timeout: 30000,
+                withCredentials: true,
                 headers: {
                     "Content-Type": "application/json",
                 },

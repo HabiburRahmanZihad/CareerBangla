@@ -9,6 +9,8 @@ type AppSubmitButtonProps = {
     pendingLabel ?: string;
     className ?: string;
     disabled ?: boolean;
+    onClick?: React.MouseEventHandler<HTMLButtonElement>;
+    type?: "button" | "submit";
 }
 
 
@@ -18,6 +20,8 @@ const AppSubmitButton = ({
     pendingLabel = "Submitting...",
     className,
     disabled = false,
+    onClick,
+    type = "submit",
 } : AppSubmitButtonProps
 ) => {
 
@@ -25,7 +29,8 @@ const AppSubmitButton = ({
 
   return (
     <Button 
-        type='submit'
+        type={type}
+        onClick={onClick}
         disabled={isDisabled} 
         className={cn("w-full", className)}
     >

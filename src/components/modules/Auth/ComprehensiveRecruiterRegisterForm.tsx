@@ -378,8 +378,6 @@ const ComprehensiveRecruiterRegisterForm = () => {
 
                     {/* Card body */}
                     <form
-                        method="POST"
-                        action="#"
                         noValidate
                         onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); form.handleSubmit(); }}
                     >
@@ -719,6 +717,8 @@ const ComprehensiveRecruiterRegisterForm = () => {
                                             pendingLabel="Creating account…"
                                             disabled={!canSubmit}
                                             className="w-auto gap-2"
+                                            type="button"
+                                            onClick={() => form.handleSubmit()}
                                         >
                                             Create Recruiter Account <ArrowRight className="h-4 w-4" />
                                         </AppSubmitButton>
