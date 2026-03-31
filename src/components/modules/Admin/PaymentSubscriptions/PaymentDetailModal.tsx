@@ -1,6 +1,5 @@
 "use client";
 
-import { httpClient } from "@/lib/axios/httpClient";
 import { swalDetailModal } from "@/lib/swal";
 import { toast } from "sonner";
 
@@ -74,10 +73,16 @@ const Section = (title: string, content: string) => `
 
 export async function showPaymentDetailModal(subscriptionId: string) {
     try {
-        const res = await httpClient.get<PaymentSubscriptionDetail>(
-            `/subscriptions/admin/payment-details/${subscriptionId}`
-        );
-        const detail = res.data;
+        const response = await fetch(`/api/admin/payment-subscriptions/${subscriptionId}`, {
+            credentials: "include",
+        });
+        const payload = await response.json().catch(() => null);
+
+        if (!response.ok || !payload?.success) {
+            throw new Error(payload?.message || "Failed to load payment details");
+        }
+
+        const detail = payload.data as PaymentSubscriptionDetail;
 
         if (!detail) {
             toast.error("Failed to load payment details");
@@ -155,7 +160,7 @@ export async function showPaymentDetailModal(subscriptionId: string) {
             width: "700px",
         });
     } catch (error: any) {
-        toast.error(error?.response?.data?.message || "Failed to load payment details");
+        toast.error(error?.message || "Failed to load payment details");
     }
 }
 

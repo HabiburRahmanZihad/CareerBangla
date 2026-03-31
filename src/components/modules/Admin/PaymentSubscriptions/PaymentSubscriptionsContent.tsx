@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { httpClient } from "@/lib/axios/httpClient";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -30,6 +29,33 @@ interface Response {
     data: Subscription[];
     pagination: { page: number; total: number; totalPages: number };
 }
+
+const fetchPaymentSubscriptions = async (page: number, search: string, status: string) => {
+    const searchParams = new URLSearchParams({
+        page: String(page),
+        limit: "10",
+    });
+
+    if (search) {
+        searchParams.set("search", search);
+    }
+
+    if (status) {
+        searchParams.set("status", status);
+    }
+
+    const response = await fetch(`/api/admin/payment-subscriptions?${searchParams.toString()}`, {
+        credentials: "include",
+    });
+
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok || !payload?.success) {
+        throw new Error(payload?.message || "Failed to fetch payment subscriptions");
+    }
+
+    return payload.data as Response;
+};
 
 // ── Status config ──────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; bg: string; text: string; dot: string }> = {
@@ -89,12 +115,7 @@ export default function PaymentSubscriptionsContent() {
 
     const { data, isLoading, isFetching, refetch, error } = useQuery({
         queryKey: ["payments", page, search, status],
-        queryFn: async () => {
-            const res = await httpClient.get<Response>("/subscriptions/admin/all-payments", {
-                params: { page, limit: 10, search: search || undefined, status: status || undefined },
-            });
-            return res.data;
-        },
+        queryFn: () => fetchPaymentSubscriptions(page, search, status),
     });
 
     const items = data?.data || [];

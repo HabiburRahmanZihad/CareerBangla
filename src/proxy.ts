@@ -7,12 +7,6 @@ export async function proxy(request: NextRequest) {
     try {
         const { pathname } = request.nextUrl;
 
-        // This page has its own server-side and backend-level SUPER_ADMIN checks.
-        // Skipping proxy logic here avoids redirect/reload loops from repeated RSC requests.
-        if (pathname === "/admin/dashboard/payment-subscriptions") {
-            return NextResponse.next();
-        }
-
         // PRIMARY AUTH: better-auth.session_token
         const sessionToken = request.cookies.get("better-auth.session_token")?.value;
         const accessToken = request.cookies.get("accessToken")?.value;
@@ -27,7 +21,7 @@ export async function proxy(request: NextRequest) {
             const decodedResult = jwtUtils.verifyToken(accessToken, envConfig.jwtAccessSecret);
             if (decodedResult.success && decodedResult.data) {
                 const role = decodedResult.data.role as UserRole;
-                userRole = role;
+                userRole = role === "SUPER_ADMIN" ? "ADMIN" : role;
 
                 if (decodedResult.data.emailVerified !== undefined) {
                     isEmailVerified = decodedResult.data.emailVerified;
@@ -75,14 +69,9 @@ export async function proxy(request: NextRequest) {
         // Rule: Role-based route mismatch -> redirect if we know the true role
         // If we don't know the role (no accessToken), we let them through and the 
         // Server Components will strictly validate via /auth/me and redirect if needed.
-        // For SUPER_ADMIN-only routes, don't hard-redirect from the access token hint.
-        // The session-backed server guard is authoritative and avoids false redirects
-        // when background server-action requests hit the current route.
-
         if (routerOwner === "ADMIN" || routerOwner === "RECRUITER" || routerOwner === "USER") {
-            const effectiveRole = userRole === "SUPER_ADMIN" ? "ADMIN" : userRole;
-            if (effectiveRole && routerOwner !== effectiveRole) {
-                return NextResponse.redirect(new URL(getDefaultDashboardRoute(userRole || "USER"), request.url));
+            if (userRole && routerOwner !== userRole) {
+                return NextResponse.redirect(new URL(getDefaultDashboardRoute(userRole), request.url));
             }
         }
 

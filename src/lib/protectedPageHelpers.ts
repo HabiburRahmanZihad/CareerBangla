@@ -45,6 +45,14 @@ export async function protectPageByRole(
         redirect("/login");
     }
 
+    if (requiredRole === "SUPER_ADMIN") {
+        if (userInfo.role !== "SUPER_ADMIN") {
+            redirect(getDefaultDashboardRoute(userInfo.role));
+        }
+
+        return userInfo;
+    }
+
     // Normalize SUPER_ADMIN to ADMIN
     const normalizedUserRole = userInfo.role === "SUPER_ADMIN" ? "ADMIN" : userInfo.role;
     const normalizedRequiredRole = requiredRole === "SUPER_ADMIN" ? "ADMIN" : requiredRole;
