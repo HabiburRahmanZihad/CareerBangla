@@ -1,8 +1,8 @@
 import PaymentSubscriptionsContent from "@/components/modules/Admin/PaymentSubscriptions/PaymentSubscriptionsContent";
-import { protectPageByRole } from "@/lib/protectedPageHelpers";
+import { protectPage } from "@/lib/protectedPageHelpers";
 
 const PaymentSubscriptionsPage = async () => {
-    await protectPageByRole("SUPER_ADMIN");
+    await protectPage("/admin/dashboard/payment-subscriptions");
     return <PaymentSubscriptionsContent />;
 };
 
