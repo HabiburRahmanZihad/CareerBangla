@@ -69,11 +69,9 @@ export async function proxy(request: NextRequest) {
         // Rule: Role-based route mismatch -> redirect if we know the true role
         // If we don't know the role (no accessToken), we let them through and the 
         // Server Components will strictly validate via /auth/me and redirect if needed.
-        if (routerOwner === "SUPER_ADMIN") {
-            if (userRole && userRole !== "SUPER_ADMIN") {
-                return NextResponse.redirect(new URL(getDefaultDashboardRoute(userRole), request.url));
-            }
-        }
+        // For SUPER_ADMIN-only routes, don't hard-redirect from the access token hint.
+        // The session-backed server guard is authoritative and avoids false redirects
+        // when background server-action requests hit the current route.
 
         if (routerOwner === "ADMIN" || routerOwner === "RECRUITER" || routerOwner === "USER") {
             const effectiveRole = userRole === "SUPER_ADMIN" ? "ADMIN" : userRole;
