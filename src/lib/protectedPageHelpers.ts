@@ -55,7 +55,8 @@ export async function protectPageByRole(
 
     // Normalize SUPER_ADMIN to ADMIN
     const normalizedUserRole = userInfo.role === "SUPER_ADMIN" ? "ADMIN" : userInfo.role;
-    const normalizedRequiredRole = requiredRole === "SUPER_ADMIN" ? "ADMIN" : requiredRole;
+    // At this point, requiredRole is guaranteed to be "ADMIN" | "RECRUITER" | "USER" (SUPER_ADMIN early return above)
+    const normalizedRequiredRole = requiredRole;
 
     if (normalizedUserRole !== normalizedRequiredRole) {
         redirect(getDefaultDashboardRoute(userInfo.role));
