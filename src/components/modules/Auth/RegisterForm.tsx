@@ -5,6 +5,7 @@ import AppField from "@/components/shared/form/AppField";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import envConfig from "@/lib/envConfig";
 import { IRegisterPayload, registerZodSchema } from "@/zod/auth.validation";
 import { useForm } from "@tanstack/react-form";
@@ -93,7 +94,7 @@ const RegisterForm = ({ referralCode }: RegisterFormProps) => {
                 }
             } catch (error: any) {
                 sessionStorage.removeItem("pendingVerification");
-                setServerError(`Registration failed: ${error.message}`);
+                setServerError(getRequestErrorMessage(error, "Registration failed"));
             }
         },
     });

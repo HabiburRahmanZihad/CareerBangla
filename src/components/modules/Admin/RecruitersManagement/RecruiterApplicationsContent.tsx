@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { swalConfirm, swalDanger } from "@/lib/swal";
 import { approveRecruiter, getAllRecruiters, rejectRecruiter, updateRecruiterData } from "@/services/recruiter.services";
 import { IRecruiterProfile } from "@/types/user.types";
@@ -36,8 +37,7 @@ const RecruiterApplicationsContent = () => {
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
         },
         onError: (err: Error) => {
-            const errorMessage = err instanceof Error && "message" in err ? (err as any).response?.data?.message : "Failed to approve";
-            toast.error(errorMessage || "Failed to approve");
+            toast.error(getRequestErrorMessage(err, "Failed to approve"));
         },
     });
 
@@ -48,8 +48,7 @@ const RecruiterApplicationsContent = () => {
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
         },
         onError: (err: Error) => {
-            const errorMessage = err instanceof Error && "message" in err ? (err as any).response?.data?.message : "Failed to reject";
-            toast.error(errorMessage || "Failed to reject");
+            toast.error(getRequestErrorMessage(err, "Failed to reject"));
         },
     });
 
@@ -63,8 +62,7 @@ const RecruiterApplicationsContent = () => {
             setEditingRecruiter(null);
         },
         onError: (err: Error) => {
-            const errorMessage = err instanceof Error && "message" in err ? (err as any).response?.data?.message : "Failed to update recruiter";
-            toast.error(errorMessage || "Failed to update recruiter");
+            toast.error(getRequestErrorMessage(err, "Failed to update recruiter"));
         },
     });
 

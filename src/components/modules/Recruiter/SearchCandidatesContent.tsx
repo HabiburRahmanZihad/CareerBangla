@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { downloadCvForRecruiter, getUserDirectory } from "@/services/application.services";
 import { searchCandidates } from "@/services/resume.services";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -73,7 +74,7 @@ const SearchCandidatesContent = () => {
             toast.success("CV downloaded successfully");
         },
         onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "Failed to download CV");
+            toast.error(getRequestErrorMessage(err, "Failed to download CV"));
         },
         onSettled: () => {
             setDownloadingUserId(null);

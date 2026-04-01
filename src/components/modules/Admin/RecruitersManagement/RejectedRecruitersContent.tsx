@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { swalConfirm, swalDanger } from "@/lib/swal";
 import { approveRecruiter, deleteRecruiter, getAllRecruiters } from "@/services/recruiter.services";
 import { IRecruiterProfile } from "@/types/user.types";
@@ -32,7 +33,7 @@ const RejectedRecruitersContent = () => {
             toast.success("Recruiter permanently deleted");
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to delete"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to delete")),
     });
 
     const { mutateAsync: doApprove } = useMutation({
@@ -41,7 +42,7 @@ const RejectedRecruitersContent = () => {
             toast.success("Recruiter re-approved and verification email sent");
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to approve"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to approve")),
     });
 
     if (isLoading) {

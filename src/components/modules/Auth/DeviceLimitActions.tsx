@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { loginAction } from "@/app/(authLayout)/login/_action";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { ILoginPayload } from "@/zod/auth.validation";
 import { useMutation } from "@tanstack/react-query";
 import { AlertTriangle, ArrowLeft, Loader2, LogOut } from "lucide-react";
@@ -65,7 +66,7 @@ const DeviceLimitActions = ({ redirectPath }: DeviceLimitActionsProps) => {
             window.sessionStorage.removeItem(DEVICE_LIMIT_LOGIN_CONTEXT_KEY);
             window.location.href = result.redirectPath || "/dashboard";
         } catch (err: any) {
-            setError(err?.message || "Failed to logout all devices and login.");
+            setError(getRequestErrorMessage(err, "Failed to logout all devices and login."));
         }
     };
 

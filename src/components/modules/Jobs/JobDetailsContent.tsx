@@ -1,6 +1,7 @@
 "use client";
 
 import { Textarea } from "@/components/ui/textarea";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { applyToJob, checkIfApplied } from "@/services/application.services";
 import { getJobs } from "@/services/job.services";
 import { getMyResume } from "@/services/resume.services";
@@ -236,7 +237,7 @@ const JobDetailsContent = ({ job, userRole, isPremium }: JobDetailsContentProps)
             refetchApplied();
         },
         onError: (error: Error & { response?: { data?: { message?: string } } }) => {
-            toast.error(error.response?.data?.message || error.message || "Failed to apply");
+            toast.error(getRequestErrorMessage(error, "Failed to apply"));
         },
     });
 

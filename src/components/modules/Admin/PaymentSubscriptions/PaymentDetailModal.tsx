@@ -1,5 +1,6 @@
 "use client";
 
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { swalDetailModal } from "@/lib/swal";
 import { toast } from "sonner";
 
@@ -160,9 +161,9 @@ export async function showPaymentDetailModal(subscriptionId: string) {
             width: "700px",
         });
     } catch (error: any) {
-        toast.error(error?.message || "Failed to load payment details");
+        toast.error(getRequestErrorMessage(error, "Failed to load payment details"));
     }
-}
+  }
 
 // Export as dummy component for backward compatibility if imported as component
 export function PaymentDetailModal() {

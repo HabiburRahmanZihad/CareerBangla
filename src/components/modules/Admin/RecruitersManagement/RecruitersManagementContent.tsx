@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { changeUserStatus } from "@/services/admin.services";
 import { approveRecruiter, getAllRecruiters, rejectRecruiter, updateRecruiterData } from "@/services/recruiter.services";
 import { IRecruiterProfile } from "@/types/user.types";
@@ -36,7 +37,7 @@ const RecruitersManagementContent = () => {
             toast.success("Recruiter approved");
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed")),
     });
 
     const { mutateAsync: reject } = useMutation({
@@ -45,7 +46,7 @@ const RecruitersManagementContent = () => {
             toast.success("Recruiter rejected");
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed")),
     });
 
     const { mutateAsync: updateStatus } = useMutation({
@@ -55,7 +56,7 @@ const RecruitersManagementContent = () => {
             toast.success("Status updated");
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed")),
     });
 
 
@@ -69,7 +70,7 @@ const RecruitersManagementContent = () => {
             setIsEditModalOpen(false);
             setEditingRecruiter(null);
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update recruiter"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to update recruiter")),
     });
 
     if (isLoading) {

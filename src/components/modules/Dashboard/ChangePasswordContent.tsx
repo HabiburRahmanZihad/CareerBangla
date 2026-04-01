@@ -4,6 +4,7 @@
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { cn } from "@/lib/utils";
 import { changePassword } from "@/services/auth.services";
 import { changePasswordFormZodSchema, IChangePasswordPayload } from "@/zod/auth.validation";
@@ -120,7 +121,7 @@ const ChangePasswordContent = () => {
             form.reset();
         },
         onError: (err: any) => {
-            setServerError(err?.response?.data?.message || "Failed to change password");
+            setServerError(getRequestErrorMessage(err, "Failed to change password"));
         },
     });
 

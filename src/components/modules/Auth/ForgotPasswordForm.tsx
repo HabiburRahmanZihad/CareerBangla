@@ -4,6 +4,7 @@ import AppField from "@/components/shared/form/AppField";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { httpClient } from "@/lib/axios/httpClient";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { forgotPasswordZodSchema, IForgotPasswordPayload } from "@/zod/auth.validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
@@ -54,7 +55,7 @@ const ForgotPasswordForm = () => {
             router.push(`/reset-password?email=${encodeURIComponent(variables.email)}&phone=${encodeURIComponent(variables.phone)}`);
         },
         onError: (err: any) => {
-            setServerError(err?.response?.data?.message || "Failed to send OTP");
+            setServerError(getRequestErrorMessage(err, "Failed to send OTP"));
         },
     });
 

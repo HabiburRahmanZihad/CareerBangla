@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { swalDanger } from "@/lib/swal";
 import { createCoupon, deleteCoupon, getAllCoupons } from "@/services/coupon.services";
 import { CouponTargetRole, CouponType, ICoupon } from "@/types/user.types";
@@ -164,7 +165,7 @@ const CouponsManagementContent = () => {
             setShowForm(false);
             setForm(DEFAULT_FORM);
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to create coupon"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to create coupon")),
     });
 
     const { mutateAsync: doDelete } = useMutation({
@@ -173,7 +174,7 @@ const CouponsManagementContent = () => {
             toast.success("Coupon deleted");
             queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to delete coupon"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to delete coupon")),
     });
 
     const allCoupons: ICoupon[] = useMemo(() => data?.data || [], [data]);

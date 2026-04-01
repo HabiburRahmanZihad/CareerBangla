@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { httpClient } from "@/lib/axios/httpClient";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { getSubscriptionPlans } from "@/services/subscription.services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -75,11 +76,7 @@ const SubscriptionsManagementContent = () => {
             queryClient.invalidateQueries({ queryKey: ["subscription-plans"] });
         },
         onError: (error: any) => {
-            toast.error(
-                error?.response?.data?.message ||
-                error?.message ||
-                "Failed to update subscription plan"
-            );
+            toast.error(getRequestErrorMessage(error, "Failed to update subscription plan"));
         },
     });
 

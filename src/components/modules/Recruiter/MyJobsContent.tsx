@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { deleteJob, getMyJobs } from "@/services/job.services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
@@ -44,7 +45,7 @@ const MyJobsContent = () => {
             queryClient.invalidateQueries({ queryKey: ["my-jobs"] });
         },
         onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "Failed to delete job");
+            toast.error(getRequestErrorMessage(err, "Failed to delete job"));
         },
     });
 

@@ -13,6 +13,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { COUNTRIES, getDistrictsForCountry } from "@/constants/countries";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import envConfig from "@/lib/envConfig";
 import { swalDanger } from "@/lib/swal";
 import { deleteMyAccount, updateMyProfile } from "@/services/auth.services";
@@ -59,7 +60,7 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
     const { mutate: deleteAccount, isPending: isDeleting } = useMutation({
         mutationFn: () => deleteMyAccount(),
         onSuccess: () => { toast.success("Account deleted"); router.push("/login"); },
-        onError: () => toast.error("Failed to delete account"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to delete account")),
     });
 
     const isRecruiter = userInfo.role === "RECRUITER";
@@ -125,7 +126,7 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
             toast.success("Profile photo updated!");
             queryClient.invalidateQueries({ queryKey: ["my-resume"] });
         } catch (err: any) {
-            toast.error(err.message || "Upload failed");
+            toast.error(getRequestErrorMessage(err, "Upload failed"));
         } finally {
             setIsUploadingPhoto(false);
             if (photoInputRef.current) photoInputRef.current.value = "";
@@ -146,7 +147,7 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
             await queryClient.invalidateQueries({ queryKey: ["my-resume"] });
             router.refresh();
         } catch (err: any) {
-            toast.error(err?.response?.data?.message || "Failed to update phone");
+            toast.error(getRequestErrorMessage(err, "Failed to update phone"));
         } finally {
             setIsSavingPhone(false);
         }
@@ -168,7 +169,7 @@ const MyProfileContent = ({ userInfo }: MyProfileContentProps) => {
             await queryClient.invalidateQueries({ queryKey: ["my-resume"] });
             router.refresh();
         } catch (err: any) {
-            toast.error(err?.response?.data?.message || "Failed to update country");
+            toast.error(getRequestErrorMessage(err, "Failed to update country"));
         } finally {
             setIsSavingCountry(false);
         }

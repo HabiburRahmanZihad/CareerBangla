@@ -76,7 +76,7 @@ export const loginAction = async (payload: ILoginPayload, redirectPath?: string,
         if (error?.response?.status === 409 && error?.response?.data?.data?.code === "DEVICE_LIMIT_EXCEEDED") {
             return {
                 success: false,
-                message: error?.response?.data?.message || "Device limit exceeded",
+                message: getRequestErrorMessage(error, "Device limit exceeded"),
                 code: "DEVICE_LIMIT_EXCEEDED",
             };
         }

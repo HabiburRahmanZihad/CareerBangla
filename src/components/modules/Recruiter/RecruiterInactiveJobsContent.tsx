@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { deleteInactiveJob, getInactiveJobs } from "@/services/job.services";
 import { IJob } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -121,7 +122,7 @@ const RecruiterInactiveJobsContent = ({ title, description, emptyMessage }: Recr
             queryClient.refetchQueries({ queryKey: ["recruiter-inactive-jobs"], type: "active" });
         },
         onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "Failed to delete job");
+            toast.error(getRequestErrorMessage(err, "Failed to delete job"));
         },
     });
 

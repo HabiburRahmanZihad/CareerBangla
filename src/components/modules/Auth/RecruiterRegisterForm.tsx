@@ -6,6 +6,7 @@ import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { registerRecruiter } from "@/services/public-auth.services";
 import { IRecruiterRegisterPayload, recruiterRegisterZodSchema } from "@/zod/auth.validation";
 import { useForm } from "@tanstack/react-form";
@@ -43,7 +44,7 @@ const RecruiterRegisterForm = () => {
                     setServerError(result.message || "Registration failed");
                 }
             } catch (error: any) {
-                setServerError(`Registration failed: ${error.message}`);
+                setServerError(getRequestErrorMessage(error, "Registration failed"));
             }
         },
     });

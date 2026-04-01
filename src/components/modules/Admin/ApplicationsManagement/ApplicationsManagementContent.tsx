@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { getAllApplications, updateApplicationStatus } from "@/services/application.services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
@@ -170,7 +171,7 @@ const ApplicationsManagementContent = () => {
             toast.success("Application status updated");
             queryClient.invalidateQueries({ queryKey: ["admin-all-applications"] });
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update status"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to update status")),
     });
 
     const applications = useMemo(() => (data?.data || []) as any[], [data]);

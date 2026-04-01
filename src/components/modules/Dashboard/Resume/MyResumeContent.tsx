@@ -6,6 +6,7 @@ import ProfileCompletionBar from "@/components/shared/ProfileCompletionBar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import envConfig from "@/lib/envConfig";
 import { getMyResume, updateMyResume } from "@/services/resume.services";
 import Link from "next/link";
@@ -153,7 +154,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
             }
         },
         onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "Failed to update resume");
+            toast.error(getRequestErrorMessage(err, "Failed to update resume"));
         },
     });
 
@@ -249,7 +250,7 @@ const MyResumeForm = ({ resume, isPremium }: { resume: any; isPremium: boolean }
             URL.revokeObjectURL(url);
             toast.success("Resume PDF downloaded!");
         } catch (err: any) {
-            toast.error(err.message || "Failed to download PDF");
+            toast.error(getRequestErrorMessage(err, "Failed to download PDF"));
         } finally {
             setIsDownloading(false);
         }

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { updateJob } from "@/services/job.services";
 import { IJob } from "@/types/user.types";
 import { useMutation } from "@tanstack/react-query";
@@ -94,7 +95,7 @@ const RecruiterJobDetailsEditContent = ({ job }: RecruiterJobDetailsEditContentP
             router.push("/recruiter/dashboard/my-jobs/pending");
         },
         onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "Failed to update job");
+            toast.error(getRequestErrorMessage(err, "Failed to update job"));
         },
     });
 

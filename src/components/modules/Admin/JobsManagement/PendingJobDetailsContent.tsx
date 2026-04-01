@@ -4,6 +4,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { swalInput } from "@/lib/swal";
 import { approveJob, rejectJob } from "@/services/job.services";
 import { IJob } from "@/types/user.types";
@@ -137,7 +138,7 @@ const PendingJobDetailsContent = ({ job }: PendingJobDetailsContentProps) => {
             await queryClient.invalidateQueries({ queryKey: ["admin-all-jobs"] });
             router.push("/admin/dashboard/pending-jobs");
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to approve job"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to approve job")),
     });
 
     const { mutateAsync: rejectMutate, isPending: isRejecting } = useMutation({
@@ -148,7 +149,7 @@ const PendingJobDetailsContent = ({ job }: PendingJobDetailsContentProps) => {
             await queryClient.invalidateQueries({ queryKey: ["admin-all-jobs"] });
             router.push("/admin/dashboard/pending-jobs");
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to reject job"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to reject job")),
     });
 
     const handleReject = async () => {

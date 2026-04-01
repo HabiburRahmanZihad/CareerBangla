@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { swalDanger } from "@/lib/swal";
 import { deleteUser, getAllUsersWithDetails } from "@/services/admin.services";
 import { IUserWithDetails } from "@/types/user.types";
@@ -41,7 +42,7 @@ const UsersManagementMain = () => {
             toast.success("User deleted successfully");
             queryClient.invalidateQueries({ queryKey: ["users-with-details"] });
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to delete user"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to delete user")),
     });
 
     if (isLoading) {

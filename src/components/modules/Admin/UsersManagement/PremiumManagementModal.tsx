@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { updateUser } from "@/services/admin.services";
 import { IUserWithDetails } from "@/types/user.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -30,7 +31,7 @@ const PremiumManagementModal = ({ isOpen, onClose, user }: PremiumManagementModa
             queryClient.invalidateQueries({ queryKey: ["users-with-details"] });
             onClose();
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update premium status"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to update premium status")),
     });
 
     const handleGrantPremium = async () => {

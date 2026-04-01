@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { cn } from "@/lib/utils";
 import { updateRecruiterData } from "@/services/recruiter.services";
 import { IRecruiterProfile } from "@/types/user.types";
@@ -45,8 +46,7 @@ const ConfirmedRecruitersDetailsPage = ({ recruiter, onBack }: ConfirmedRecruite
             setIsEditMode(false);
         },
         onError: (err: Error) => {
-            const errorMessage = err instanceof Error && "message" in err ? (err as any).response?.data?.message : "Failed to update";
-            toast.error(errorMessage || "Failed to update recruiter");
+            toast.error(getRequestErrorMessage(err, "Failed to update recruiter"));
         },
     });
 

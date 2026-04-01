@@ -5,6 +5,7 @@ import AppField from "@/components/shared/form/AppField";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import envConfig from "@/lib/envConfig";
 import { ILoginPayload, loginZodSchema } from "@/zod/auth.validation";
 import { useForm } from "@tanstack/react-form";
@@ -102,7 +103,7 @@ const LoginForm = ({ redirectPath, oauthError, forceLogoutMode = false }: LoginF
         }
         window.location.href = result.redirectPath || "/dashboard";
       } catch (error: any) {
-        setServerError(`Login failed: ${error.message}`);
+        setServerError(getRequestErrorMessage(error, "Login failed"));
       }
     },
   });

@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { getAllJobsAdmin } from "@/services/admin.services";
 import { deleteJob, updateJob } from "@/services/job.services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -178,7 +179,7 @@ const JobsManagementContent = () => {
             queryClient.invalidateQueries({ queryKey: ["admin-all-jobs"] });
             queryClient.invalidateQueries({ queryKey: ["pending-jobs"] });
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to delete job"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to delete job")),
     });
 
     const { mutateAsync: updateStatusMutate, isPending: updatingStatus } = useMutation({
@@ -188,7 +189,7 @@ const JobsManagementContent = () => {
             queryClient.invalidateQueries({ queryKey: ["admin-all-jobs"] });
             queryClient.invalidateQueries({ queryKey: ["pending-jobs"] });
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update job status"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to update job status")),
     });
 
     if (isLoading) return <JobsManagementSkeleton />;

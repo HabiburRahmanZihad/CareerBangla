@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { swalDanger } from "@/lib/swal";
 import { createJobCategory, deleteJobCategory, getJobCategories } from "@/services/job.services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -82,7 +83,7 @@ const CategoriesManagementContent = () => {
             queryClient.invalidateQueries({ queryKey: ["job-categories"] });
         },
         onError: (err: any) =>
-            toast.error(err?.response?.data?.message || "Failed to create category"),
+            toast.error(getRequestErrorMessage(err, "Failed to create category")),
     });
 
     const { mutateAsync: removeCategory, isPending: isDeleting } = useMutation({
@@ -92,7 +93,7 @@ const CategoriesManagementContent = () => {
             queryClient.invalidateQueries({ queryKey: ["job-categories"] });
         },
         onError: (err: any) =>
-            toast.error(err?.response?.data?.message || "Failed to delete category"),
+            toast.error(getRequestErrorMessage(err, "Failed to delete category")),
     });
 
     const handleAdd = () => {

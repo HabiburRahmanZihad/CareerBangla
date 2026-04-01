@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { approveRecruiter, rejectRecruiter, updateRecruiterData } from "@/services/recruiter.services";
 import { IRecruiterProfile } from "@/types/user.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -45,8 +46,7 @@ const RecruiterApplicationsDetailsPage = ({ recruiter, onBack }: RecruiterApplic
             setIsEditMode(false);
         },
         onError: (err: Error) => {
-            const errorMessage = err instanceof Error && "message" in err ? (err as any).response?.data?.message : "Failed to update";
-            toast.error(errorMessage || "Failed to update recruiter");
+            toast.error(getRequestErrorMessage(err, "Failed to update recruiter"));
         },
     });
 
@@ -58,8 +58,7 @@ const RecruiterApplicationsDetailsPage = ({ recruiter, onBack }: RecruiterApplic
             setTimeout(() => onBack(), 1000);
         },
         onError: (err: Error) => {
-            const errorMessage = err instanceof Error && "message" in err ? (err as any).response?.data?.message : "Failed to approve";
-            toast.error(errorMessage || "Failed to approve recruiter");
+            toast.error(getRequestErrorMessage(err, "Failed to approve recruiter"));
         },
     });
 
@@ -71,8 +70,7 @@ const RecruiterApplicationsDetailsPage = ({ recruiter, onBack }: RecruiterApplic
             setTimeout(() => onBack(), 1000);
         },
         onError: (err: Error) => {
-            const errorMessage = err instanceof Error && "message" in err ? (err as any).response?.data?.message : "Failed to reject";
-            toast.error(errorMessage || "Failed to reject recruiter");
+            toast.error(getRequestErrorMessage(err, "Failed to reject recruiter"));
         },
     });
 

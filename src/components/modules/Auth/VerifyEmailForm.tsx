@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
 import { httpClient } from "@/lib/axios/httpClient";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -36,7 +37,7 @@ const VerifyEmailForm = ({ email }: VerifyEmailFormProps) => {
             setTimeLeft(60);
         },
         onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "Failed to resend OTP");
+            toast.error(getRequestErrorMessage(err, "Failed to resend OTP"));
         },
     });
 
@@ -73,7 +74,7 @@ const VerifyEmailForm = ({ email }: VerifyEmailFormProps) => {
             window.location.href = "/login";
         },
         onError: (err: any) => {
-            setError(err?.response?.data?.message || "Verification failed");
+            setError(getRequestErrorMessage(err, "Verification failed"));
         },
     });
 

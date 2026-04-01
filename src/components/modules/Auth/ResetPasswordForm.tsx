@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
 import { httpClient } from "@/lib/axios/httpClient";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { resetPasswordZodSchema } from "@/zod/auth.validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
@@ -47,7 +48,7 @@ const getPasswordStrength = (pwd: string): { score: number; label: string; color
 
 // ── Extract readable message from backend error (handles Zod JSON strings) ───
 const extractErrorMessage = (err: any, fallback: string): string => {
-    const raw = err?.response?.data?.message;
+    const raw = getRequestErrorMessage(err, fallback);
     if (!raw) return fallback;
     try {
         const parsed = JSON.parse(raw);

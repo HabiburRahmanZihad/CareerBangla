@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { cn } from "@/lib/utils";
 import { createJob, getJobCategories } from "@/services/job.services";
 import { getMyRecruiterProfile } from "@/services/recruiter.services";
@@ -161,7 +162,7 @@ const PostJobContent = () => {
             router.push("/recruiter/dashboard/my-jobs/pending");
         },
         onError: (err: any) => {
-            setServerError(err?.response?.data?.message || "Failed to post job");
+            setServerError(getRequestErrorMessage(err, "Failed to post job"));
         },
     });
 

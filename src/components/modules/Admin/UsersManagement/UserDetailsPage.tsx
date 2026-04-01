@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { downloadPdfFromElement } from "@/lib/pdfUtils";
 import { swalConfirm, swalDanger } from "@/lib/swal";
 import { changeUserStatus, updateUser, updateUserHiredStatus } from "@/services/admin.services";
@@ -53,7 +54,7 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
             queryClient.invalidateQueries({ queryKey: ["user", user.id] });
             setIsEditMode(false);
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update user"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to update user")),
     });
 
     const { mutateAsync: doUpdateResume, isPending: isUpdatingResume } = useMutation({
@@ -63,7 +64,7 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
             queryClient.invalidateQueries({ queryKey: ["users-with-details"] });
             queryClient.invalidateQueries({ queryKey: ["user", user.id] });
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update resume"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to update resume")),
     });
 
     const { mutateAsync: doChangeStatus } = useMutation({
@@ -73,7 +74,7 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
             queryClient.invalidateQueries({ queryKey: ["users-with-details"] });
             queryClient.invalidateQueries({ queryKey: ["user", user.id] });
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update status"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to update status")),
     });
 
     const { mutateAsync: doUpdateHiredStatus, isPending: isUpdatingHired } = useMutation({
@@ -83,7 +84,7 @@ const UserDetailsPage = ({ user, onBack }: UserDetailsPageProps) => {
             queryClient.invalidateQueries({ queryKey: ["users-with-details"] });
             queryClient.invalidateQueries({ queryKey: ["user", user.id] });
         },
-        onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update hired status"),
+        onError: (err: any) => toast.error(getRequestErrorMessage(err, "Failed to update hired status")),
     });
 
     const handleSaveChanges = async () => {

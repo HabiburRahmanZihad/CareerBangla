@@ -5,6 +5,7 @@ import AppField from "@/components/shared/form/AppField";
 import AppSubmitButton from "@/components/shared/form/AppSubmitButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { registerRecruiter } from "@/services/public-auth.services";
 import { IRecruiterRegisterPayload, recruiterRegisterZodSchema } from "@/zod/auth.validation";
 import { useForm } from "@tanstack/react-form";
@@ -199,7 +200,7 @@ const ComprehensiveRecruiterRegisterForm = () => {
                     setServerError(result.message || "Registration failed");
                 }
             } catch (error: any) {
-                setServerError(error?.response?.data?.message || error.message || "Registration failed");
+                setServerError(getRequestErrorMessage(error, "Registration failed"));
             }
         },
     });

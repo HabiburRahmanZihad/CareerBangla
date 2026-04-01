@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { downloadCvForRecruiter, getApplicationsByJob, updateApplicationStatus } from "@/services/application.services";
 import { getMyJobs } from "@/services/job.services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -81,7 +82,7 @@ const RecruiterApplicationsContent = () => {
             setInterviewModal(null);
         },
         onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "Failed to update status");
+            toast.error(getRequestErrorMessage(err, "Failed to update status"));
         },
     });
 
@@ -119,7 +120,7 @@ const RecruiterApplicationsContent = () => {
             URL.revokeObjectURL(url);
             toast.success("CV downloaded successfully");
         } catch (err: any) {
-            toast.error(err?.message || "Failed to download CV");
+            toast.error(getRequestErrorMessage(err, "Failed to download CV"));
         } finally {
             setDownloadingCv(null);
         }

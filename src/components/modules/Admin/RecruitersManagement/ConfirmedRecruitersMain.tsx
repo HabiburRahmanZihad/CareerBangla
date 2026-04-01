@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { swalConfirm } from "@/lib/swal";
 import { changeUserStatus } from "@/services/admin.services";
 import { getAllRecruiters } from "@/services/recruiter.services";
@@ -41,8 +42,7 @@ const ConfirmedRecruitersMain = () => {
             queryClient.invalidateQueries({ queryKey: ["all-recruiters"] });
         },
         onError: (err: Error) => {
-            const errorMessage = err instanceof Error && "message" in err ? (err as any).response?.data?.message : "Failed to update status";
-            toast.error(errorMessage || "Failed to update status");
+            toast.error(getRequestErrorMessage(err, "Failed to update status"));
         },
     });
 

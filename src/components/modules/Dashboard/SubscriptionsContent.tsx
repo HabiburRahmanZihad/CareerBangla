@@ -12,6 +12,7 @@ import {
     purchaseSubscription,
     validateCoupon,
 } from "@/services/subscription.services";
+import { getRequestErrorMessage } from "@/lib/axios/getRequestErrorMessage";
 import { UserInfo } from "@/types/user.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { isFuture } from "date-fns";
@@ -97,7 +98,7 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
             }
         },
         onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "Failed to initiate payment");
+            toast.error(getRequestErrorMessage(err, "Failed to initiate payment"));
         },
     });
 
@@ -111,7 +112,7 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
             }
         },
         onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "Invalid coupon code");
+            toast.error(getRequestErrorMessage(err, "Invalid coupon code"));
             setAppliedCoupon(null);
         },
     });
@@ -127,7 +128,7 @@ const SubscriptionsContent = ({ userInfo, userRole }: SubscriptionsContentProps)
             setShowPaymentResult("success");
         },
         onError: (err: any) => {
-            toast.error(err?.response?.data?.message || "Failed to activate coupon");
+            toast.error(getRequestErrorMessage(err, "Failed to activate coupon"));
         },
     });
 
