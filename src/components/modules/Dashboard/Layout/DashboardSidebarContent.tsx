@@ -42,7 +42,7 @@ const DashboardSidebarContent = ({ navItems, userInfo }: DashboardSidebarContent
     const roleLabel = ROLE_LABEL[userInfo.role] ?? userInfo.role;
 
     return (
-        <div className="hidden md:flex h-full w-64 flex-col bg-card border-r border-border/50 overflow-hidden">
+        <div className="hidden md:flex h-full min-h-0 w-64 flex-col bg-card border-r border-border/50 overflow-hidden">
 
             {/* ── Logo ──────────────────────────────────────────────────── */}
             <div className="flex h-16 items-center px-5 border-b border-border/40 shrink-0">
@@ -59,8 +59,8 @@ const DashboardSidebarContent = ({ navItems, userInfo }: DashboardSidebarContent
             </div>
 
             {/* ── Nav ───────────────────────────────────────────────────── */}
-            <ScrollArea className="flex-1 py-3">
-                <nav className="px-3 space-y-5">
+            <ScrollArea className="min-h-0 flex-1 py-3">
+                <nav className="space-y-5 px-3 pb-3">
                     {navItems.map((section, sectionIdx) => (
                         <div key={sectionIdx}>
                             {section.title && (

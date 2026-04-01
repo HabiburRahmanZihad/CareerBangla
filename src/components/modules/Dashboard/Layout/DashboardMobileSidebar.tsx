@@ -43,7 +43,7 @@ const DashboardMobileSidebar = ({ navItems, userInfo }: DashboardMobileSidebarPr
     const roleLabel = ROLE_LABEL[userInfo.role] ?? userInfo.role;
 
     return (
-        <div className="flex h-full flex-col bg-card overflow-hidden">
+        <div className="flex h-full min-h-0 flex-col bg-card overflow-hidden">
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
 
             {/* ── Logo ──────────────────────────────────────────────── */}
@@ -61,8 +61,8 @@ const DashboardMobileSidebar = ({ navItems, userInfo }: DashboardMobileSidebarPr
             </div>
 
             {/* ── Nav ───────────────────────────────────────────────── */}
-            <ScrollArea className="flex-1 py-3">
-                <nav className="px-3 space-y-5">
+            <ScrollArea className="min-h-0 flex-1 py-3">
+                <nav className="space-y-5 px-3 pb-3">
                     {navItems.map((section, sectionIdx) => (
                         <div key={sectionIdx}>
                             {section.title && (
