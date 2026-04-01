@@ -27,6 +27,7 @@ const navLinks = [
 export default function Navbar({ user }: NavbarProps) {
     const pathname = usePathname();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const notificationOwnerKey = user?.id ?? "guest-navbar";
 
     return (
         <header className="sticky top-0 z-999 w-full">
@@ -65,7 +66,10 @@ export default function Navbar({ user }: NavbarProps) {
                         <div className="hidden items-center gap-3 lg:flex">
                             {user ? (
                                 <>
-                                    <NotificationDropdown userRole={user.role as UserRole} />
+                                    <NotificationDropdown
+                                        userRole={user.role as UserRole}
+                                        notificationOwnerKey={notificationOwnerKey}
+                                    />
                                     <UserDropdown userInfo={user} />
                                 </>
                             ) : (
@@ -124,7 +128,10 @@ export default function Navbar({ user }: NavbarProps) {
                                 {user ? (
                                     <>
                                         <div className="flex items-center gap-2 rounded-xl border border-border bg-white/60 px-4 py-3 dark:bg-slate-950/60">
-                                            <NotificationDropdown userRole={user.role as UserRole} />
+                                            <NotificationDropdown
+                                                userRole={user.role as UserRole}
+                                                notificationOwnerKey={notificationOwnerKey}
+                                            />
                                             <UserDropdown userInfo={user} />
                                         </div>
                                     </>
