@@ -4,6 +4,7 @@ import { logger } from "@/lib/logger";
 import { ApiResponse } from "@/types/api.types";
 import type { AxiosRequestConfig } from "axios";
 import axios, { AxiosError } from "axios";
+import { normalizeRequestErrorForUi } from "./resolveRequestErrorMessage";
 
 const axiosInstance = axios.create({
     baseURL: envConfig.apiBaseUrl,
@@ -36,7 +37,15 @@ axiosInstance.interceptors.response.use(
         logger.apiError(
             error.config?.method?.toUpperCase() || "?",
             error.config?.url || "",
-            { status: error.response?.status, message: error.message },
+            {
+                status: error.response?.status,
+                message: (error.response?.data as { message?: string } | undefined)?.message || error.message,
+            },
+        );
+
+        normalizeRequestErrorForUi(
+            error,
+            `${error.config?.method?.toUpperCase() || "REQUEST"} ${error.config?.url || ""} failed`
         );
 
         // Gracefully handle 401 Unauthorized across the app

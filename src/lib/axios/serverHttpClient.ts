@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import "server-only";
 
@@ -8,6 +9,7 @@ import axios from "axios";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { ApiRequestOptions } from "./httpClient";
+import { normalizeRequestErrorForUi } from "./resolveRequestErrorMessage";
 
 const axiosInstance = async () => {
     // Use raw Cookie header from the incoming request to preserve exact encoding
@@ -47,6 +49,7 @@ const httpGet = async <TData>(endpoint: string, options?: ApiRequestOptions): Pr
         logger.apiSuccess("GET", endpoint, response.status);
         return response.data;
     } catch (error: any) {
+        normalizeRequestErrorForUi(error, `GET ${endpoint} failed`);
         if (error.response?.status === 401) {
             redirect("/login");
         }
@@ -67,6 +70,7 @@ const httpPost = async <TData>(endpoint: string, data: unknown, options?: ApiReq
         logger.apiSuccess("POST", endpoint, response.status);
         return response.data;
     } catch (error: any) {
+        normalizeRequestErrorForUi(error, `POST ${endpoint} failed`);
         if (error.response?.status === 401) {
             redirect("/login");
         }
@@ -87,6 +91,7 @@ const httpPut = async <TData>(endpoint: string, data: unknown, options?: ApiRequ
         logger.apiSuccess("PUT", endpoint, response.status);
         return response.data;
     } catch (error: any) {
+        normalizeRequestErrorForUi(error, `PUT ${endpoint} failed`);
         if (error.response?.status === 401) {
             redirect("/login");
         }
@@ -107,6 +112,7 @@ const httpPatch = async <TData>(endpoint: string, data: unknown, options?: ApiRe
         logger.apiSuccess("PATCH", endpoint, response.status);
         return response.data;
     } catch (error: any) {
+        normalizeRequestErrorForUi(error, `PATCH ${endpoint} failed`);
         if (error.response?.status === 401) {
             redirect("/login");
         }
@@ -127,6 +133,7 @@ const httpDelete = async <TData>(endpoint: string, options?: ApiRequestOptions):
         logger.apiSuccess("DELETE", endpoint, response.status);
         return response.data;
     } catch (error: any) {
+        normalizeRequestErrorForUi(error, `DELETE ${endpoint} failed`);
         if (error.response?.status === 401) {
             redirect("/login");
         }

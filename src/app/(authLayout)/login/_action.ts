@@ -82,7 +82,7 @@ export const loginAction = async (payload: ILoginPayload, redirectPath?: string,
         }
 
         // Handle email verification redirect
-        if (error?.response?.status === 401 && error?.response?.data?.message === "Email not verified") {
+        if (error?.response?.status === 401 && /email not verified/i.test(error?.response?.data?.message || "")) {
             const { identifier } = parsedPayload.data;
             // If identifier was an email, pass it through; if phone, backend returned user.email in error data
             const emailForRedirect = error?.response?.data?.email || (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier) ? identifier : "");
