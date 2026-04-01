@@ -121,7 +121,7 @@ export default function WhyChooseSection() {
                                 </div>
                             </div>
 
-                            <div className="mt-4 grid grid-cols-1 gap-3 xs:grid-cols-3">
+                            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                                 {trustSignals.map((signal) => (
                                     <div
                                         key={signal.label}

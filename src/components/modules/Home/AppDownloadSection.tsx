@@ -49,7 +49,7 @@ export default function AppDownloadSection() {
                             fast enough for everyday use.
                         </p>
 
-                        <div className="mt-6 grid grid-cols-1 gap-3 xs:grid-cols-3">
+                        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
                             {appSignals.map((signal) => (
                                 <div
                                     key={signal.label}
@@ -65,17 +65,17 @@ export default function AppDownloadSection() {
                             ))}
                         </div>
 
-                        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                        <div className="mt-6 flex flex-col gap-3 md:flex-row md:flex-wrap">
                             <button
                                 onClick={handleComingSoon}
-                                className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-6 text-left transition-colors hover:bg-white/10 sm:w-52 cursor-pointer"
+                                className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-5 text-left transition-colors hover:bg-white/10 md:w-52 cursor-pointer"
                             >
                                 <Apple className="h-7 w-7 text-white" />
-                                <div>
+                                <div className="min-w-0 flex-1">
                                     <div className="text-[10px] font-semibold uppercase tracking-wide text-white/60">
                                         Download on the
                                     </div>
-                                    <div className="text-base font-black text-white">
+                                    <div className="text-base font-black text-white wrap-break-word">
                                         App Store
                                     </div>
                                 </div>
@@ -83,14 +83,14 @@ export default function AppDownloadSection() {
 
                             <button
                                 onClick={handleComingSoon}
-                                className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-6 text-left transition-colors hover:bg-white/10 sm:w-52 cursor-pointer"
+                                className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-5 text-left transition-colors hover:bg-white/10 md:w-52 cursor-pointer"
                             >
                                 <Play className="h-6 w-6 text-white" fill="currentColor" />
-                                <div>
+                                <div className="min-w-0 flex-1">
                                     <div className="text-[10px] font-semibold uppercase tracking-wide text-white/60">
                                         Get it on
                                     </div>
-                                    <div className="text-base font-black text-white">
+                                    <div className="text-base font-black text-white wrap-break-word">
                                         Google Play
                                     </div>
                                 </div>
@@ -98,7 +98,7 @@ export default function AppDownloadSection() {
                         </div>
 
                         <div className="mt-6 border-t border-white/10 pt-6">
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
                                 <div className="flex -space-x-3">
                                     {["men/32", "women/44", "women/68"].map((portrait) => (
                                         <Image

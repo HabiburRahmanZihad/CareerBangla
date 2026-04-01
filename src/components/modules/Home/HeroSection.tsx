@@ -108,7 +108,7 @@ export default function HeroSection() {
                             </div>
 
                             <div className="space-y-5">
-                                <h1 className="max-w-xl text-4xl font-black leading-[1.02] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+                                <h1 className="max-w-xl text-[2.55rem] font-black leading-[1.02] tracking-tight text-foreground xs:text-4xl sm:text-5xl lg:text-6xl">
                                     Find the right job
                                     <span className="block text-foreground/75">
                                         without wasting weeks.
@@ -146,10 +146,10 @@ export default function HeroSection() {
                                 ))}
                             </div>
 
-                            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                                 <Button
                                     size="lg"
-                                    className="h-12 rounded-full px-7 text-sm font-bold shadow-[0_16px_36px_rgba(255,107,26,0.24)]"
+                                    className="h-12 w-full rounded-full px-7 text-sm font-bold shadow-[0_16px_36px_rgba(255,107,26,0.24)] sm:w-auto"
                                     asChild
                                 >
                                     <Link href="/jobs">
@@ -160,7 +160,7 @@ export default function HeroSection() {
                                 <Button
                                     size="lg"
                                     variant="outline"
-                                    className="h-12 rounded-full border-border/70 bg-background/60 px-7 text-sm font-bold backdrop-blur hover:border-primary/35 hover:bg-primary/5"
+                                    className="h-12 w-full rounded-full border-border/70 bg-background/60 px-7 text-sm font-bold backdrop-blur hover:border-primary/35 hover:bg-primary/5 sm:w-auto"
                                     asChild
                                 >
                                     <Link href="/register">
@@ -349,7 +349,7 @@ export default function HeroSection() {
                                             Everything important stays visible at a glance
                                         </p>
                                     </div>
-                                    <div className="rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs font-semibold text-muted-foreground">
+                                    <div className="self-start rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs font-semibold text-muted-foreground sm:self-auto">
                                         Responsive across mobile, tablet, and desktop
                                     </div>
                                 </div>

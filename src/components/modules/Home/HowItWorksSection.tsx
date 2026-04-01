@@ -73,7 +73,7 @@ export default function HowItWorksSection() {
                             description="CareerBangla removes the usual mess from job hunting. The flow is designed so candidates can set up, discover opportunities, and apply without jumping between scattered tools."
                         />
 
-                        <div className="grid grid-cols-1 gap-3 xs:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                             {processSignals.map((signal) => (
                                 <div
                                     key={signal.label}

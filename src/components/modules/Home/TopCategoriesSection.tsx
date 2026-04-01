@@ -64,7 +64,7 @@ const TopCategoriesSection = async () => {
 
 
             <div className="container relative z-10 mx-auto  px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-12 relative flex flex-col items-center gap-2.5">
+                <div className="relative mb-12 flex flex-col items-center gap-2.5 text-center">
                     <span className="text-[11px] font-bold tracking-[0.22em] uppercase text-primary">
                         Categories
                     </span>
@@ -115,7 +115,7 @@ const TopCategoriesSection = async () => {
                 <div className="mt-16 flex justify-center">
                     <Link
                         href="/jobs"
-                        className="group inline-flex h-14 items-center justify-center gap-2.5 rounded-xl bg-primary px-8 text-base font-bold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/40 active:translate-y-0"
+                        className="group inline-flex h-14 w-full max-w-xs items-center justify-center gap-2.5 rounded-xl bg-primary px-6 text-base font-bold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/40 active:translate-y-0 sm:w-auto sm:max-w-none sm:px-8"
                     >
                         All Categories
                         <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />

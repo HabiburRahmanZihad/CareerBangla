@@ -119,7 +119,7 @@ export default function PlatformFeaturesSection() {
                         description="Instead of isolated tools, CareerBangla packages search, resume building, recruiter trust, and candidate sourcing into one connected system."
                     />
 
-                    <div className="grid grid-cols-1 gap-3 xs:grid-cols-3 lg:w-136">
+                    <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3 lg:w-136">
                         {platformSignals.map((signal) => (
                             <div
                                 key={signal.label}
