@@ -25,14 +25,47 @@ const FRIENDLY_MESSAGE_PATTERNS: Array<{ pattern: RegExp; message: string }> = [
     },
 ];
 
+const extractStringMessage = (value: unknown): string | undefined => {
+    if (typeof value === "string" && value.trim()) return value.trim();
+
+    if (Array.isArray(value)) {
+        for (const item of value) {
+            const extracted = extractStringMessage(item);
+            if (extracted) return extracted;
+        }
+        return undefined;
+    }
+
+    if (value && typeof value === "object") {
+        const record = value as Record<string, unknown>;
+        const nestedCandidates = [
+            record.message,
+            record.error,
+            record.title,
+        ];
+
+        for (const candidate of nestedCandidates) {
+            const extracted = extractStringMessage(candidate);
+            if (extracted) return extracted;
+        }
+    }
+
+    return undefined;
+};
+
 const getServerMessage = (error: any): string | undefined => {
-    const serverMessage = error?.response?.data?.message;
-    return typeof serverMessage === "string" && serverMessage.trim() ? serverMessage.trim() : undefined;
+    const responseData = error?.response?.data;
+    const directMessage = extractStringMessage(responseData?.message);
+    if (directMessage) return directMessage;
+
+    const errorSourceMessage = extractStringMessage(responseData?.errorSources);
+    if (errorSourceMessage) return errorSourceMessage;
+
+    return extractStringMessage(responseData?.error);
 };
 
 const getRawMessage = (error: any): string | undefined => {
-    const rawMessage = error?.message;
-    return typeof rawMessage === "string" && rawMessage.trim() ? rawMessage.trim() : undefined;
+    return extractStringMessage(error?.message);
 };
 
 const logExactErrorInDevelopment = (error: any) => {
@@ -52,10 +85,36 @@ const logExactErrorInDevelopment = (error: any) => {
     });
 };
 
-const getFriendlyMessageFromPattern = (message?: string): string | undefined => {
+const getFriendlyMessageFromPattern = (message?: string, fallbackPrefix?: string): string | undefined => {
     if (!message) return undefined;
 
     const normalized = message.trim();
+    const normalizedFallback = fallbackPrefix?.trim().toLowerCase() || "";
+
+    const isLoginContext =
+        normalizedFallback.includes("login") ||
+        normalizedFallback.includes("sign in") ||
+        normalizedFallback.includes("device limit");
+
+    if (
+        isLoginContext &&
+        /(invalid credentials|invalid email|invalid password|invalid email or password|incorrect password|wrong password|password does not matched|user not found|no user found|no account found|account not found)/i.test(normalized)
+    ) {
+        return "The email or password you entered is incorrect.";
+    }
+
+    const isRecoveryContext =
+        normalizedFallback.includes("otp") ||
+        normalizedFallback.includes("reset password") ||
+        normalizedFallback.includes("forgot password");
+
+    if (
+        isRecoveryContext &&
+        /(user not found|no user found|no account found|account not found)/i.test(normalized)
+    ) {
+        return "We couldn't find an account with the information you entered.";
+    }
+
     const match = FRIENDLY_MESSAGE_PATTERNS.find(({ pattern }) => pattern.test(normalized));
     return match?.message;
 };
@@ -85,7 +144,7 @@ export const resolveRequestErrorMessage = (error: any, fallbackPrefix: string) =
         return `${fallbackPrefix}: ${rawMessage || "Unexpected error"}`;
     }
 
-    const mappedMessage = getFriendlyMessageFromPattern(messageCandidate);
+    const mappedMessage = getFriendlyMessageFromPattern(messageCandidate, fallbackPrefix);
     if (mappedMessage) return mappedMessage;
 
     if (
