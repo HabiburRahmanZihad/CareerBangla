@@ -162,9 +162,16 @@ const NotifItem = ({
 };
 
 // ── Main component ─────────────────────────────────────────────────────────────
-const NotificationDropdown = ({ userRole }: { userRole?: UserRole }) => {
+const NotificationDropdown = ({
+    userRole,
+    notificationOwnerKey,
+}: {
+    userRole?: UserRole;
+    notificationOwnerKey: string;
+}) => {
     const router = useRouter();
     const queryClient = useQueryClient();
+    const notificationsQueryKey = ["notifications-dropdown", notificationOwnerKey];
 
     const notificationsPagePath =
         userRole === "ADMIN" || userRole === "SUPER_ADMIN"
@@ -174,18 +181,18 @@ const NotificationDropdown = ({ userRole }: { userRole?: UserRole }) => {
                 : "/dashboard/notifications";
 
     const { data: notificationsData } = useQuery({
-        queryKey: ["notifications-dropdown"],
+        queryKey: notificationsQueryKey,
         queryFn: () => getMyNotifications({ limit: 50 }),
     });
 
     const { mutate: markRead } = useMutation({
         mutationFn: (id: string) => markAsRead(id),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications-dropdown"] }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: notificationsQueryKey }),
     });
 
     const { mutate: markAll, isPending: isMarkingAll } = useMutation({
         mutationFn: () => markAllAsRead(),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications-dropdown"] }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: notificationsQueryKey }),
     });
 
     const notifications: INotification[] = notificationsData?.data ?? [];

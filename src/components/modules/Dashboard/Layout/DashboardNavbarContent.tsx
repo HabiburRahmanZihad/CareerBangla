@@ -106,7 +106,7 @@ const DashboardNavbarContent = ({ dashboardHome, navItems, userInfo }: Dashboard
             {/* Right Side Actions */}
             <div className="flex items-center gap-2">
                 {/* Notification */}
-                <NotificationDropdown userRole={userInfo.role} />
+                <NotificationDropdown userRole={userInfo.role} notificationOwnerKey={userInfo.id} />
 
                 {/* User Dropdown  */}
                 <UserDropdown userInfo={userInfo} />

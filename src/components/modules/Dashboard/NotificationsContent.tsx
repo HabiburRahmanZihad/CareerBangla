@@ -248,27 +248,28 @@ const NotifCard = ({
 };
 
 // ── Main component ─────────────────────────────────────────────────────────────
-const NotificationsContent = () => {
+const NotificationsContent = ({ notificationOwnerKey }: { notificationOwnerKey: string }) => {
     const queryClient = useQueryClient();
     const [filter, setFilter] = useState<FilterKey>("ALL");
     const [markingId, setMarkingId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const notificationsQueryKey = ["my-notifications", notificationOwnerKey];
 
     const { data, isLoading } = useQuery({
-        queryKey: ["my-notifications"],
+        queryKey: notificationsQueryKey,
         queryFn: () => getMyNotifications({ limit: "100" }),
     });
 
     const { mutateAsync: markRead } = useMutation({
         mutationFn: (id: string) => markAsRead(id),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["my-notifications"] }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: notificationsQueryKey }),
     });
 
     const { mutateAsync: markAll, isPending: isMarkingAll } = useMutation({
         mutationFn: () => markAllAsRead(),
         onSuccess: () => {
             toast.success("All notifications marked as read");
-            queryClient.invalidateQueries({ queryKey: ["my-notifications"] });
+            queryClient.invalidateQueries({ queryKey: notificationsQueryKey });
         },
     });
 
@@ -276,7 +277,7 @@ const NotificationsContent = () => {
         mutationFn: (id: string) => deleteNotification(id),
         onSuccess: () => {
             toast.success("Notification deleted");
-            queryClient.invalidateQueries({ queryKey: ["my-notifications"] });
+            queryClient.invalidateQueries({ queryKey: notificationsQueryKey });
         },
     });
 
