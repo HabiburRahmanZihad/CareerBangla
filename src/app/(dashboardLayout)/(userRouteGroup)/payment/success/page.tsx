@@ -28,14 +28,14 @@ const PaymentSuccessPage = async () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <p className="text-muted-foreground">
-                        Your subscription has been activated and coins have been added to your wallet.
+                        Your subscription has been activated successfully. You can now access your premium features.
                     </p>
                     <div className="flex gap-3 justify-center">
                         <Button asChild>
-                            <Link href="/dashboard/wallet">View Wallet</Link>
+                            <Link href="/dashboard">Go to Dashboard</Link>
                         </Button>
                         <Button variant="outline" asChild>
-                            <Link href="/dashboard">Go to Dashboard</Link>
+                            <Link href="/dashboard/subscription">View Subscription</Link>
                         </Button>
                     </div>
                 </CardContent>

@@ -408,7 +408,7 @@ const UsersManagementMain = () => {
                                                 e.stopPropagation();
                                                 const r = await swalDanger({
                                                     title: "Delete User?",
-                                                    text: "This will permanently delete the user and all their data including resume, applications, and wallet. This cannot be undone.",
+                                                    text: "This will permanently delete the user and all their data including resume and applications. This cannot be undone.",
                                                     confirmText: "Delete User",
                                                 });
                                                 if (r.isConfirmed) doDeleteUser(user.id);

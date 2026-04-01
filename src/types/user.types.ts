@@ -44,7 +44,6 @@ export interface IUserWithDetails extends UserInfo {
     recruiter?: IRecruiterProfile | null;
     admin?: IAdminProfile | null;
     resume?: IResume | null;
-    wallet?: IWallet | null;
     applications?: IApplication[];
     createdAt?: string;
     updatedAt?: string;
@@ -233,26 +232,6 @@ export interface IExperience {
     current?: boolean;
     description?: string;
 }
-
-export interface IWallet {
-    id: string;
-    userId: string;
-    coins: number;
-    transactions?: ICoinTransaction[];
-    createdAt?: string;
-    updatedAt?: string;
-}
-
-export interface ICoinTransaction {
-    id: string;
-    walletId: string;
-    amount: number;
-    type: "CREDIT" | "DEBIT";
-    purpose: string;
-    details?: string;
-    createdAt?: string;
-}
-
 export interface IJob {
     id: string;
     recruiterId: string;
@@ -313,7 +292,6 @@ export interface ISubscriptionPlan {
     id: string;
     name: string;
     price: number;
-    coins: number;
     features: string[];
     duration: number;
     isActive: boolean;
