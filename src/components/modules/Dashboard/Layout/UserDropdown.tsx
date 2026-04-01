@@ -5,18 +5,18 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { deleteCookie } from "@/lib/cookieUtils";
 import { swalDanger } from "@/lib/swal";
 import { IApplication, UserInfo } from "@/types/user.types";
 import {
     Award, Bell, ChevronRight, Crown,
-    Key, LayoutDashboard, LogOut,
+    Key, LayoutDashboard, Loader2, LogOut,
     Monitor, Sparkles, User,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Swal from "sweetalert2";
 
 interface UserDropdownProps {
     userInfo: UserInfo;
@@ -74,6 +74,8 @@ const MenuItem = ({
     sublabel,
     danger,
     onClick,
+    disabled,
+    iconClassName,
 }: {
     href?: string;
     icon: React.ElementType;
@@ -81,17 +83,22 @@ const MenuItem = ({
     sublabel?: string;
     danger?: boolean;
     onClick?: () => void;
+    disabled?: boolean;
+    iconClassName?: string;
 }) => {
     const inner = (
-        <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group cursor-pointer ${danger
+        <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${disabled
+                ? "opacity-60 cursor-not-allowed pointer-events-none"
+                : "cursor-pointer"
+            } ${danger
                 ? "hover:bg-destructive/8 text-destructive"
                 : "hover:bg-muted/60 text-foreground"
-            }`} onClick={onClick}>
+            }`} onClick={disabled ? undefined : onClick}>
             <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${danger
                     ? "bg-destructive/8 group-hover:bg-destructive/15"
                     : "bg-muted/70 group-hover:bg-muted"
                 }`}>
-                <Icon className={`h-4 w-4 ${danger ? "text-destructive" : "text-muted-foreground group-hover:text-foreground"}`} />
+                <Icon className={`h-4 w-4 ${danger ? "text-destructive" : "text-muted-foreground group-hover:text-foreground"}${iconClassName ? ` ${iconClassName}` : ""}`} />
             </div>
             <div className="flex-1 min-w-0">
                 <p className={`text-sm font-semibold leading-none ${danger ? "text-destructive" : ""}`}>{label}</p>
@@ -111,6 +118,7 @@ const MenuItem = ({
 const UserDropdown = ({ userInfo }: UserDropdownProps) => {
     const router = useRouter();
     const [open, setOpen] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const isHired = userInfo.applications?.some((app: IApplication) => app.status === "HIRED");
     const grad = avatarGradient(userInfo.name);
@@ -121,19 +129,41 @@ const UserDropdown = ({ userInfo }: UserDropdownProps) => {
     const avatarSrc = userInfo.resume?.profilePhoto || userInfo.image || null;
 
     const handleLogoutClick = async () => {
+        if (isLoggingOut) return;
         setOpen(false);
+
         const result = await swalDanger({
             title: "Confirm Logout",
             text: "You'll be signed out of your current session. You can always sign back in.",
             confirmText: "Logout",
             cancelText: "Cancel",
         });
+
         if (result.isConfirmed) {
-            await deleteCookie("accessToken");
-            await deleteCookie("refreshToken");
-            await deleteCookie("better-auth.session_token");
-            router.push("/login");
-            router.refresh();
+            setIsLoggingOut(true);
+
+            Swal.fire({
+                title: "Logging out...",
+                text: "Please wait while we end your session.",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+
+            try {
+                await fetch("/api/auth/logout", {
+                    method: "POST",
+                    credentials: "include",
+                });
+            } finally {
+                Swal.close();
+                setIsLoggingOut(false);
+                router.push("/login");
+                router.refresh();
+            }
         }
     };
 
@@ -293,9 +323,11 @@ const UserDropdown = ({ userInfo }: UserDropdownProps) => {
                     {/* ── Logout ───────────────────────────────────────────── */}
                     <div className="p-2">
                         <MenuItem
-                            icon={LogOut}
-                            label="Logout"
+                            icon={isLoggingOut ? Loader2 : LogOut}
+                            label={isLoggingOut ? "Logging out..." : "Logout"}
                             danger
+                            disabled={isLoggingOut}
+                            iconClassName={isLoggingOut ? "animate-spin" : undefined}
                             onClick={handleLogoutClick}
                         />
                     </div>
