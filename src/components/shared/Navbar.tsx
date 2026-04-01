@@ -24,10 +24,23 @@ const navLinks = [
     { name: "Contact", href: "/contact" },
 ];
 
+const getDashboardLink = (role?: UserRole) => {
+    if (role === "ADMIN" || role === "SUPER_ADMIN") return "/admin/dashboard";
+    if (role === "RECRUITER") return "/recruiter/dashboard";
+    return "/dashboard";
+};
+
+const getNotificationsLink = (role?: UserRole) => {
+    if (role === "ADMIN" || role === "SUPER_ADMIN") return "/admin/dashboard/notifications";
+    if (role === "RECRUITER") return "/recruiter/dashboard/notifications";
+    return "/dashboard/notifications";
+};
+
 export default function Navbar({ user }: NavbarProps) {
     const pathname = usePathname();
     const [mobileOpen, setMobileOpen] = useState(false);
     const notificationOwnerKey = user?.id ?? "guest-navbar";
+    const userRole = user?.role as UserRole | undefined;
 
     return (
         <header className="sticky top-0 z-999 w-full">
@@ -67,7 +80,7 @@ export default function Navbar({ user }: NavbarProps) {
                             {user ? (
                                 <>
                                     <NotificationDropdown
-                                        userRole={user.role as UserRole}
+                                        userRole={userRole}
                                         notificationOwnerKey={notificationOwnerKey}
                                     />
                                     <UserDropdown userInfo={user} />
@@ -92,15 +105,27 @@ export default function Navbar({ user }: NavbarProps) {
                             )}
                         </div>
 
-                        {/* mobile button */}
-                        <button
-                            type="button"
-                            onClick={() => setMobileOpen(!mobileOpen)}
-                            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-white/50 text-foreground transition-colors hover:text-primary dark:bg-slate-950/50 lg:hidden"
-                            aria-label="Toggle menu"
-                        >
-                            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                        </button>
+                        <div className="flex items-center gap-2 lg:hidden">
+                            {user && (
+                                <>
+                                    <NotificationDropdown
+                                        userRole={userRole}
+                                        notificationOwnerKey={notificationOwnerKey}
+                                    />
+                                    <UserDropdown userInfo={user} />
+                                </>
+                            )}
+
+                            {/* mobile button */}
+                            <button
+                                type="button"
+                                onClick={() => setMobileOpen(!mobileOpen)}
+                                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-white/50 text-foreground transition-colors hover:text-primary dark:bg-slate-950/50"
+                                aria-label="Toggle menu"
+                            >
+                                {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                            </button>
+                        </div>
                     </div>
 
                     {/* mobile menu */}
@@ -127,13 +152,20 @@ export default function Navbar({ user }: NavbarProps) {
                             <div className="mt-4 flex flex-col gap-3">
                                 {user ? (
                                     <>
-                                        <div className="flex items-center gap-2 rounded-xl border border-border bg-white/60 px-4 py-3 dark:bg-slate-950/60">
-                                            <NotificationDropdown
-                                                userRole={user.role as UserRole}
-                                                notificationOwnerKey={notificationOwnerKey}
-                                            />
-                                            <UserDropdown userInfo={user} />
-                                        </div>
+                                        <Link
+                                            href={getDashboardLink(userRole)}
+                                            onClick={() => setMobileOpen(false)}
+                                            className="inline-flex h-11 items-center justify-center rounded-full border border-border bg-white/60 px-6 text-sm font-semibold text-foreground transition-all duration-300 hover:border-primary/40 hover:text-primary dark:bg-slate-950/60"
+                                        >
+                                            Dashboard
+                                        </Link>
+                                        <Link
+                                            href={getNotificationsLink(userRole)}
+                                            onClick={() => setMobileOpen(false)}
+                                            className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-all duration-300 hover:bg-accent"
+                                        >
+                                            Notifications
+                                        </Link>
                                     </>
                                 ) : (
                                     <>
