@@ -171,8 +171,8 @@ export default function HeroSection() {
                             </div>
 
                             <div className="mt-7 flex flex-col gap-4 rounded-3xl border border-border/50 bg-card/70 p-4 shadow-sm backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:p-5">
-                                <div className="flex items-center gap-3">
-                                    <div className="flex -space-x-3">
+                                <div className="flex flex-col gap-3 xs:flex-row xs:items-center">
+                                    <div className="flex shrink-0 -space-x-2 xs:-space-x-3">
                                         {["men/32", "women/44", "women/68", "men/75"].map((portrait) => (
                                             <Image
                                                 key={portrait}
@@ -180,14 +180,14 @@ export default function HeroSection() {
                                                 alt="CareerBangla user"
                                                 width={42}
                                                 height={42}
-                                                className="rounded-full border-2 border-background object-cover shadow-md"
+                                                className="h-9 w-9 rounded-full border-2 border-background object-cover shadow-md xs:h-10.5 xs:w-10.5"
                                             />
                                         ))}
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-background bg-primary text-[10px] font-black text-primary-foreground shadow-md">
+                                        <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-background bg-primary text-[9px] font-black text-primary-foreground shadow-md xs:h-10 xs:w-10 xs:text-[10px]">
                                             9k+
                                         </div>
                                     </div>
-                                    <div>
+                                    <div className="min-w-0">
                                         <div className="mb-1 flex items-center gap-0.5">
                                             {[1, 2, 3, 4, 5].map((star) => (
                                                 <Star
@@ -196,7 +196,7 @@ export default function HeroSection() {
                                                 />
                                             ))}
                                         </div>
-                                        <p className="text-sm font-semibold text-foreground">
+                                        <p className="text-sm font-semibold leading-tight text-foreground">
                                             Trusted by 50,000+ professionals
                                         </p>
                                         <p className="text-xs text-muted-foreground">
@@ -205,7 +205,7 @@ export default function HeroSection() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-2 sm:w-auto">
+                                <div className="grid w-full grid-cols-2 gap-2 sm:w-auto">
                                     <div className="rounded-2xl bg-primary/10 px-3 py-2 text-center">
                                         <p className="text-lg font-black text-primary">1-click</p>
                                         <p className="text-[11px] font-semibold text-muted-foreground">
