@@ -63,15 +63,18 @@ export default function CvBannerSection() {
 
                             <div className="flex items-center justify-center">
                                 <div className="flex -space-x-3">
-                                    {[32, 44, 68, 75].map((num, idx) => (
-                                        <Image
-                                            key={idx}
-                                            src={`https://randomuser.me/api/portraits/${idx % 2 === 0 ? 'men' : 'women'}/${num}.jpg`}
-                                            alt="Candidate"
-                                            width={40}
-                                            height={40}
-                                            className="rounded-full border-2 border-background object-cover shadow-sm transition-transform hover:-translate-y-1 hover:z-30 relative"
-                                        />
+                                    {[
+                                        { initials: "R", bg: "from-orange-400 to-orange-600" },
+                                        { initials: "F", bg: "from-violet-400 to-violet-600" },
+                                        { initials: "T", bg: "from-emerald-400 to-emerald-600" },
+                                        { initials: "A", bg: "from-blue-400 to-blue-600" },
+                                    ].map((user) => (
+                                        <div
+                                            key={user.initials}
+                                            className={`h-10 w-10 rounded-full border-2 border-background bg-linear-to-br ${user.bg} flex items-center justify-center text-xs font-black text-white shadow-sm transition-transform hover:-translate-y-1 hover:z-30 relative shrink-0`}
+                                        >
+                                            {user.initials}
+                                        </div>
                                     ))}
                                 </div>
                                 <div className="ml-2 flex h-10 w-10 z-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-foreground text-background shadow-md transition-all hover:rotate-90 hover:scale-110 hover:bg-primary">

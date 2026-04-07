@@ -73,7 +73,7 @@ const EXPERIENCE_LABELS: Record<string, string> = {
     LEAD: "Lead", EXECUTIVE: "Executive",
 };
 
-const formatSalary = (n: number) => (n >= 1000 ? `$${(n / 1000).toFixed(0)}k` : `$${n}`);
+const formatSalary = (n: number) => (n >= 1000 ? `৳${(n / 1000).toFixed(0)}k` : `৳${n}`);
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 

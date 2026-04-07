@@ -13,7 +13,6 @@ import {
     Users,
     Zap,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 
 const stats = [
@@ -173,15 +172,18 @@ export default function HeroSection() {
                             <div className="mt-7 flex flex-col gap-4 rounded-3xl border border-border/50 bg-card/70 p-4 shadow-sm backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:p-5">
                                 <div className="flex flex-col gap-3 xs:flex-row xs:items-center">
                                     <div className="flex shrink-0 -space-x-2 xs:-space-x-3">
-                                        {["men/32", "women/44", "women/68", "men/75"].map((portrait) => (
-                                            <Image
-                                                key={portrait}
-                                                src={`https://randomuser.me/api/portraits/${portrait}.jpg`}
-                                                alt="CareerBangla user"
-                                                width={42}
-                                                height={42}
-                                                className="h-9 w-9 rounded-full border-2 border-background object-cover shadow-md xs:h-10.5 xs:w-10.5"
-                                            />
+                                        {[
+                                            { initials: "R", bg: "from-orange-400 to-orange-600" },
+                                            { initials: "F", bg: "from-violet-400 to-violet-600" },
+                                            { initials: "T", bg: "from-emerald-400 to-emerald-600" },
+                                            { initials: "A", bg: "from-blue-400 to-blue-600" },
+                                        ].map((user) => (
+                                            <div
+                                                key={user.initials}
+                                                className={`h-9 w-9 rounded-full border-2 border-background bg-linear-to-br ${user.bg} flex items-center justify-center text-[11px] font-black text-white shadow-md xs:h-10 xs:w-10 shrink-0`}
+                                            >
+                                                {user.initials}
+                                            </div>
                                         ))}
                                         <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-background bg-primary text-[9px] font-black text-primary-foreground shadow-md xs:h-10 xs:w-10 xs:text-[10px]">
                                             9k+

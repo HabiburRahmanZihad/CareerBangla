@@ -78,9 +78,9 @@ export const RecruiterInactiveJobCard = ({
                         <div className="flex items-center gap-1.5 text-muted-foreground bg-background px-3 py-1.5 rounded-lg border border-border/60 shadow-sm">
                             <DollarSign className="w-4 h-4 text-green-500/80" />
                             <span className="font-medium text-green-600 dark:text-green-400">
-                                {job.salaryMin ? `$${job.salaryMin.toLocaleString()}` : ""}
+                                {job.salaryMin ? `৳${job.salaryMin.toLocaleString()}` : ""}
                                 {job.salaryMin && job.salaryMax ? " - " : ""}
-                                {job.salaryMax ? `$${job.salaryMax.toLocaleString()}` : ""}
+                                {job.salaryMax ? `৳${job.salaryMax.toLocaleString()}` : ""}
                             </span>
                         </div>
                     )}

@@ -50,7 +50,7 @@ const LOCATION_OPTIONS  = ["REMOTE", "ONSITE", "HYBRID"];
 const PER_PAGE = 20;
 
 const formatLabel  = (v: string) => v.split("_").map((w) => w.charAt(0) + w.slice(1).toLowerCase()).join(" ");
-const formatSalary = (n: number) => (n >= 1000 ? `$${(n / 1000).toFixed(0)}k` : `$${n}`);
+const formatSalary = (n: number) => (n >= 1000 ? `৳${(n / 1000).toFixed(0)}k` : `৳${n}`);
 
 type CategoryOption = { id: string; title?: string | null };
 

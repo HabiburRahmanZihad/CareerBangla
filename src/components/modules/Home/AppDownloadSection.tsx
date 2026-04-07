@@ -5,7 +5,6 @@ import {
     Play,
     Star
 } from "lucide-react";
-import Image from "next/image";
 import Swal from "sweetalert2";
 
 const appSignals = [
@@ -100,15 +99,17 @@ export default function AppDownloadSection() {
                         <div className="mt-6 border-t border-white/10 pt-6">
                             <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
                                 <div className="flex -space-x-3">
-                                    {["men/32", "women/44", "women/68"].map((portrait) => (
-                                        <Image
-                                            key={portrait}
-                                            src={`https://randomuser.me/api/portraits/${portrait}.jpg`}
-                                            alt="CareerBangla user"
-                                            width={40}
-                                            height={40}
-                                            className="rounded-full border-2 border-slate-950 object-cover"
-                                        />
+                                    {[
+                                        { initials: "R", bg: "from-orange-400 to-orange-600" },
+                                        { initials: "F", bg: "from-violet-400 to-violet-600" },
+                                        { initials: "T", bg: "from-emerald-400 to-emerald-600" },
+                                    ].map((user) => (
+                                        <div
+                                            key={user.initials}
+                                            className={`h-10 w-10 rounded-full border-2 border-slate-950 bg-linear-to-br ${user.bg} flex items-center justify-center text-xs font-black text-white shrink-0`}
+                                        >
+                                            {user.initials}
+                                        </div>
                                     ))}
                                     <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-950 bg-slate-800 text-xs font-bold text-white">
                                         9k+

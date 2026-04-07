@@ -1,6 +1,5 @@
 import SectionHeader from "@/components/modules/Home/SectionHeader";
 import { Star } from "lucide-react";
-import Image from "next/image";
 
 const testimonials = [
     {
@@ -8,7 +7,7 @@ const testimonials = [
         role: "Software Engineer",
         company: "BRAC IT Services",
         text: "CareerBangla helped me land my first tech job in just 2 weeks. The ATS resume builder was a complete game-changer for breaking into the industry.",
-        portrait: "men/32",
+        avatarGradient: "from-orange-400 to-orange-600",
         rating: 5,
     },
     {
@@ -16,7 +15,7 @@ const testimonials = [
         role: "Marketing Manager",
         company: "Shohoz",
         text: "The smart matching system showed me jobs I would never have found on my own. Got 3 interview calls in a single week, absolutely brilliant.",
-        portrait: "women/44",
+        avatarGradient: "from-violet-400 to-violet-600",
         rating: 5,
     },
     {
@@ -24,7 +23,7 @@ const testimonials = [
         role: "Product Designer",
         company: "Pathao",
         text: "Switched careers entirely through CareerBangla. The verified recruiter network means zero spam, only quality opportunities from day one.",
-        portrait: "men/68",
+        avatarGradient: "from-emerald-400 to-emerald-600",
         rating: 5,
     },
 ];
@@ -57,13 +56,11 @@ export default function TestimonialsSection() {
                                 &ldquo;{testimonial.text}&rdquo;
                             </p>
                             <div className="flex items-center gap-3 border-t border-border/50 pt-4">
-                                <Image
-                                    src={`https://randomuser.me/api/portraits/${testimonial.portrait}.jpg`}
-                                    alt={testimonial.name}
-                                    width={40}
-                                    height={40}
-                                    className="shrink-0 rounded-full border-2 border-border/50 object-cover"
-                                />
+                                <div
+                                    className={`h-10 w-10 shrink-0 rounded-full border-2 border-border/50 bg-linear-to-br ${testimonial.avatarGradient} flex items-center justify-center text-sm font-black text-white`}
+                                >
+                                    {testimonial.name.charAt(0)}
+                                </div>
                                 <div>
                                     <p className="text-sm font-semibold text-foreground">
                                         {testimonial.name}

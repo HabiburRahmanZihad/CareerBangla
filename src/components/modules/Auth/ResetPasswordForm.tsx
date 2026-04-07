@@ -210,7 +210,7 @@ const ResetPasswordForm = ({ email, phone }: ResetPasswordFormProps) => {
                     <div className="flex items-start gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3">
                         <ShieldCheck className="h-4 w-4 text-white/70 shrink-0 mt-0.5" />
                         <p className="text-xs text-white/65 leading-relaxed">
-                            Your OTP expires in 1 minutes. Never share it with anyone — CareerBangla will never ask for your OTP.
+                            Your OTP expires in 1 minute. Never share it with anyone — CareerBangla will never ask for your OTP.
                         </p>
                     </div>
                 </div>
