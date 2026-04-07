@@ -18,6 +18,7 @@ const companyLinks = [
     { label: "About Us", href: "/about-us" },
     { label: "Career Resources", href: "/career-resources" },
     { label: "Hired Candidates", href: "/hired-candidates" },
+    { label: "Help Center", href: "/help" },
     { label: "Contact Us", href: "/contact" },
 ];
 
@@ -243,10 +244,10 @@ const Footer = () => {
                             Terms of Service
                         </Link>
                         <Link
-                            href="/contact"
+                            href="/help"
                             className="text-xs text-muted-foreground transition-colors hover:text-primary"
                         >
-                            Support
+                            Help Center
                         </Link>
                     </div>
                 </div>

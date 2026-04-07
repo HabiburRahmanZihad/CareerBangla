@@ -1,3 +1,4 @@
+import AIChatbot from "@/components/shared/AIChatbot";
 import Footer from "@/components/shared/Footer";
 import Navbar from "@/components/shared/Navbar";
 import { getUserInfo } from "@/services/auth.services";
@@ -14,6 +15,7 @@ export default async function CommonLayout({
       <Navbar user={user} />
       <main className="flex-1">{children}</main>
       <Footer />
+      <AIChatbot />
     </div>
   );
 }

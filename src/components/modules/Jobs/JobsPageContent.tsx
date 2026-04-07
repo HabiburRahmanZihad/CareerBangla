@@ -28,7 +28,7 @@ import {
     X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { JOB_TYPE_LABELS, JobGridCard, JobListCard } from "./JobCard";
 import { DATE_POSTED_OPTIONS, FilterChip, JobsFilterPanel } from "./JobsFilterPanel";
 
@@ -73,6 +73,43 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
     const [limit, setLimit] = useState(currentParams.limit || "12");
     const [view, setView] = useState<"list" | "grid">("list");
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+    // ── AI search suggestions ─────────────────────────────────────────────────
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [suggestionLoading, setSuggestionLoading] = useState(false);
+    const suggestionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // ── AI suggestions fetcher ────────────────────────────────────────────────
+    const fetchSuggestions = useCallback((query: string) => {
+        if (suggestionTimer.current) clearTimeout(suggestionTimer.current);
+        if (query.length < 2) { setSuggestions([]); setShowSuggestions(false); return; }
+        suggestionTimer.current = setTimeout(async () => {
+            setSuggestionLoading(true);
+            try {
+                const res = await fetch(`/api/job-suggestions?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                setSuggestions(data.suggestions || []);
+                setShowSuggestions(true);
+            } catch {
+                setSuggestions([]);
+            } finally {
+                setSuggestionLoading(false);
+            }
+        }, 350);
+    }, []);
+
+    const handleSearchTermChange = (val: string) => {
+        setSearchTerm(val);
+        fetchSuggestions(val);
+    };
+
+    const applySuggestion = (suggestion: string) => {
+        setSearchTerm(suggestion);
+        setSuggestions([]);
+        setShowSuggestions(false);
+        buildAndNavigate({ searchTerm: suggestion });
+    };
 
     // ── URL navigation ────────────────────────────────────────────────────────
     const buildAndNavigate = (overrides: Record<string, string | undefined> = {}) => {
@@ -227,10 +264,37 @@ const JobsPageContent = ({ jobs, meta, categories, currentParams }: JobsPageCont
                                         type="text"
                                         placeholder="Job title, skill, or company..."
                                         value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        onKeyDown={(e) => e.key === "Enter" && applyFilters()}
+                                        onChange={(e) => handleSearchTermChange(e.target.value)}
+                                        onKeyDown={(e) => { if (e.key === "Enter") { setSuggestions([]); setShowSuggestions(false); applyFilters(); } if (e.key === "Escape") { setSuggestions([]); setShowSuggestions(false); } }}
+                                        onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                                        onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                                         className="w-full pl-9 pr-3 py-2.5 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                                        autoComplete="off"
                                     />
+                                    {/* AI Suggestions Dropdown */}
+                                    {showSuggestions && (suggestions.length > 0 || suggestionLoading) && (
+                                        <div className="absolute left-0 right-0 top-full mt-1 z-50 rounded-xl border border-border/60 bg-background shadow-xl overflow-hidden">
+                                            {suggestionLoading && (
+                                                <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
+                                                    <Sparkles className="h-3 w-3 animate-pulse text-primary" /> AI is thinking...
+                                                </div>
+                                            )}
+                                            {suggestions.map((s) => (
+                                                <button
+                                                    key={s}
+                                                    type="button"
+                                                    onMouseDown={() => applySuggestion(s)}
+                                                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-left hover:bg-muted transition-colors"
+                                                >
+                                                    <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                                    {s}
+                                                </button>
+                                            ))}
+                                            <div className="border-t border-border/40 px-3 py-1.5 flex items-center gap-1 text-[10px] text-muted-foreground/60">
+                                                <Sparkles className="h-2.5 w-2.5 text-primary/60" /> AI-powered suggestions
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="hidden sm:block w-px bg-border/50 self-stretch" />
                                 <div className="relative sm:w-44">
