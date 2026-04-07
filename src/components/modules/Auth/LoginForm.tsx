@@ -13,12 +13,14 @@ import { useMutation } from "@tanstack/react-query";
 import {
   AlertCircle,
   ArrowRight,
+  Briefcase,
   CheckCircle2,
   Eye,
   EyeOff,
   Info,
   LogIn,
   Sparkles,
+  UserCircle2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -26,6 +28,23 @@ import { useState } from "react";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const DEVICE_LIMIT_LOGIN_CONTEXT_KEY = "device-limit-login-context";
+
+const DEMO_ACCOUNTS = [
+  {
+    label: "Demo User",
+    icon: UserCircle2,
+    identifier: "md134habu@gmail.com",
+    password: "Pa$$w0rd!",
+    color: "hover:border-primary/40 hover:bg-primary/5 hover:text-primary",
+  },
+  {
+    label: "Demo Recruiter",
+    icon: Briefcase,
+    identifier: "har2186734@maricopa.edu",
+    password: "Pa$$w0rd!",
+    color: "hover:border-emerald-500/40 hover:bg-emerald-500/5 hover:text-emerald-600",
+  },
+] as const;
 
 const oauthErrorMessages: Record<string, string> = {
   oauth_failed: "Google sign-in failed. Please try again or use email login.",
@@ -350,6 +369,37 @@ const LoginForm = ({ redirectPath, oauthError, forceLogoutMode = false }: LoginF
                 <GoogleIcon />
                 Continue with Google
               </Button>
+
+              {/* Demo accounts */}
+              <div className="relative flex items-center gap-3">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted-foreground font-medium shrink-0">
+                  try demo account
+                </span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {DEMO_ACCOUNTS.map((demo) => (
+                  <Button
+                    key={demo.label}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isPending}
+                    className={`gap-1.5 border-border/60 text-xs font-semibold transition-all ${demo.color}`}
+                    onClick={() => {
+                      setServerError(null);
+                      form.setFieldValue("identifier", demo.identifier);
+                      form.setFieldValue("password", demo.password);
+                      setTimeout(() => form.handleSubmit(), 80);
+                    }}
+                  >
+                    <demo.icon className="h-3.5 w-3.5 shrink-0" />
+                    {demo.label}
+                  </Button>
+                ))}
+              </div>
             </div>
 
             {/* Card footer */}
