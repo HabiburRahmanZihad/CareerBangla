@@ -16,6 +16,7 @@ import Link from "next/link";
 const companyLinks = [
     { label: "Home", href: "/" },
     { label: "About Us", href: "/about-us" },
+    { label: "Blog", href: "/blog" },
     { label: "Career Resources", href: "/career-resources" },
     { label: "Hired Candidates", href: "/hired-candidates" },
     { label: "Help Center", href: "/help" },
