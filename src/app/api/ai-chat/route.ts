@@ -56,6 +56,28 @@ export async function POST(req: NextRequest) {
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
             console.error("Anthropic API error:", err);
+
+            const errMessage: string = err?.error?.message || "";
+            const errType: string = err?.error?.type || "";
+
+            if (
+                errMessage.toLowerCase().includes("credit balance is too low") ||
+                errMessage.toLowerCase().includes("insufficient") ||
+                errType === "invalid_request_error" && errMessage.toLowerCase().includes("credit")
+            ) {
+                return NextResponse.json(
+                    { error: "AI assistant is temporarily unavailable. Please try again later." },
+                    { status: 503 }
+                );
+            }
+
+            if (response.status === 429 || errType === "rate_limit_error") {
+                return NextResponse.json(
+                    { error: "Too many requests. Please wait a moment and try again." },
+                    { status: 429 }
+                );
+            }
+
             return NextResponse.json(
                 { error: "AI service error. Please try again." },
                 { status: 502 }

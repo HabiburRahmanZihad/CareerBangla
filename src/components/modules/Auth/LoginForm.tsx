@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -84,10 +85,12 @@ interface LoginFormProps {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 const LoginForm = ({ redirectPath, oauthError, forceLogoutMode = false }: LoginFormProps) => {
+  const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(
     oauthError ? (oauthErrorMessages[oauthError] || "Authentication failed. Please try again.") : null
   );
   const [showPassword, setShowPassword] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: ({ payload, forceLogout }: { payload: ILoginPayload; forceLogout?: boolean }) =>
@@ -110,7 +113,7 @@ const LoginForm = ({ redirectPath, oauthError, forceLogoutMode = false }: LoginF
               );
             }
             const deviceLimitPath = `/login/device-limit${redirectPath ? `?redirect=${encodeURIComponent(redirectPath)}` : ""}`;
-            window.location.href = deviceLimitPath;
+            router.push(deviceLimitPath);
             return;
           }
           setServerError(result.message || "Login failed");
@@ -120,12 +123,24 @@ const LoginForm = ({ redirectPath, oauthError, forceLogoutMode = false }: LoginF
         if (typeof window !== "undefined") {
           window.sessionStorage.removeItem(DEVICE_LIMIT_LOGIN_CONTEXT_KEY);
         }
-        window.location.href = result.redirectPath || "/dashboard";
+        setIsRedirecting(true);
+        router.push(result.redirectPath || "/dashboard");
       } catch (error: any) {
         setServerError(getRequestErrorMessage(error, "Login failed"));
       }
     },
   });
+
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-10 w-10 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+          <p className="text-sm text-muted-foreground font-medium">Redirecting…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-background">
